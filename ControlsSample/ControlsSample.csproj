@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <Platforms>AnyCPU;x64;x86</Platforms>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <TargetFrameworks>netcoreapp3.1;net45</TargetFrameworks>
+  </PropertyGroup>
+  <PropertyGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <RuntimeFrameworkVersion>3.1.0</RuntimeFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="build\**" />
+    <EmbeddedResource Remove="build\**" />
+    <None Remove="build\**" />
+  </ItemGroup>
+  <ItemGroup Condition="$(DefineConstants.Contains(';NETFRAMEWORK'))">
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="ComboBoxPage.uixml" />
+    <None Remove="GridPage.uixml" />
+    <None Remove="ListBoxPage.uixml" />
+    <None Remove="ListViewPage.uixml" />
+    <None Remove="MainWindow.uixml" />
+    <None Remove="Resources\ImageListIcons\Large\Calendar32.png" />
+    <None Remove="Resources\ImageListIcons\Large\LineGraph32.png" />
+    <None Remove="Resources\ImageListIcons\Large\Pencil32.png" />
+    <None Remove="Resources\ImageListIcons\Large\Photo32.png" />
+    <None Remove="Resources\ImageListIcons\Small\Calendar16.png" />
+    <None Remove="Resources\ImageListIcons\Small\LineGraph16.png" />
+    <None Remove="Resources\ImageListIcons\Small\Pencil16.png" />
+    <None Remove="Resources\ImageListIcons\Small\Photo16.png" />
+    <None Remove="TreeViewPage.uixml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ImageListIcons\Large\Calendar32.png" />
+    <EmbeddedResource Include="Resources\ImageListIcons\Large\LineGraph32.png" />
+    <EmbeddedResource Include="Resources\ImageListIcons\Large\Pencil32.png" />
+    <EmbeddedResource Include="Resources\ImageListIcons\Large\Photo32.png" />
+    <EmbeddedResource Include="Resources\ImageListIcons\Small\Calendar16.png" />
+    <EmbeddedResource Include="Resources\ImageListIcons\Small\LineGraph16.png" />
+    <EmbeddedResource Include="Resources\ImageListIcons\Small\Pencil16.png" />
+    <EmbeddedResource Include="Resources\ImageListIcons\Small\Photo16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <UIXml Update="ComboBoxPage.uixml">
+      <Generator>MSBuild:Compile</Generator>
+    </UIXml>
+    <UIXml Update="ListViewPage.uixml">
+      <Generator>MSBuild:Compile</Generator>
+    </UIXml>
+    <UIXml Update="GridPage.uixml">
+      <SubType>Designer</SubType>
+    </UIXml>
+    <UIXml Update="TreeViewPage.uixml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </UIXml>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Alternet.UI" Version="0.1.68-beta" />
+  </ItemGroup>
+</Project>
