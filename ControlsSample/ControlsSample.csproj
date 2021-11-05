@@ -64,6 +64,6 @@
     </UIXml>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.1.85-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.1.86-beta" />
   </ItemGroup>
 </Project>
