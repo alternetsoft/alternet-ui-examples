@@ -6,19 +6,27 @@ namespace ControlsSample
 {
     partial class SliderPage : Control
     {
-        private readonly IPageSite site;
+        private IPageSite? site;
 
-        public SliderPage(IPageSite site)
+        public SliderPage()
         {
             InitializeComponent();
-            progressBarControlSlider.Value = 1;
+        }
 
-            this.site = site;
+        public IPageSite? Site
+        {
+            get => site;
+
+            set
+            {
+                progressBarControlSlider.Value = 1;
+                site = value;
+            }
         }
 
         private void Slider_ValueChanged(object? sender, EventArgs e)
         {
-            site.LogEvent("New slider value is: " + ((Slider)sender!).Value);
+            site?.LogEvent("New slider value is: " + ((Slider)sender!).Value);
         }
 
         private void ProgressBarControlSlider_ValueChanged(object? sender, EventArgs e)

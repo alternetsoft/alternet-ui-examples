@@ -8,7 +8,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
-    <TargetFrameworks>netcoreapp3.1;net45</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net461</TargetFrameworks>
   </PropertyGroup>
   <PropertyGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
     <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
@@ -32,6 +32,6 @@
     <EmbeddedResource Include="Resources\ReportImage_16x.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.1.91-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.1.104-beta" />
   </ItemGroup>
 </Project>

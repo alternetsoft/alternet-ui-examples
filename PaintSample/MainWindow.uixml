@@ -1,0 +1,19 @@
+<Window xmlns="http://schemas.alternetsoft.com/ui/2021"
+        xmlns:x="http://schemas.alternetsoft.com/ui/2021/uixml"
+        x:Class="PaintSample.MainWindow"
+		Title="AlterNET UI Paint Sample"
+		xmlns:local="clr-namespace:PaintSample"
+		Width="800" Height="800">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+			<local:Toolbar Name="toolbar" Grid.Row="0" Grid.Column="0"/>
+			<Border Name="border" Grid.Row="1" Grid.Column="0">
+				<local:CanvasControl Name="canvasControl" />
+			</Border>
+			<local:ColorSelector Name="colorSelector" Grid.Row="2" Grid.Column="0"/>
+		</Grid>
+	</Window>

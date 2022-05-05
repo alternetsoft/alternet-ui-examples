@@ -5,26 +5,34 @@ namespace ControlsSample
 {
     partial class ListViewPage : Control
     {
-        private readonly IPageSite site;
+        private IPageSite? site;
 
-        public ListViewPage(IPageSite site)
+        public ListViewPage()
         {
             InitializeComponent();
+        }
 
-            var imageLists = ResourceLoader.LoadImageLists();
-            listView.SmallImageList = imageLists.Small;
-            listView.LargeImageList = imageLists.Large;
+        public IPageSite? Site
+        {
+            get => site;
 
-            listView.Columns.Add(new ListViewColumn("Column 1"));
-            listView.Columns.Add(new ListViewColumn("Column 2"));
+            set
+            {
+                var imageLists = ResourceLoader.LoadImageLists();
+                listView.SmallImageList = imageLists.Small;
+                listView.LargeImageList = imageLists.Large;
 
-            AddItems(10);
+                listView.Columns.Add(new ListViewColumn("Column 1"));
+                listView.Columns.Add(new ListViewColumn("Column 2"));
 
-            foreach (var item in Enum.GetValues(typeof(ListViewView)))
-                viewComboBox.Items.Add(item ?? throw new Exception());
-            viewComboBox.SelectedIndex = 0;
+                AddItems(10);
 
-            this.site = site;
+                foreach (var item in Enum.GetValues(typeof(ListViewView)))
+                    viewComboBox.Items.Add(item ?? throw new Exception());
+                viewComboBox.SelectedIndex = 0;
+
+                site = value;
+            }
         }
 
         private void ViewComboBox_SelectedItemChanged(object? sender, EventArgs e)
@@ -56,7 +64,7 @@ namespace ControlsSample
         private void ListView_SelectionChanged(object? sender, EventArgs e)
         {
             string selectedIndicesString = listView.SelectedIndices.Count > 100 ? "too many indices to display" : string.Join(",", listView.SelectedIndices);
-            site.LogEvent($"ListView: SelectionChanged. SelectedIndices: ({selectedIndicesString})");
+            site?.LogEvent($"ListView: SelectionChanged. SelectedIndices: ({selectedIndicesString})");
         }
 
         private void AllowMultipleSelectionCheckBox_CheckedChanged(object? sender, EventArgs e)

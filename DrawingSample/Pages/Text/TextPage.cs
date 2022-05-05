@@ -13,13 +13,13 @@ namespace DrawingSample
         private static Font fontInfoFont = new Font(FontFamily.GenericMonospace, 8);
         private static Brush fontInfoBrush = Brushes.Black;
         private Paragraph[]? paragraphs;
-        private float fontSize = 10;
+        private double fontSize = 10;
         private FontStyle fontStyle;
         private string customFontFamilyName = Control.DefaultFont.FontFamily.Name;
 
         public override string Name => "Text";
 
-        public float FontSize
+        public double FontSize
         {
             get => fontSize;
             set
@@ -29,7 +29,44 @@ namespace DrawingSample
             }
         }
 
-        public FontStyle FontStyle
+        public bool Bold
+        {
+            get => GetFontStyle(FontStyle.Bold);
+            set => SetFontStyle(FontStyle.Bold, value);
+        }
+
+        public bool Italic
+        {
+            get => GetFontStyle(FontStyle.Italic);
+            set => SetFontStyle(FontStyle.Italic, value);
+        }
+
+        public bool Underlined
+        {
+            get => GetFontStyle(FontStyle.Underlined);
+            set => SetFontStyle(FontStyle.Underlined, value);
+        }
+
+        public bool Strikethrough
+        {
+            get => GetFontStyle(FontStyle.Strikethrough);
+            set => SetFontStyle(FontStyle.Strikethrough, value);
+        }
+
+        private void SetFontStyle(FontStyle style, bool value)
+        {
+            if (value)
+                FontStyle |= style;
+            else
+                FontStyle &= ~style;
+        }
+
+        private bool GetFontStyle(FontStyle style)
+        {
+            return (FontStyle & style) != 0;
+        }
+
+        FontStyle FontStyle
         {
             get => fontStyle;
             set
@@ -49,7 +86,7 @@ namespace DrawingSample
             }
         }
 
-        public override void Draw(DrawingContext dc, RectangleF bounds)
+        public override void Draw(DrawingContext dc, Rect bounds)
         {
             if (paragraphs == null)
                 paragraphs = CreateParagraphs().ToArray();
@@ -57,14 +94,14 @@ namespace DrawingSample
             var color = Color.MidnightBlue;
             float lighten = 10;
 
-            float x = 20;
-            float y = 20;
+            double x = 20;
+            double y = 20;
             foreach (var paragraph in paragraphs)
             {
-                dc.DrawText(paragraph.FontInfo, fontInfoFont, fontInfoBrush, new PointF(x, y));
+                dc.DrawText(paragraph.FontInfo, fontInfoFont, fontInfoBrush, new Point(x, y));
                 y += dc.MeasureText(paragraph.FontInfo, fontInfoFont).Height + 3;
 
-                dc.DrawText(LoremIpsum, paragraph.Font, new SolidBrush(color), new PointF(20, y));
+                dc.DrawText(LoremIpsum, paragraph.Font, new SolidBrush(color), new Point(20, y));
                 y += dc.MeasureText(LoremIpsum, paragraph.Font).Height + 20;
 
                 var c = new Skybrud.Colors.RgbColor(color.R, color.G, color.B).Lighten(lighten).ToRgb();
@@ -72,7 +109,12 @@ namespace DrawingSample
             }
         }
 
-        protected override Control CreateSettingsControl() => new TextPageSettings(this);
+        protected override Control CreateSettingsControl()
+        {
+            var control = new TextPageSettings();
+            control.Initialize(this);
+            return control;
+        }
 
         private void InvalidateParagraphs()
         {
@@ -83,7 +125,7 @@ namespace DrawingSample
                 paragraphs = null;
             }
 
-            Canvas?.Update();
+            Canvas?.Invalidate();
         }
 
         private IEnumerable<Paragraph> CreateParagraphs()

@@ -5,19 +5,27 @@ namespace ControlsSample
 {
     partial class ComboBoxPage : Control
     {
-        private readonly IPageSite site;
+        private IPageSite? site;
 
-        public ComboBoxPage(IPageSite site)
+        public ComboBoxPage()
         {
             InitializeComponent();
-
-            this.site = site;
-
-            comboBox.Items.Add("One");
-            comboBox.Items.Add("Two");
-            comboBox.Items.Add("Three");
-            comboBox.SelectedIndex = 1;
         }
+
+        public IPageSite? Site
+        {
+            get => site;
+
+            set
+            {
+                site = value;
+                comboBox.Items.Add("One");
+                comboBox.Items.Add("Two");
+                comboBox.Items.Add("Three");
+                comboBox.SelectedIndex = 1;
+            }
+        }
+
 
         private void SetSelectedItemToNullButton_Click(object? sender, EventArgs e)
         {
@@ -52,12 +60,12 @@ namespace ControlsSample
         private void ComboBox_TextChanged(object? sender, EventArgs e)
         {
             var text = comboBox.Text == "" ? "\"\"" : comboBox.Text;
-            site.LogEvent($"ComboBox: TextChanged. Text: {text}");
+            site?.LogEvent($"ComboBox: TextChanged. Text: {text}");
         }
 
         private void ComboBox_SelectedItemChanged(object? sender, EventArgs e)
         {
-            site.LogEvent($"ComboBox: SelectedItemChanged. SelectedIndex: {(comboBox.SelectedIndex == null ? "<null>" : comboBox.SelectedIndex.ToString())}");
+            site?.LogEvent($"ComboBox: SelectedItemChanged. SelectedIndex: {(comboBox.SelectedIndex == null ? "<null>" : comboBox.SelectedIndex.ToString())}");
         }
 
         private void AllowTextEditingCheckBox_CheckedChanged(object? sender, EventArgs e)

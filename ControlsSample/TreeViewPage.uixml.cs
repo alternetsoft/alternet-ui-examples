@@ -6,17 +6,23 @@ namespace ControlsSample
 {
     partial class TreeViewPage : Control
     {
-        private readonly IPageSite site;
+        private IPageSite? site;
 
-        public TreeViewPage(IPageSite site)
+        public TreeViewPage()
         {
             InitializeComponent();
+        }
 
-            treeView.ImageList = ResourceLoader.LoadImageLists().Small;
+        public IPageSite? Site
+        {
+            get => site;
 
-            AddItems(10);
-
-            this.site = site;
+            set
+            {
+                treeView.ImageList = ResourceLoader.LoadImageLists().Small;
+                AddItems(10);
+                site = value;
+            }
         }
 
         private void AddManyItemsButton_Click(object? sender, EventArgs e)
@@ -50,12 +56,12 @@ namespace ControlsSample
         {
             var selectedItems = treeView.SelectedItems;
             string selectedItemsString = selectedItems.Count > 100 ? "too many indices to display" : string.Join(",", selectedItems.Select(x => x.Text));
-            site.LogEvent($"TreeView: SelectionChanged. SelectedItems: ({selectedItemsString})");
+            site?.LogEvent($"TreeView: SelectionChanged. SelectedItems: ({selectedItemsString})");
         }
 
         private void TreeView_ExpandedChanged(object? sender, TreeViewItemExpandedChangedEventArgs e)
         {
-            site.LogEvent($"TreeView: ExpandedChanged. Item: '{e.Item.Text}', IsExpanded: {e.Item.IsExpanded}");
+            site?.LogEvent($"TreeView: ExpandedChanged. Item: '{e.Item.Text}', IsExpanded: {e.Item.IsExpanded}");
         }
 
         private void EnabledCheckBox_CheckedChanged(object? sender, EventArgs e)

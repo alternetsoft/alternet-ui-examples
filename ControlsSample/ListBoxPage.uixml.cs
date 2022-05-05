@@ -5,17 +5,24 @@ namespace ControlsSample
 {
     partial class ListBoxPage : Control
     {
-        private readonly IPageSite site;
+        private IPageSite? site;
 
-        public ListBoxPage(IPageSite site)
+        public ListBoxPage()
         {
             InitializeComponent();
+        }
 
-            listBox.Items.Add("One");
-            listBox.Items.Add("Two");
-            listBox.Items.Add("Three");
+        public IPageSite? Site
+        {
+            get => site;
 
-            this.site = site;
+            set
+            {
+                listBox.Items.Add("One");
+                listBox.Items.Add("Two");
+                listBox.Items.Add("Three");
+                site = value;
+            }
         }
 
         private void AddManyItemsButton_Click(object? sender, EventArgs e)
@@ -37,7 +44,7 @@ namespace ControlsSample
         private void ListBox_SelectionChanged(object? sender, EventArgs e)
         {
             string selectedIndicesString = listBox.SelectedIndices.Count > 100 ? "too many indices to display" : string.Join(",", listBox.SelectedIndices);
-            site.LogEvent($"ListBox: SelectionChanged. SelectedIndices: ({selectedIndicesString})");
+            site?.LogEvent($"ListBox: SelectionChanged. SelectedIndices: ({selectedIndicesString})");
         }
 
         private void AllowMultipleSelectionCheckBox_CheckedChanged(object? sender, EventArgs e)

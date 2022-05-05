@@ -14,11 +14,11 @@ namespace DrawingSample
 
         private int shapeCount = 5;
 
-        private double brushColorHue = 0.1;
+        private int brushColorHue = 1;
 
-        private double penColorHue = 0.25;
+        private int penColorHue = 2;
 
-        private float penWidth = 4;
+        private int penWidth = 4;
 
         private BrushHatchStyle hatchStyle = BrushHatchStyle.DiagonalCross;
 
@@ -47,7 +47,7 @@ namespace DrawingSample
             }
         }
 
-        public ShapeType[] IncludedShapes
+        ShapeType[] IncludedShapes
         {
             get => includedShapeTypes;
             set
@@ -56,6 +56,32 @@ namespace DrawingSample
                 Update();
             }
         }
+
+        public bool RectanglesIncluded
+        {
+            get => IsShapeIncluded(AllShapeTypes.Rectangle);
+            set => SetIncludedShape(AllShapeTypes.Rectangle, value);
+        }
+
+        public bool EllipsesIncluded
+        {
+            get => IsShapeIncluded(AllShapeTypes.Ellipse);
+            set => SetIncludedShape(AllShapeTypes.Ellipse, value);
+        }
+
+        private void SetIncludedShape(ShapeType shape, bool value)
+        {
+            var shapes = IncludedShapes.ToList();
+
+            if (value)
+                shapes.Add(shape);
+            else
+                shapes.Remove(shape);
+
+            IncludedShapes = shapes.ToArray();
+        }
+
+        private bool IsShapeIncluded(BrushesAndPensPage.ShapeType shape) => IncludedShapes.Contains(shape);
 
         public int ShapeCount
         {
@@ -67,7 +93,10 @@ namespace DrawingSample
             }
         }
 
-        public double BrushColorHue
+        private static double MapRanges(double value, double fromLow, double fromHigh, double toLow, double toHigh) =>
+            ((value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow)) + toLow;
+
+        public int BrushColorHue
         {
             get => brushColorHue;
             set
@@ -77,7 +106,7 @@ namespace DrawingSample
             }
         }
 
-        public double PenColorHue
+        public int PenColorHue
         {
             get => penColorHue;
             set
@@ -87,7 +116,7 @@ namespace DrawingSample
             }
         }
 
-        public float PenWidth
+        public int PenWidth
         {
             get => penWidth;
             set
@@ -123,10 +152,13 @@ namespace DrawingSample
                 new ShapeType(CreateRectangle),
                 new ShapeType(CreateEllipse));
 
-        public override void Draw(DrawingContext dc, RectangleF bounds)
+        public override void Draw(DrawingContext dc, Rect bounds)
         {
             if (Canvas == null)
                 throw new Exception();
+
+            if (bounds.IsEmpty)
+                return;
 
             if (shapes == null)
             {
@@ -140,11 +172,16 @@ namespace DrawingSample
                 shape.Draw(dc);
         }
 
-        protected override Control CreateSettingsControl() => new BrushesAndPensPageSettings(this);
-
-        private static RectangleShape CreateRectangle(Random random, RectangleF bounds, Brush fill, Pen stroke)
+        protected override Control CreateSettingsControl()
         {
-            var rect = new RectangleF(
+            var control = new BrushesAndPensPageSettings();
+            control.Initialize(this);
+            return control;
+        }
+
+        private static RectangleShape CreateRectangle(Random random, Rect bounds, Brush fill, Pen stroke)
+        {
+            var rect = new Rect(
                 random.Next(0, (int)bounds.Width / 2),
                 random.Next(0, (int)bounds.Height / 2),
                 random.Next((int)bounds.Width / 5, (int)bounds.Width / 3),
@@ -152,9 +189,9 @@ namespace DrawingSample
             return new RectangleShape(rect, fill, stroke);
         }
 
-        private static EllipseShape CreateEllipse(Random random, RectangleF bounds, Brush fill, Pen stroke)
+        private static EllipseShape CreateEllipse(Random random, Rect bounds, Brush fill, Pen stroke)
         {
-            var rect = new RectangleF(
+            var rect = new Rect(
                 random.Next(0, (int)bounds.Width / 2),
                 random.Next(0, (int)bounds.Height / 2),
                 random.Next((int)bounds.Width / 5, (int)bounds.Width / 3),
@@ -165,10 +202,10 @@ namespace DrawingSample
         private void Update()
         {
             shapes = null;
-            Canvas?.Update();
+            Canvas?.Invalidate();
         }
 
-        private IEnumerable<Shape> CreateShapes(Random random, RectangleF bounds, Brush fill, Pen stroke)
+        private IEnumerable<Shape> CreateShapes(Random random, Rect bounds, Brush fill, Pen stroke)
         {
             if (includedShapeTypes.Length == 0)
                 yield break;
@@ -179,13 +216,20 @@ namespace DrawingSample
 
         private Pen CreateStrokePen()
         {
-            var c = new Skybrud.Colors.HslColor(penColorHue, 1, 0.3).ToRgb();
+            var c = new Skybrud.Colors.HslColor(
+                MapRanges(penColorHue, 0, 10, 0, 1),
+                1,
+                0.3).ToRgb();
+
             return new Pen(Color.FromArgb(c.R, c.G, c.B), penWidth, penDashStyle);
         }
 
         private Brush CreateFillBrush()
         {
-            var c = new Skybrud.Colors.HslColor(brushColorHue, 1, 0.7).ToRgb();
+            var c = new Skybrud.Colors.HslColor(
+                MapRanges(brushColorHue, 0, 10, 0, 1),
+                1,
+                0.7).ToRgb();
 
             return brush switch
             {
@@ -217,7 +261,7 @@ namespace DrawingSample
                 ShapeFactory = shapeFactory;
             }
 
-            public delegate Shape Factory(Random random, RectangleF bounds, Brush fill, Pen stroke);
+            public delegate Shape Factory(Random random, Rect bounds, Brush fill, Pen stroke);
 
             public Factory ShapeFactory { get; }
         }
@@ -237,9 +281,9 @@ namespace DrawingSample
 
         private class RectangleShape : Shape
         {
-            private RectangleF rectangle;
+            private Rect rectangle;
 
-            public RectangleShape(RectangleF rectangle, Brush fill, Pen stroke) : base(fill, stroke)
+            public RectangleShape(Rect rectangle, Brush fill, Pen stroke) : base(fill, stroke)
             {
                 this.rectangle = rectangle;
             }
@@ -253,9 +297,9 @@ namespace DrawingSample
 
         private class EllipseShape : Shape
         {
-            private RectangleF bounds;
+            private Rect bounds;
 
-            public EllipseShape(RectangleF bounds, Brush fill, Pen stroke) : base(fill, stroke)
+            public EllipseShape(Rect bounds, Brush fill, Pen stroke) : base(fill, stroke)
             {
                 this.bounds = bounds;
             }
