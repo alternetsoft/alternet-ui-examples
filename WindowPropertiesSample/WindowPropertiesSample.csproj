@@ -23,13 +23,14 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="MainWindow.uixml" />
+    <None Remove="OwnedWindow.uixml" />
+    <None Remove="Resources\TestIcon1.ico" />
+    <None Remove="Resources\TestIcon2.ico" />
+    <None Remove="TestWindow.uixml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Document_16x.png" />
-    <EmbeddedResource Include="Resources\FolderClosed_16x.png" />
-    <EmbeddedResource Include="Resources\Report_16x.png" />
-    <EmbeddedResource Include="Resources\ReportImage_16x.png" />
+    <EmbeddedResource Include="Resources\TestIcon1.ico" />
+    <EmbeddedResource Include="Resources\TestIcon2.ico" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Alternet.UI" Version="0.3.121-beta" />

@@ -8,11 +8,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
-    <TargetFrameworks>netcoreapp3.1;net461</TargetFrameworks>
+    <TargetFrameworks>net6.0;net461</TargetFrameworks>
   </PropertyGroup>
   <PropertyGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
-    <RuntimeFrameworkVersion>3.1.0</RuntimeFrameworkVersion>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <RuntimeFrameworkVersion>6.0.0</RuntimeFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="build\**" />
@@ -88,6 +88,6 @@
     </UIXml>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.2.106-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.3.121-beta" />
   </ItemGroup>
 </Project>
