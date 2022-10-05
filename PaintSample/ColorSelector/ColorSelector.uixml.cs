@@ -27,7 +27,6 @@ namespace PaintSample
             InitializeComponent();
 
             CreateSwatches();
-
             selectedColorDisplay.SelectedColor = Color.Blue;
         }
 

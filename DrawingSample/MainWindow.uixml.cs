@@ -14,6 +14,7 @@ namespace DrawingSample
         public MainWindow()
         {
             InitializeComponent();
+
             InitializePages();
         }
 

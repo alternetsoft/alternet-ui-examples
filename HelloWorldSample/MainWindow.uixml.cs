@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using Alternet.Drawing;
 using Alternet.UI;
 
 namespace HelloWorldSample

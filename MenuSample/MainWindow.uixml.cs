@@ -30,12 +30,12 @@ namespace MenuSample
             roleControlsPanel.Visible = runningUnderMacOS;
         }
 
-        public Command SaveCommand { get; }
-        public Command ExportToPngCommand { get; }
+        public Command? SaveCommand { get; private set; }
+        public Command? ExportToPngCommand { get; private set; }
 
         private void OpenMenuItem_Click(object sender, EventArgs e) => MessageBox.Show("Open");
 
-        private void SaveEnabledMenuItem_Click(object sender, EventArgs e) => SaveCommand.RaiseCanExecuteChanged();
+        private void SaveEnabledMenuItem_Click(object sender, EventArgs e) => SaveCommand!.RaiseCanExecuteChanged();
 
         private void ExportToPdfMenuItem_Click(object sender, EventArgs e) => MessageBox.Show("Export to PDF");
 
@@ -139,19 +139,24 @@ namespace MenuSample
             UpdateControls();
         }
 
-        private void SetAboutMenuItemRoleToNone_Click(object sender, System.EventArgs e)
+        private void SetAboutMenuItemRoleToNone_Click(object sender, EventArgs e)
         {
             aboutMenuItem.Role = MenuItemRoles.None;
         }
 
-        private void SetOptionsMenuItemRoleToNone_Click(object sender, System.EventArgs e)
+        private void SetOptionsMenuItemRoleToNone_Click(object sender, EventArgs e)
         {
             optionsMenuItem.Role = MenuItemRoles.None;
         }
 
-        private void SetOptionsMenuItemRoleToPreferences_Click(object sender, System.EventArgs e)
+        private void SetOptionsMenuItemRoleToPreferences_Click(object sender, EventArgs e)
         {
             optionsMenuItem.Role = MenuItemRoles.Preferences;
+        }
+
+        private void ContextMenuBorder_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            new ExampleContextMenu().Show(contextMenuBorder, e.GetPosition(contextMenuBorder));
         }
     }
 }

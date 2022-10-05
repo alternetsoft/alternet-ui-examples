@@ -13,7 +13,6 @@ namespace InputSample
             InitializeComponent();
 
             PlatformSpecificInitialize();
-            
             InputManager.Current.PreProcessInput += InputManager_PreProcessInput;
         }
 
