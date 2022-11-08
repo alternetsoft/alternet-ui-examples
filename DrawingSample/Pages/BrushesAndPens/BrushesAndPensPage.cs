@@ -8,7 +8,7 @@ namespace DrawingSample
 {
     internal sealed class BrushesAndPensPage : DrawingPage
     {
-        private BrushType brush;
+        private BrushType brush = BrushType.RadialGradient;
 
         private ShapeType[] includedShapeTypes;
 
@@ -24,6 +24,10 @@ namespace DrawingSample
 
         private PenDashStyle penDashStyle = PenDashStyle.Dash;
 
+        private LineJoin lineJoin = LineJoin.Miter;
+
+        private LineCap lineCap = LineCap.Flat;
+
         private Shape[]? shapes;
 
         public BrushesAndPensPage()
@@ -34,7 +38,9 @@ namespace DrawingSample
         public enum BrushType
         {
             Solid,
-            Hatch
+            Hatch,
+            LinearGradient,
+            RadialGradient
         }
 
         public BrushType Brush
@@ -93,9 +99,6 @@ namespace DrawingSample
             }
         }
 
-        private static double MapRanges(double value, double fromLow, double fromHigh, double toLow, double toHigh) =>
-            ((value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow)) + toLow;
-
         public int BrushColorHue
         {
             get => brushColorHue;
@@ -142,6 +145,26 @@ namespace DrawingSample
             set
             {
                 penDashStyle = value;
+                Update();
+            }
+        }
+
+        public LineJoin LineJoin
+        {
+            get => lineJoin;
+            set
+            {
+                lineJoin = value;
+                Update();
+            }
+        }
+
+        public LineCap LineCap
+        {
+            get => lineCap;
+            set
+            {
+                lineCap = value;
                 Update();
             }
         }
@@ -217,17 +240,27 @@ namespace DrawingSample
         private Pen CreateStrokePen()
         {
             var c = new Skybrud.Colors.HslColor(
-                MapRanges(penColorHue, 0, 10, 0, 1),
+                MathUtils.MapRanges(penColorHue, 0, 10, 0, 1),
                 1,
                 0.3).ToRgb();
 
-            return new Pen(Color.FromArgb(c.R, c.G, c.B), penWidth, penDashStyle);
+            return new Pen(Color.FromArgb(c.R, c.G, c.B), penWidth, penDashStyle, lineCap, lineJoin);
         }
 
         private Brush CreateFillBrush()
         {
             var c = new Skybrud.Colors.HslColor(
-                MapRanges(brushColorHue, 0, 10, 0, 1),
+                MathUtils.MapRanges(brushColorHue, 0, 10, 0, 1),
+                1,
+                0.7).ToRgb();
+
+            var c1 = new Skybrud.Colors.HslColor(
+                MathUtils.MapRanges(brushColorHue, 0, 10, 0, 1) - 0.3,
+                1,
+                0.7).ToRgb();
+
+            var c2 = new Skybrud.Colors.HslColor(
+                MathUtils.MapRanges(brushColorHue, 0, 10, 0, 1) - 0.8,
                 1,
                 0.7).ToRgb();
 
@@ -235,6 +268,30 @@ namespace DrawingSample
             {
                 BrushType.Solid => new SolidBrush(Color.FromArgb(c.R, c.G, c.B)),
                 BrushType.Hatch => new HatchBrush(hatchStyle, Color.FromArgb(c.R, c.G, c.B)),
+                
+                BrushType.LinearGradient =>
+                    new LinearGradientBrush(
+                        new Point(0,0),
+                        new Point(200, 200),
+                        new[]
+                        {
+                            new GradientStop(Color.FromArgb(c.R, c.G, c.B), 0),
+                            new GradientStop(Color.FromArgb(c1.R, c1.G, c1.B), 0.5),
+                            new GradientStop(Color.FromArgb(c2.R, c2.G, c2.B), 0.8),
+                        }),
+                
+                BrushType.RadialGradient =>
+                    new RadialGradientBrush(
+                        new Point(200, 200),
+                        200,
+                        new Point(200, 200),
+                        new[]
+                        {
+                            new GradientStop(Color.FromArgb(c.R, c.G, c.B), 0),
+                            new GradientStop(Color.FromArgb(c1.R, c1.G, c1.B), 0.5),
+                            new GradientStop(Color.FromArgb(c2.R, c2.G, c2.B), 0.8),
+                        }),
+                
                 _ => throw new Exception(),
             };
         }

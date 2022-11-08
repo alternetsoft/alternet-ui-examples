@@ -1,21 +1,36 @@
-﻿using Alternet.UI;
+﻿using Alternet.Drawing;
+using Alternet.UI;
 using System;
 using System.Collections.Generic;
-using Alternet.Drawing;
 using System.Linq;
 
 namespace DrawingSample
 {
     internal sealed class TextPage : DrawingPage
     {
-        private const string LoremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nSuspendisse tincidunt orci vitae arcu congue commodo.\nProin fermentum rhoncus dictum.";
+        private const string LoremIpsum = "Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit. Suspendisse tincidunt orci vitae arcu congue commodo. Proin fermentum rhoncus dictum.";
 
         private static Font fontInfoFont = new Font(FontFamily.GenericMonospace, 8);
         private static Brush fontInfoBrush = Brushes.Black;
+        private static Pen textWidthLimitPen = new Pen(Color.Gray, 1, PenDashStyle.Dash);
         private Paragraph[]? paragraphs;
         private double fontSize = 10;
         private FontStyle fontStyle;
         private string customFontFamilyName = Control.DefaultFont.FontFamily.Name;
+
+        private int textWidthLimit = 500;
+        private int textHeightValue = 40;
+
+        private bool textWidthLimitEnabled = true;
+        private bool textHeightSet = false;
+
+        private TextHorizontalAlignment horizontalAlignment = TextHorizontalAlignment.Left;
+
+        private TextVerticalAlignment verticalAlignment = TextVerticalAlignment.Top;
+
+        private TextTrimming trimming = TextTrimming.Pixel;
+
+        private TextWrapping wrapping = TextWrapping.Character;
 
         public override string Name => "Text";
 
@@ -53,6 +68,180 @@ namespace DrawingSample
             set => SetFontStyle(FontStyle.Strikethrough, value);
         }
 
+        public string CustomFontFamilyName
+        {
+            get => customFontFamilyName;
+            set
+            {
+                customFontFamilyName = value;
+                InvalidateParagraphs();
+            }
+        }
+
+        public int TextWidthLimit
+        {
+            get => textWidthLimit;
+            set
+            {
+                textWidthLimit = value;
+                Invalidate();
+            }
+        }
+
+        public int TextHeightValue
+        {
+            get => textHeightValue;
+            set
+            {
+                textHeightValue = value;
+                Invalidate();
+            }
+        }
+
+        public int MinTextWidthLimit => 100;
+
+        public int MaxTextWidthLimit => 1000;
+
+        public int MinTextHeightValue => 20;
+
+        public int MaxTextHeightValue => 200;
+
+        public bool TextWidthLimitEnabled
+        {
+            get => textWidthLimitEnabled;
+            set
+            {
+                textWidthLimitEnabled = value;
+                Invalidate();
+            }
+        }
+
+        public bool TextHeightSet
+        {
+            get => textHeightSet;
+            set
+            {
+                textHeightSet = value;
+                Invalidate();
+            }
+        }
+
+        public TextHorizontalAlignment HorizontalAlignment
+        {
+            get => horizontalAlignment;
+            set
+            {
+                horizontalAlignment = value;
+                Invalidate();
+            }
+        }
+
+        public TextVerticalAlignment VerticalAlignment
+        {
+            get => verticalAlignment;
+            set
+            {
+                verticalAlignment = value;
+                Invalidate();
+            }
+        }
+
+        public TextTrimming Trimming
+        {
+            get => trimming;
+            set
+            {
+                trimming = value;
+                Invalidate();
+            }
+        }
+
+        public TextWrapping Wrapping
+        {
+            get => wrapping;
+            set
+            {
+                wrapping = value;
+                Invalidate();
+            }
+        }
+
+        private FontStyle FontStyle
+        {
+            get => fontStyle;
+            set
+            {
+                fontStyle = value;
+                InvalidateParagraphs();
+            }
+        }
+
+        public override void Draw(DrawingContext dc, Rect bounds)
+        {
+            if (paragraphs == null)
+                paragraphs = CreateParagraphs().ToArray();
+
+            var color = Color.MidnightBlue;
+            float lighten = 10;
+
+            var textFormat = GetTextFormat();
+
+            double x = 20;
+            double y = 20;
+            foreach (var paragraph in paragraphs)
+            {
+                dc.DrawText(paragraph.FontInfo, fontInfoFont, fontInfoBrush, new Point(x, y));
+                y += dc.MeasureText(paragraph.FontInfo, fontInfoFont).Height + 3;
+
+                double textHeight;
+
+                if (TextHeightSet)
+                {
+                    textHeight = TextHeightValue;
+                }
+                else
+                {
+                    if (TextWidthLimitEnabled)
+                        textHeight = dc.MeasureText(LoremIpsum, paragraph.Font, TextWidthLimit, GetTextFormat()).Height;
+                    else
+                        textHeight = dc.MeasureText(LoremIpsum, paragraph.Font).Height;
+                }
+
+                if (TextWidthLimitEnabled)
+                    dc.DrawText(LoremIpsum, paragraph.Font, new SolidBrush(color), new Rect(x, y, TextWidthLimit, textHeight), textFormat);
+                else if (TextHeightSet)
+                    dc.DrawText(LoremIpsum, paragraph.Font, new SolidBrush(color), new Rect(x, y, TextWidthLimitEnabled ? TextWidthLimit : double.MaxValue, textHeight), textFormat);
+                else
+                    dc.DrawText(LoremIpsum, paragraph.Font, new SolidBrush(color), new Point(x, y), textFormat);
+
+                y += textHeight + 20;
+
+                var c = new Skybrud.Colors.RgbColor(color.R, color.G, color.B).Lighten(lighten).ToRgb();
+                color = Color.FromArgb(c.R, c.G, c.B);
+            }
+
+            if (TextWidthLimitEnabled)
+                dc.DrawLine(textWidthLimitPen, new Point(TextWidthLimit + x, bounds.Top), new Point(TextWidthLimit + x, bounds.Bottom));
+        }
+
+        protected override Control CreateSettingsControl()
+        {
+            var control = new TextPageSettings();
+            control.Initialize(this);
+            return control;
+        }
+
+        private TextFormat GetTextFormat()
+        {
+            return new TextFormat
+            {
+                HorizontalAlignment = HorizontalAlignment,
+                VerticalAlignment = VerticalAlignment,
+                Trimming = Trimming,
+                Wrapping = Wrapping
+            };
+        }
+
         private void SetFontStyle(FontStyle style, bool value)
         {
             if (value)
@@ -66,56 +255,6 @@ namespace DrawingSample
             return (FontStyle & style) != 0;
         }
 
-        FontStyle FontStyle
-        {
-            get => fontStyle;
-            set
-            {
-                fontStyle = value;
-                InvalidateParagraphs();
-            }
-        }
-
-        public string CustomFontFamilyName
-        {
-            get => customFontFamilyName;
-            set
-            {
-                customFontFamilyName = value;
-                InvalidateParagraphs();
-            }
-        }
-
-        public override void Draw(DrawingContext dc, Rect bounds)
-        {
-            if (paragraphs == null)
-                paragraphs = CreateParagraphs().ToArray();
-
-            var color = Color.MidnightBlue;
-            float lighten = 10;
-
-            double x = 20;
-            double y = 20;
-            foreach (var paragraph in paragraphs)
-            {
-                dc.DrawText(paragraph.FontInfo, fontInfoFont, fontInfoBrush, new Point(x, y));
-                y += dc.MeasureText(paragraph.FontInfo, fontInfoFont).Height + 3;
-
-                dc.DrawText(LoremIpsum, paragraph.Font, new SolidBrush(color), new Point(20, y));
-                y += dc.MeasureText(LoremIpsum, paragraph.Font).Height + 20;
-
-                var c = new Skybrud.Colors.RgbColor(color.R, color.G, color.B).Lighten(lighten).ToRgb();
-                color = Color.FromArgb(c.R, c.G, c.B);
-            }
-        }
-
-        protected override Control CreateSettingsControl()
-        {
-            var control = new TextPageSettings();
-            control.Initialize(this);
-            return control;
-        }
-
         private void InvalidateParagraphs()
         {
             if (paragraphs != null)
@@ -125,6 +264,11 @@ namespace DrawingSample
                 paragraphs = null;
             }
 
+            Invalidate();
+        }
+
+        private void Invalidate()
+        {
             Canvas?.Invalidate();
         }
 

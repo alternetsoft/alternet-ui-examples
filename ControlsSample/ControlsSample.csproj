@@ -25,6 +25,7 @@
   <ItemGroup>
     <None Remove="CheckBoxesPage.uixml" />
     <None Remove="ComboBoxPage.uixml" />
+    <None Remove="ExampleContextMenu.uixml" />
     <None Remove="GridPage.uixml" />
     <None Remove="ListBoxPage.uixml" />
     <None Remove="ListViewPage.uixml" />
@@ -40,6 +41,7 @@
     <None Remove="Resources\ImageListIcons\Small\LineGraph16.png" />
     <None Remove="Resources\ImageListIcons\Small\Pencil16.png" />
     <None Remove="Resources\ImageListIcons\Small\Photo16.png" />
+    <None Remove="Resources\Logo16x16.png" />
     <None Remove="SliderPage.uixml" />
     <None Remove="TextInputPage.uixml" />
     <None Remove="TreeViewPage.uixml" />
@@ -53,6 +55,7 @@
     <EmbeddedResource Include="Resources\ImageListIcons\Small\LineGraph16.png" />
     <EmbeddedResource Include="Resources\ImageListIcons\Small\Pencil16.png" />
     <EmbeddedResource Include="Resources\ImageListIcons\Small\Photo16.png" />
+    <EmbeddedResource Include="Resources\Logo16x16.png" />
   </ItemGroup>
   <ItemGroup>
     <UIXml Update="CheckBoxesPage.uixml">
@@ -82,12 +85,16 @@
     <UIXml Update="GridPage.uixml">
       <SubType>Designer</SubType>
     </UIXml>
+    <UIXml Update="NotifyIconPage.uixml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </UIXml>
     <UIXml Update="TreeViewPage.uixml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </UIXml>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.4.144-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.5.147-beta" />
   </ItemGroup>
 </Project>
