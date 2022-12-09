@@ -22,8 +22,22 @@ namespace ControlsSample
                 listBox.Items.Add("One");
                 listBox.Items.Add("Two");
                 listBox.Items.Add("Three");
+                listBox.Items.Add("Four");
+                listBox.Items.Add("Five");
+                listBox.Items.Add("Six");
+                listBox.Items.Add("Seven");
+                listBox.Items.Add("Eight");
+                listBox.Items.Add("Nine");
+                listBox.Items.Add("Ten");
                 site = value;
             }
+        }
+
+        private void ListBox_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var result = listBox.HitTest(e.GetPosition(listBox));
+
+            site?.LogEvent($"HitTest result: Item: '{(result == null ? "<none>" : listBox.Items[result.Value])}'");
         }
 
         private void AddManyItemsButton_Click(object? sender, EventArgs e)
@@ -62,6 +76,34 @@ namespace ControlsSample
         private void AddItemButton_Click(object? sender, EventArgs e)
         {
             listBox.Items.Add("Item " + (listBox.Items.Count + 1));
+        }
+
+        private void EnsureLastItemVisibleButton_Click(object sender, System.EventArgs e)
+        {
+            var count = listBox.Items.Count;
+            if (count > 0)
+                listBox.EnsureVisible(count - 1);
+        }
+
+        private void SelectItemAtIndex2Button_Click(object sender, System.EventArgs e)
+        {
+            int index = 2;
+            var count = listBox.Items.Count;
+            if (index < count)
+                listBox.SelectedIndex = index;
+        }
+
+        private void DeselectAllButton_Click(object sender, System.EventArgs e)
+        {
+            listBox.SelectedItem = null;
+        }
+
+        private void SelectItemAtIndices2And4Button_Click(object sender, System.EventArgs e)
+        {
+            int maxIndex = 4;
+            var count = listBox.Items.Count;
+            if (maxIndex < count)
+                listBox.SelectedIndices = new[] { 2, maxIndex };
         }
     }
 }

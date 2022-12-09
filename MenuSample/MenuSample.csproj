@@ -24,8 +24,26 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="ExampleContextMenu.uixml" />
+    <None Remove="Resources\Icons\Large\Calendar32.png" />
+    <None Remove="Resources\Icons\Large\LineGraph32.png" />
+    <None Remove="Resources\Icons\Large\Pencil32.png" />
+    <None Remove="Resources\Icons\Large\Photo32.png" />
+    <None Remove="Resources\Icons\Small\Calendar16.png" />
+    <None Remove="Resources\Icons\Small\LineGraph16.png" />
+    <None Remove="Resources\Icons\Small\Pencil16.png" />
+    <None Remove="Resources\Icons\Small\Photo16.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.5.147-beta" />
+    <EmbeddedResource Include="Resources\Icons\Large\Calendar32.png" />
+    <EmbeddedResource Include="Resources\Icons\Large\LineGraph32.png" />
+    <EmbeddedResource Include="Resources\Icons\Large\Pencil32.png" />
+    <EmbeddedResource Include="Resources\Icons\Large\Photo32.png" />
+    <EmbeddedResource Include="Resources\Icons\Small\Calendar16.png" />
+    <EmbeddedResource Include="Resources\Icons\Small\LineGraph16.png" />
+    <EmbeddedResource Include="Resources\Icons\Small\Pencil16.png" />
+    <EmbeddedResource Include="Resources\Icons\Small\Photo16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Alternet.UI" Version="0.6.150-beta" />
   </ItemGroup>
 </Project>

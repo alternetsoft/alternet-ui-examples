@@ -29,6 +29,6 @@
     <PackageReference Include="Skybrud.Colors" Version="1.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.5.147-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.6.150-beta" />
   </ItemGroup>
 </Project>

@@ -33,6 +33,10 @@
     <None Remove="NumericInputPage.uixml" />
     <None Remove="ProgressBarPage.uixml" />
     <None Remove="RadioButtonsPage.uixml" />
+    <None Remove="Resources\ButtonImages\ButtonImageDisabled.png" />
+    <None Remove="Resources\ButtonImages\ButtonImageHovered.png" />
+    <None Remove="Resources\ButtonImages\ButtonImageNormal.png" />
+    <None Remove="Resources\ButtonImages\ButtonImagePressed.png" />
     <None Remove="Resources\ImageListIcons\Large\Calendar32.png" />
     <None Remove="Resources\ImageListIcons\Large\LineGraph32.png" />
     <None Remove="Resources\ImageListIcons\Large\Pencil32.png" />
@@ -47,6 +51,10 @@
     <None Remove="TreeViewPage.uixml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageDisabled.png" />
+    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageHovered.png" />
+    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageNormal.png" />
+    <EmbeddedResource Include="Resources\ButtonImages\ButtonImagePressed.png" />
     <EmbeddedResource Include="Resources\ImageListIcons\Large\Calendar32.png" />
     <EmbeddedResource Include="Resources\ImageListIcons\Large\LineGraph32.png" />
     <EmbeddedResource Include="Resources\ImageListIcons\Large\Pencil32.png" />
@@ -58,6 +66,9 @@
     <EmbeddedResource Include="Resources\Logo16x16.png" />
   </ItemGroup>
   <ItemGroup>
+    <UIXml Update="ButtonPage.uixml">
+      <SubType>Designer</SubType>
+    </UIXml>
     <UIXml Update="CheckBoxesPage.uixml">
       <SubType>Designer</SubType>
     </UIXml>
@@ -95,6 +106,6 @@
     </UIXml>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.5.147-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.6.150-beta" />
   </ItemGroup>
 </Project>

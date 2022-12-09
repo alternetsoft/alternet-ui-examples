@@ -1,6 +1,7 @@
 using Alternet.UI;
 using System;
 using System.Linq;
+using System.Security.Policy;
 
 namespace MenuSample
 {
@@ -16,7 +17,25 @@ namespace MenuSample
 
             PlatformSpecificInitialize();
             UpdateControls();
+
+            dynamicToolbarItemsSeparatorIndex = toolbar.Items.IndexOf(dynamicToolbarItemsSeparator);
+            AddDynamicToolbarItem();
+
+            clockStatusBarPanelIndex = statusBar.Panels.IndexOf(clockStatusBarPanel);
+            AddDynamicStatusBarPanel();
+
+            foreach (var value in Enum.GetValues(typeof(ToolbarItemImageToTextDisplayMode)))
+                imageToTextDisplayModeComboBox.Items.Add(value!);
+            imageToTextDisplayModeComboBox.SelectedItem = ToolbarItemImageToTextDisplayMode.Horizontal;
+
+            clockTimer = new Timer(TimeSpan.FromMilliseconds(200), (o, e) => clockStatusBarPanel.Text = DateTime.Now.ToString("HH:mm:ss"));
+            clockTimer.Start();
         }
+
+        Timer clockTimer;
+
+        int dynamicToolbarItemsSeparatorIndex;
+        int clockStatusBarPanelIndex;
 
         private void PlatformSpecificInitialize()
         {
@@ -157,6 +176,108 @@ namespace MenuSample
         private void ContextMenuBorder_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
             new ExampleContextMenu().Show(contextMenuBorder, e.GetPosition(contextMenuBorder));
+        }
+
+        private void ToolbarItem_Click(object? sender, EventArgs e)
+        {
+            LogEvent("Toolbar item clicked: " + ((ToolbarItem)sender!).Text);
+        }
+
+        private void ToggleToolbarItem_Click(object sender, EventArgs e)
+        {
+            var item = (ToolbarItem)sender;
+            LogEvent($"Toggle toolbar item clicked: {item.Text}. Is checked: {item.Checked}");
+        }
+
+        private int lastEventNumber = 1;
+
+        void LogEvent(string message)
+        {
+            eventsListBox.Items.Add($"{lastEventNumber++}. {message}");
+            eventsListBox.SelectedIndex = eventsListBox.Items.Count - 1;
+        }
+
+        private void ToggleToolbarItemCheckButton_Click(object sender, EventArgs e)
+        {
+            checkableToolbarItem.Checked = !checkableToolbarItem.Checked;
+        }
+
+        private void ToggleFirstToolbarEnabledButton_Click(object sender, EventArgs e)
+        {
+            var item = toolbar.Items[0];
+            item.Enabled = !item.Enabled;
+        }
+
+        private void AddDynamicToolbarItem()
+        {
+            int number = toolbar.Items.Count - dynamicToolbarItemsSeparatorIndex;
+
+            string text = "Dynamic Item " + number;
+            var item = new ToolbarItem(text)
+            {
+                Image = toolbar.Items[0].Image,
+                ToolTip = text + " Description"
+            };
+            
+            item.Click += ToolbarItem_Click;
+            toolbar.Items.Add(item);
+        }
+
+        private void AddDynamicToolbarItemButton_Click(object sender, EventArgs e)
+        {
+            AddDynamicToolbarItem();
+        }
+
+        private void RemoveLastDynamicToolbarItemButton_Click(object sender, EventArgs e)
+        {
+            if (toolbar.Items.Count == dynamicToolbarItemsSeparatorIndex + 1)
+                return;
+            toolbar.Items.RemoveAt(toolbar.Items.Count - 1);
+        }
+
+        private void ShowToolbarTextCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            toolbar.ItemTextVisible = showToolbarTextCheckBox.IsChecked;
+        }
+
+        private void ShowToolbarImagesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            toolbar.ItemImagesVisible = showToolbarImagesCheckBox.IsChecked;
+        }
+
+        private void ToolbarDropDownMenuItem_Click(object sender, EventArgs e)
+        {
+            var item = (MenuItem)sender;
+            LogEvent($"Toolbar drop down menu item clicked: {item.Text.Replace("_", "")}.");
+        }
+
+        private void ImageToTextDisplayModeComboBox_SelectedItemChanged(object sender, EventArgs e)
+        {
+            toolbar.ImageToTextDisplayMode = (ToolbarItemImageToTextDisplayMode)imageToTextDisplayModeComboBox.SelectedItem!;
+        }
+
+        private void AddDynamicStatusBarPanelButton_Click(object sender, System.EventArgs e)
+        {
+            AddDynamicStatusBarPanel();
+        }
+
+        private void RemoveLastDynamicStatusBarPanelButton_Click(object sender, System.EventArgs e)
+        {
+            if (statusBar.Panels.Count == clockStatusBarPanelIndex + 1)
+                return;
+            statusBar.Panels.RemoveAt(statusBar.Panels.Count - 1);
+        }
+
+        private void AddDynamicStatusBarPanel()
+        {
+            int number = statusBar.Panels.Count - clockStatusBarPanelIndex;
+            string text = "Dynamic Panel " + number;
+            statusBar.Panels.Add(new StatusBarPanel(text));
+        }
+
+        private void ShowSizingGripCheckBox_CheckedChanged(object sender, System.EventArgs e)
+        {
+            statusBar.SizingGripVisible = showSizingGripCheckBox.IsChecked;
         }
     }
 }
