@@ -24,12 +24,17 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="AlignmentControl.uixml" />
+    <None Remove="FocusWindow.uixml" />
     <None Remove="Grid10x10Window.uixml" />
     <None Remove="GridLayoutPropertiesWindow.uixml" />
     <None Remove="GridLengthControl.uixml" />
+    <None Remove="Resources\logo.png" />
     <None Remove="StackLayoutPropertiesWindow.uixml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.6.150-beta" />
+    <EmbeddedResource Include="Resources\logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Alternet.UI" Version="0.9.153-beta" />
   </ItemGroup>
 </Project>

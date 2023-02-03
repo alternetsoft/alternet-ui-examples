@@ -27,5 +27,17 @@ namespace LayoutSample
             var window = new GridLayoutPropertiesWindow();
             window.Show();
         }
+
+        private void ShowScrollingButton_Click(object? sender, EventArgs e)
+        {
+            var window = new ScrollingWindow();
+            window.Show();
+        }
+
+        private void ShowFocusButton_Click(object? sender, EventArgs e)
+        {
+            var window = new FocusWindow();
+            window.Show();
+        }
     }
 }

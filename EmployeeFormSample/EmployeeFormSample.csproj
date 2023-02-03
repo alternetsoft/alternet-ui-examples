@@ -29,6 +29,6 @@
     <EmbeddedResource Include="Resources\EmployeePhoto.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.6.150-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.153-beta" />
   </ItemGroup>
 </Project>

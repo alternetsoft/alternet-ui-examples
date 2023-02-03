@@ -23,12 +23,12 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Car.png" />
+    <None Remove="TicTacToe\TicTacToeControl.uixml" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Skybrud.Colors" Version="1.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.6.150-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.153-beta" />
   </ItemGroup>
 </Project>
