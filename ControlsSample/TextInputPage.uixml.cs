@@ -1,10 +1,10 @@
-﻿using Alternet.UI;
-using System;
+﻿using System;
 using System.Linq;
+using Alternet.UI;
 
 namespace ControlsSample
 {
-    partial class TextInputPage : Control
+    internal partial class TextInputPage : Control
     {
         private IPageSite? site;
 
@@ -26,6 +26,12 @@ namespace ControlsSample
         private void TextBox_ValueChanged(object? sender, TextChangedEventArgs e)
         {
             site?.LogEvent("New TextBox value is: " + ((TextBox)sender!).Text);
+        }
+
+        private void HasBorderButton_Click(object? sender, EventArgs e)
+        {
+            foreach (var textBox in textBoxesPanel.Children.OfType<TextBox>())
+                textBox.HasBorder = !textBox.HasBorder;
         }
 
         private void AddLetterAButton_Click(object? sender, EventArgs e)

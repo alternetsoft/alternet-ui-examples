@@ -92,36 +92,29 @@ namespace WindowPropertiesSample
 
         private void TestWindow_LocationChanged(object? sender, EventArgs e)
         {
-            LogEvent("LocationChanged");
-            UpdateWindowBounds();
+            LogEvent("LocationChanged. Bounds: "+testWindow?.Bounds.ToString());
         }
 
         private void TestWindow_SizeChanged(object? sender, EventArgs e)
         {
-            LogEvent("SizeChanged");
-            UpdateWindowBounds();
+            LogEvent("SizeChanged. Bounds: "+testWindow?.Bounds.ToString());
         }
 
         private void TestWindow_StateChanged(object? sender, EventArgs e)
         {
-            LogEvent("StateChanged");
+            LogEvent("StateChanged"); 
             UpdateWindowState();
         }
 
         private void UpdateWindowState()
         {
-            stateComboBox.SelectedItem = (testWindow ?? throw new Exception()).State;
-        }
-
-        private void UpdateWindowBounds()
-        {
-            currentBoundsLabel.Text = (testWindow ?? throw new Exception()).Bounds.ToString();
+            stateComboBox.SelectedItem = testWindow?.State;
         }
 
         private void UpdateActiveWindowInfoLabel()
         {
             var title = ActiveWindow?.Title ?? "N/A";
-            activeWindowTitleLabel.Text = "Active window title: " + title;
+            activeWindowTitleLabel.Text =  title;
 
             if (testWindow != null)
                 isWindowActiveLabel.Text = "Test window active: " + (testWindow.IsActive ? "Yes" : "No");

@@ -13,7 +13,7 @@ namespace ExplorerUISample
         {
             InitializeComponent();
 
-            var date = DateTime.Now.ToShortDateString();
+            var date = System.DateTime.Now.ToShortDateString();
             listView.Items.Add(new ListViewItem(new[] { "July Report 1", "1K", date }, 0));
             listView.Items.Add(new ListViewItem(new[] { "06.21 M&A Meeting Memo", "1.5K", date }, 2));
             listView.Items.Add(new ListViewItem(new[] { "RTC Chart - Mary", "12M", date }, 3));
@@ -30,21 +30,26 @@ namespace ExplorerUISample
             meetings.Items.Add(new TreeViewItem("July", FolderImageIndex));
             maryM.Items.Add(meetings);
             treeView.Items.Add(maryM);
+            treeView.ExpandAll();            
 
             var imageList = LoadImageList();
             treeView.ImageList = imageList;
             listView.SmallImageList = imageList;
+            listView.Columns[0].WidthMode = ListViewColumnWidthMode.AutoSize;
+            listView.Columns[1].WidthMode = ListViewColumnWidthMode.AutoSize;
+            listView.Columns[2].WidthMode = ListViewColumnWidthMode.AutoSize;
+            Closed+=MainWindow_Closed;
         }
 
-        protected override void OnVisibleChanged(EventArgs e)
+        private void MainWindow_Closed(object? sender, WindowClosedEventArgs e)
         {
-            base.OnVisibleChanged(e);
-
-            if (listView == null)
-                return;
-
-            if (Visible)
-                new ProgressWindow().Show();
+            Application.Current.Exit();
+        }
+        
+        private void ShowProgress_Click(object sender, EventArgs e)
+        {
+            var progressWindow = new ProgressWindow();
+            progressWindow.Show();
         }
 
         private static ImageList LoadImageList()

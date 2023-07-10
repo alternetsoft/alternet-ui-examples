@@ -2,7 +2,7 @@
 
 namespace ControlsSample
 {
-    partial class ButtonPage : Control
+    internal partial class ButtonPage : Control
     {
         private IPageSite? site;
 
@@ -53,6 +53,8 @@ namespace ControlsSample
 
         private void ApplyImage()
         {
+            if (button == null)
+                return;
             button.StateImages = imageCheckBox.IsChecked ? ResourceLoader.ButtonImages : new ControlStateImages();
         }
 

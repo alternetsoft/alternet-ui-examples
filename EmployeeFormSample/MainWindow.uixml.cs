@@ -1,7 +1,10 @@
 using System;
+using System.ComponentModel;
+using System.Collections;
 using System.Linq;
 using Alternet.Drawing;
 using Alternet.UI;
+using Alternet.Base.Collections;
 
 namespace EmployeeFormSample
 {
@@ -11,13 +14,16 @@ namespace EmployeeFormSample
         {
             InitializeComponent();
 
-            PopuplateComboBoxes();
+            employeeFoto.Image = Image.FromUrl(
+                "embres:EmployeeFormSample.Resources.EmployeePhoto.jpg");
+
+            PopulateComboBoxes();
 
             DataContext = new Employee
             {
                 FirstName = "Alice",
                 LastName = "Jameson",
-                BirthDate = new DateTime(1993, 10, 2).ToShortDateString(),
+                BirthDate = new System.DateTime(1993, 10, 2).ToShortDateString(),
                 Title = "Customer Success Manager",
                 Prefix = EmployeePrefix.Mrs,
                 Address = "143 Coolidge St.",
@@ -29,20 +35,38 @@ namespace EmployeeFormSample
                 Email = "AliceJ@mycompany.com",
                 Skype = "AliceJ12",
                 Department = Department.Sales,
-                HireDate = new DateTime(2018, 3, 5).ToShortDateString(),
+                HireDate = new System.DateTime(2018, 3, 5).ToShortDateString(),
                 Status = Status.Salaried
             };
 
-            evaluationsListView.Items.Add(new ListViewItem(new[] { "2018-12-4", "2018 Employee Review", "James Smith" }));
-            evaluationsListView.Items.Add(new ListViewItem(new[] { "2019-12-10", "2019 Employee Review", "James Smith" }));
-            evaluationsListView.Items.Add(new ListViewItem(new[] { "2020-12-1", "2020 Employee Review", "James Smith" }));
-            evaluationsListView.Items.Add(new ListViewItem(new[] { "2021-12-20", "2021 Employee Review", "James Smith" }));
-            evaluationsListView.Items.Add(new ListViewItem(new[] { "2022-12-5", "2022 Employee Review", "James Smith" }));
+            evaluationsListView.Items.Add(new ListViewItem(new[] {
+                new DateTime(2018,12,4).ToShortDateString(), "2018 Employee Review", "James Smith" }));
+            evaluationsListView.Items.Add(new ListViewItem(new[] {
+                new DateTime(2019,12,10).ToShortDateString(), "2019 Employee Review", "James Smith" }));
+            evaluationsListView.Items.Add(new ListViewItem(new[] {
+                new DateTime(2020,12,1).ToShortDateString(), "2020 Employee Review", "James Smith" }));
+            evaluationsListView.Items.Add(new ListViewItem(new[] {
+                new DateTime(2021,12,20).ToShortDateString(), "2021 Employee Review", "James Smith" }));
+            evaluationsListView.Items.Add(new ListViewItem(new[] {
+                new DateTime(2022,12,5).ToShortDateString(), "2022 Employee Review", "James Smith" }));
+            evaluationsListView.Columns[0].WidthMode = ListViewColumnWidthMode.AutoSize;
+            evaluationsListView.Columns[1].WidthMode = ListViewColumnWidthMode.AutoSize;
+            evaluationsListView.Columns[2].WidthMode = ListViewColumnWidthMode.AutoSize;
+
+            LayoutUpdated += MainWindow_LayoutUpdated;
+
+            // On Linux height of the ComboBox is greater than height of the TextBox.
+            // We need to increase height of all window's TextBoxes.
+            LayoutFactory.AdjustTextBoxesHeight(this);
         }
 
-        private void PopuplateComboBoxes()
+        private void MainWindow_LayoutUpdated(object sender, EventArgs e)
         {
-            void FillComboBoxWithEnumValues(ComboBox cb, Type enumType)
+        }        
+
+        private void PopulateComboBoxes()
+        {
+            static void FillComboBoxWithEnumValues(ComboBox cb, Type enumType)
             {
                 cb.BeginInit();
                 cb.BeginUpdate();

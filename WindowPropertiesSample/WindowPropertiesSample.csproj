@@ -1,18 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\CommonData\TargetFrameworks.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <Platforms>AnyCPU;x64;x86</Platforms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
-    <TargetFrameworks>net6.0;net461</TargetFrameworks>
-  </PropertyGroup>
-  <PropertyGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
-    <TargetFrameworks>net6.0</TargetFrameworks>
-    <RuntimeFrameworkVersion>6.0.0</RuntimeFrameworkVersion>
+    <ApplicationIcon>../CommonData/Sample.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="build\**" />
@@ -33,6 +28,6 @@
     <EmbeddedResource Include="Resources\TestIcon2.ico" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.153-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.201-beta" />
   </ItemGroup>
 </Project>

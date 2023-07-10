@@ -1,11 +1,12 @@
-﻿using Alternet.UI;
-using System;
+﻿using System;
+using Alternet.UI;
 
 namespace ControlsSample
 {
-    partial class ComboBoxPage : Control
+    internal partial class ComboBoxPage : Control
     {
         private IPageSite? site;
+        bool ignoreEvents = false;
 
         public ComboBoxPage()
         {
@@ -19,13 +20,15 @@ namespace ControlsSample
             set
             {
                 site = value;
+
+                ignoreEvents = true;
                 comboBox.Items.Add("One");
                 comboBox.Items.Add("Two");
                 comboBox.Items.Add("Three");
                 comboBox.SelectedIndex = 1;
+                ignoreEvents = false;
             }
         }
-
 
         private void SetSelectedItemToNullButton_Click(object? sender, EventArgs e)
         {
@@ -39,7 +42,7 @@ namespace ControlsSample
 
         private void SetTextToEmptyStringButton_Click(object? sender, EventArgs e)
         {
-            comboBox.Text = "";
+            comboBox.Text = string.Empty;
         }
 
         private void AddManyItemsButton_Click(object? sender, EventArgs e)
@@ -59,12 +62,17 @@ namespace ControlsSample
 
         private void ComboBox_TextChanged(object? sender, EventArgs e)
         {
-            var text = comboBox.Text == "" ? "\"\"" : comboBox.Text;
+            if (ignoreEvents)
+                return;
+            
+            var text = comboBox.Text == string.Empty ? "\"\"" : comboBox.Text;
             site?.LogEvent($"ComboBox: TextChanged. Text: {text}");
         }
 
         private void ComboBox_SelectedItemChanged(object? sender, EventArgs e)
         {
+            if (ignoreEvents)
+                return;
             site?.LogEvent($"ComboBox: SelectedItemChanged. SelectedIndex: {(comboBox.SelectedIndex == null ? "<null>" : comboBox.SelectedIndex.ToString())}");
         }
 
@@ -84,12 +92,12 @@ namespace ControlsSample
             comboBox.Items.Add("Item " + (comboBox.Items.Count + 1));
         }
 
-        bool CheckComboBoxIsEditable()
+        private bool CheckComboBoxIsEditable()
         {
             bool isEditable = comboBox.IsEditable;
 
             if (!isEditable)
-                MessageBox.Show("Cannot perform this operation on a non-editable ComboBox.");
+                site?.LogEvent("Cannot perform this operation on a non-editable ComboBox.");
 
             return isEditable;
         }
@@ -111,11 +119,13 @@ namespace ControlsSample
             var length = comboBox.TextSelectionLength;
             var selectedText = comboBox.Text.Substring(start, length);
             var message = $"ComboBox text selection is: [{start}..{start + length}], selected text: '{selectedText}'";
-            MessageBox.Show(message, "ComboBox Text Selection");
+            site?.LogEvent("ComboBox Text Selection: " + message);
         }
 
         private void SetTextToAbcButton_Click(object sender, System.EventArgs e)
         {
+            if (!CheckComboBoxIsEditable())
+                return;
             comboBox.Text = "abc";
         }
 

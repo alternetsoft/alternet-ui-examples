@@ -4,7 +4,7 @@ using System;
 
 namespace PaintSample
 {
-    internal class CommandButton : Control
+    public class CommandButton : Control
     {
         private bool isPressed;
 
@@ -97,13 +97,13 @@ namespace PaintSample
             }
             else
             {
-                var shadowRect = innerRect;
-                shadowRect.Offset(1, 1);
-                dc.FillRectangle(Brushes.Black, shadowRect);
+                //var shadowRect = innerRect;
+                //shadowRect.Offset(1, 1);
+                //dc.FillRectangle(Brushes.Black, shadowRect);
             }
 
             dc.FillRectangle(Brushes.WhiteSmoke, innerRect);
-            dc.DrawRectangle(Pens.Black, innerRect);
+            dc.DrawRectangle(Pens.Gray, innerRect);
 
             var imageSize = new Size(image.PixelSize.Width, image.PixelSize.Height);
 

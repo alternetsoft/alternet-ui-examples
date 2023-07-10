@@ -1,17 +1,18 @@
-﻿using Alternet.UI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Alternet.UI;
 
 namespace ControlsSample
 {
-    partial class ProgressBarPage : Control
+    internal partial class ProgressBarPage : Control
     {
         private IPageSite? site;
 
         public ProgressBarPage()
         {
             InitializeComponent();
+			VerticalProgressBarsGroupBox.Visible = WebBrowser.GetBackendOS() !=WebBrowserBackendOS.MacOS;
         }
 
         public IPageSite? Site
