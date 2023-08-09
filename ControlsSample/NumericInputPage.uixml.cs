@@ -11,6 +11,8 @@ namespace ControlsSample
         public NumericInputPage()
         {
             InitializeComponent();
+
+            NumericUpDown edit1 = numberUpDown1;
         }
 
         public IPageSite? Site
@@ -26,21 +28,25 @@ namespace ControlsSample
 
         private void NumericUpDown_ValueChanged(object? sender, EventArgs e)
         {
-            site?.LogEvent("New NumericUpDown value is: " + ((NumericUpDown)sender!).Value);
+            site?.LogEvent("New NumericUpDown value is: " +
+                ((NumericUpDown)sender!).Value);
         }
 
-        private void ProgressBarControlNumericUpDown_ValueChanged(object? sender, EventArgs e)
+        private void ProgressBarControlNumericUpDown_ValueChanged(
+            object? sender, 
+            EventArgs e)
         {
             progressBar.Value = (int)progressBarControlNumericUpDown.Value;
         }
 
+        private void HasBorderButton_Click(object? sender, EventArgs e)
+        {
+        }
+
         private void IncreaseAllButton_Click(object? sender, EventArgs e)
         {
-            foreach (var numericUpDown in numericUpDownsPanel.Children.OfType<NumericUpDown>())
-            {
-                if (numericUpDown.Value < numericUpDown.Maximum)
-                    numericUpDown.Value++;
-            }
+            numericUpDownsPanel.ForEachChild<NumericUpDown>(
+                (x) => { x.IncrementValue(); });
         }
     }
 }

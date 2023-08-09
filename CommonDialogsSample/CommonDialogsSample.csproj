@@ -7,7 +7,6 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <ApplicationIcon>../CommonData/Sample.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="build\**" />
@@ -18,6 +17,6 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.201-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.300-beta" />
   </ItemGroup>
 </Project>

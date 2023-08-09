@@ -3,11 +3,61 @@
         xmlns:x="http://schemas.alternetsoft.com/ui/2021/uixml"
         xmlns:local="clr-namespace:ControlsSample;assembly=ControlsSample">
   <StackPanel Orientation="Vertical" Padding="10">
-    <GroupBox Title="Text Input">
-      <StackPanel Orientation="Vertical" Margin="5" Name="textBoxesPanel">
-        <DateTimePicker Margin="0,0,0,5" Value="11/21/2003" Name="datePicker" ValueChanged="DatePicker_DateChanged"/>
-        <Label Text="Selected Date" Margin="0,10,0,5" Name="dateLabel"/>
-      </StackPanel>
-    </GroupBox>
+    <Control>
+      <HorizontalStackPanel>
+
+        <VerticalStackPanel Margin="5" Name="textBoxesPanel">
+          <Label Text="Date:" Margin="0,0,0,5"/>
+          <DateTimePicker
+            Width="200" HorizontalAlignment="Left"
+            Margin="0,0,0,5" Name="datePicker"
+            ValueChanged="DatePicker_DateChanged"/>
+          <Label Text="Selected Value" Margin="0,10,0,5" Name="dateLabel"/>
+
+          <Label Text="Time:" Margin="0,10,0,5"/>
+          <DateTimePicker Kind="Time"
+            Width="200" HorizontalAlignment="Left"
+            Margin="0,0,0,5" Name="timePicker"
+            ValueChanged="TimePicker_Changed"/>
+          <Label Text="Selected Value" Margin="0,10,0,5" Name="timeLabel"/>
+        </VerticalStackPanel>
+
+        <VerticalStackPanel Margin="5" Padding="5">
+          <GroupBox Title="Date Editor" Margin="0,0,0,5">
+            <VerticalStackPanel Margin="5">
+              <RadioButton Text="Default" Margin="0,0,0,5" IsChecked="True"
+                           Name="DefaultRadioButton"
+                           CheckedChanged="Popup_CheckedChanged" />
+              <RadioButton Text="Spin" Margin="0,0,0,5"
+                           Name="SpinRadioButton"
+                           CheckedChanged="Popup_CheckedChanged" />
+              <RadioButton Text="DropDown" Margin="0,0,0,5"
+                           Name="DropDownRadioButton"
+                           CheckedChanged="Popup_CheckedChanged" />
+            </VerticalStackPanel>
+          </GroupBox>
+          <Button Text="Set Date And Time" Click="SetNow_Click" Margin="0,0,0,5"/>
+          <Button Text="Set Only Date" Click="SetNowDate_Click" Margin="0,0,0,5"/>
+        </VerticalStackPanel>
+
+        <VerticalStackPanel Margin="5" Padding="5">
+          <GroupBox Title="Allow Date Range" Margin="0,0,0,5">
+            <VerticalStackPanel Margin="5">
+              <Button Text="Allow Edit Any Date" Margin="0,0,0,5"
+                      Click="RangeAnyDate_Click" />
+              <Button Text="Allow Dates &lt;= Tomorrow" Margin="0,0,0,5"
+                      Click="RangeTomorrow_Click" />
+              <Button Text="Allow Dates &gt;= Yesterday" Margin="0,0,0,5"
+                      Click="RangeYesterday_Click" />
+              <Button Text="Allow Dates Yesterday..Tomorrow" Margin="0,0,0,5"
+                      Click="RangeYesterdayTomorrow_Click" />
+            </VerticalStackPanel>
+          </GroupBox>
+          <Button Text="Has Border" Margin="0,0,0,5" Name="hasBorderButton"
+                  Click="HasBorderButton_Click" Visible="false"/>
+        </VerticalStackPanel>
+
+      </HorizontalStackPanel>
+    </Control>
   </StackPanel>
-  </Control>
+</Control>

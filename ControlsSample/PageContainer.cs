@@ -5,23 +5,25 @@ namespace ControlsSample
 {
     public class PageContainer : Control
     {
-        private TreeView pagesControl;
-        private Control activePageHolder;
-        private Grid grid;
+        private readonly TreeView pagesControl;
+        private readonly Control activePageHolder;
+        private readonly Grid grid;
 
         public PageContainer()
         {
             grid = new Grid();
-            //grid.Margin = new Thickness(5);
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { 
-                Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition
+            {
+                Width = new GridLength(1, GridUnitType.Star)
+            });
             Children.Add(grid);
 
-            pagesControl = new ();
-            pagesControl.FullRowSelect = true;
-            pagesControl.ShowRootLines = false;
-            pagesControl.ShowLines = false;
+            pagesControl = new()
+            {
+                Width = 140,
+            };
+            pagesControl.MakeAsListBox();
 
             pagesControl.SelectionChanged += PagesListBox_SelectionChanged;
             grid.Children.Add(pagesControl);

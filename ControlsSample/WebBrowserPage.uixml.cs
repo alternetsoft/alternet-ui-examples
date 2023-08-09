@@ -19,7 +19,7 @@ namespace ControlsSample
         private IPageSite? site;
         private bool historyCleared = false;
         private bool pandaLoaded = false;
-        WebBrowser WebBrowser1;
+        private readonly WebBrowser WebBrowser1;
 
         static WebBrowserPage()
         {
@@ -62,17 +62,17 @@ namespace ControlsSample
             }
         }
 
-        private string GetPandaFileName()
+        private static string GetPandaFileName()
         {
-            var s = ControlsSampleUtils.GetAppFolder() +
+            var s = PathUtils.GetAppFolder() +
                 "Html/SampleArchive/Html/page1.html";
             // Log("GetPandaFileName: " + s);
             return s;
         }
 
-        private string GetPandaUrl()
+        private static string GetPandaUrl()
         {
-            var s = ControlsSampleUtils.PrepareFileUrl(GetPandaFileName());
+            var s = WebBrowser.PrepareFileUrl(GetPandaFileName());
             // Log("GetPandaUrl: " + s);
             return s;
         }
@@ -169,13 +169,13 @@ namespace ControlsSample
 
             if (s == SItemImage)
             {
-                s = ControlsSampleUtils.PrepareFileUrl(ControlsSampleUtils.GetAppFolder() +
+                s = WebBrowser.PrepareFileUrl(PathUtils.GetAppFolder() +
                 "Html/SampleArchive/Images/panda1.jpg");
             }
 
             if (s == SItemPDF)
             {
-                s = ControlsSampleUtils.PrepareFileUrl(ControlsSampleUtils.GetAppFolder() +
+                s = WebBrowser.PrepareFileUrl(PathUtils.GetAppFolder() +
                     "Resources/SamplePandaPdf.pdf");
             }
 

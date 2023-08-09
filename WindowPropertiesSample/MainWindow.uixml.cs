@@ -12,19 +12,16 @@ namespace WindowPropertiesSample
 
         public MainWindow()
         {
+            Icon = ImageSet.FromUrlOrNull(
+                "embres:WindowPropertiesSample.Sample.ico");
+
             InitializeComponent();
 
-            foreach (var value in Enum.GetValues(typeof(WindowState)))
-                stateComboBox.Items.Add(value!);
-
-            foreach (var value in Enum.GetValues(typeof(WindowStartLocation)))
-                startLocationComboBox.Items.Add(value!);
-            startLocationComboBox.SelectedItem = WindowStartLocation.Default;
-
-            foreach (var value in Enum.GetValues(typeof(WindowSizeToContentMode)))
-                sizeToContentModeComboBox.Items.Add(value!);
-            sizeToContentModeComboBox.SelectedItem = WindowSizeToContentMode.WidthAndHeight;
-
+            stateComboBox.AddEnumValues(typeof(WindowState));
+            startLocationComboBox.AddEnumValues(typeof(WindowStartLocation),
+                WindowStartLocation.Default);
+            sizeToContentModeComboBox.AddEnumValues(typeof(WindowSizeToContentMode),
+                WindowSizeToContentMode.WidthAndHeight);
             UpdateControls();
         }
 

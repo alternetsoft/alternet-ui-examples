@@ -7,7 +7,6 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <ApplicationIcon>../CommonData/Sample.ico</ApplicationIcon>
     <UseStyleCop>false</UseStyleCop>
   </PropertyGroup>
   <ItemGroup>
@@ -40,6 +39,8 @@
     <None Remove="Resources\Svg\plus.svg" />
     <None Remove="Resources\Svg\search.svg" />
     <None Remove="Resources\Svg\xmark.svg" />
+    <None Remove="runsample.bat" />
+    <None Remove="runsample.sh" />
     <None Remove="WebBrowserPage.uixml" />
     <None Remove="ListBoxPage.uixml" />
     <None Remove="ListViewPage.uixml" />
@@ -115,6 +116,12 @@
     <Content Include="Resources\SamplePandaPdf.pdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="runsample.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="runsample.sh">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
@@ -173,6 +180,6 @@
     </UIXml>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.201-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.300-beta" />
   </ItemGroup>
 </Project>
