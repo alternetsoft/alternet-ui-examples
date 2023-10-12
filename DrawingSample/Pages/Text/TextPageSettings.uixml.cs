@@ -6,29 +6,49 @@ namespace DrawingSample
 {
     partial class TextPageSettings : Control
     {
+        private readonly Label horzAlignLabel = new("Horz Align:");
+        private readonly Label vertAlignLabel = new("Vert Align:");
+        private readonly Label trimmingLabel = new("Trimming:");
+        private readonly Label wrappingLabel = new("Wrapping:");
+        private readonly ComboBox horizontalAlignmentComboBox = new();
+        private readonly ComboBox verticalAlignmentComboBox = new();
+        private readonly ComboBox wrappingComboBox = new();
+        private readonly ComboBox trimmingComboBox = new();
+
         public TextPageSettings()
         {
-            InitializeComponent();
+            DoInsideLayout(() =>
+            {
+                InitializeComponent();
+
+                ControlSet labels = new(horzAlignLabel, vertAlignLabel, trimmingLabel, wrappingLabel);
+                ControlSet comboBoxes = new(
+                    horizontalAlignmentComboBox,
+                    verticalAlignmentComboBox,
+                    trimmingComboBox,
+                    wrappingComboBox);
+                labels.Margin(new(0, 5, 10, 5)).VerticalAlignment(VerticalAlignment.Center);
+                comboBoxes.Margin(new(0, 5, 0, 5)).IsEditable(false);
+                var gridControls = ControlSet.GridFromColumns(labels, comboBoxes);
+
+                LayoutFactory.SetupGrid(propGrid, gridControls);
+            });
         }
 
         public void Initialize(TextPage page)
         {
             DataContext = page;
 
-            foreach (var family in FontFamily.Families)
-                customFontFamilyComboBox.Items.Add(family.Name);
+            customFontFamilyComboBox.Items.AddRange(FontFamily.Families);
+            wrappingComboBox.AddEnumValues<TextWrapping>();
+            trimmingComboBox.AddEnumValues<TextTrimming>();
+            verticalAlignmentComboBox.AddEnumValues<TextVerticalAlignment>();
+            horizontalAlignmentComboBox.AddEnumValues<TextHorizontalAlignment>();
 
-            foreach (var value in Enum.GetValues(typeof(TextHorizontalAlignment)))
-                horizontalAlignmentComboBox.Items.Add(value!);
-
-            foreach (var value in Enum.GetValues(typeof(TextVerticalAlignment)))
-                verticalAlignmentComboBox.Items.Add(value!);
-
-            foreach (var value in Enum.GetValues(typeof(TextTrimming)))
-                trimmingComboBox.Items.Add(value!);
-
-            foreach (var value in Enum.GetValues(typeof(TextWrapping)))
-                wrappingComboBox.Items.Add(value!);
+            horizontalAlignmentComboBox.BindSelectedItem(nameof(TextPage.HorizontalAlignment));
+            verticalAlignmentComboBox.BindSelectedItem(nameof(TextPage.VerticalAlignment));
+            wrappingComboBox.BindSelectedItem(nameof(TextPage.Wrapping));
+            trimmingComboBox.BindSelectedItem(nameof(TextPage.Trimming));
         }
     }
 }

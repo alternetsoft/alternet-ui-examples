@@ -30,6 +30,7 @@
     <None Remove="Html\SampleArchive\Images\panda2.jpg" />
     <None Remove="Html\SampleArchive\root.html" />
     <None Remove="Html\SampleArchive\Styles\default.css" />
+    <None Remove="Resources\ButtonImages\ButtonImageFocused.png" />
     <None Remove="Resources\SamplePandaPdf.pdf" />
     <None Remove="Resources\Svg\arrow-left.svg" />
     <None Remove="Resources\Svg\arrow-right.svg" />
@@ -67,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\ButtonImages\ButtonImageDisabled.png" />
+    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageFocused.png" />
     <EmbeddedResource Include="Resources\ButtonImages\ButtonImageHovered.png" />
     <EmbeddedResource Include="Resources\ButtonImages\ButtonImageNormal.png" />
     <EmbeddedResource Include="Resources\ButtonImages\ButtonImagePressed.png" />
@@ -180,6 +182,6 @@
     </UIXml>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.300-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.404-beta" />
   </ItemGroup>
 </Project>

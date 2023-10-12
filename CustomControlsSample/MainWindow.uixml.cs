@@ -68,7 +68,10 @@ namespace CustomControlsSample
             slidersStackPanel.Children.Add(knobControl);
             slidersStackPanel.Children.Add(gaugeControl);
             ResumeLayout(true);
+            this.SetSizeToContent();
         }
+
+        public static bool DisableCustomColorPopup { get; set; } = true;
 
         class Data : INotifyPropertyChanged
         {

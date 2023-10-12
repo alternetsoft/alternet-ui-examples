@@ -22,18 +22,6 @@ namespace CommonDialogsSample
             InitEnumComboBox<MessageBoxIcon>(messageBoxIconComboBox);
             InitEnumComboBox<TestExceptionType>(exceptionTypeComboBox);
             this.ResumeLayout();
-
-        }
-
-        internal void LogFontFamilies()
-        {
-            var s = string.Empty;
-            foreach (string s2 in FontFamily.FamiliesNames)
-            {
-                s += s2 + Environment.NewLine;
-            }
-
-            File.WriteAllText("e:/families.txt", s);
         }
 
         enum TestExceptionType
@@ -43,7 +31,7 @@ namespace CommonDialogsSample
             FileNotFoundException,
         }
 
-        void InitEnumComboBox<TEnum>(ComboBox comboBox)
+        private void InitEnumComboBox<TEnum>(ComboBox comboBox)
         {
             comboBox.Items.Clear();
 
@@ -53,7 +41,7 @@ namespace CommonDialogsSample
             comboBox.SelectedIndex = 0;
         }
 
-        string GetInitialDirectory()
+        private string GetInitialDirectory()
         {
             return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         }
@@ -164,7 +152,9 @@ namespace CommonDialogsSample
         {
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                MessageBox.Show("Run this application without debugging to see the thread exception window.", "Common Dialogs Sample");
+                MessageBox.Show(
+                    "Run this application without debugging to see the thread exception window.",
+                    "Common Dialogs Sample");
                 return;
             }
 
@@ -219,12 +209,10 @@ namespace CommonDialogsSample
         {
             ResultMessage = "";
 
-            var dialog = new ColorDialog();
-
-            if(sampleLabel.Background is SolidBrush solidBrush)
+            var dialog = new ColorDialog
             {
-                dialog.Color = solidBrush.Color;
-            }
+                Color = sampleLabel.RealBackgroundColor ?? SystemColors.Window
+            };
 
             if (setCustomTitleCheckBox.IsChecked)
                 dialog.Title = CustomTitle;
@@ -235,10 +223,13 @@ namespace CommonDialogsSample
             {
                 ResultMessage =
                     "Color Dialog Result: Accepted, Color = " + dialog.Color;
-                sampleLabel.Background = new SolidBrush(dialog.Color);
+                sampleLabel.BackgroundColor = dialog.Color;
             }
             else
+            {
                 ResultMessage = "Color Dialog Result: " + result.ToString();
+                sampleLabel.BackgroundColor = null;
+            }
         }
     }
 }

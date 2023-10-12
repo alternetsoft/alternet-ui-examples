@@ -8,6 +8,7 @@ namespace ControlsSample
 {
     internal partial class TreeViewPage : Control
     {
+        private readonly CardPanelHeader panelHeader = new();
         private IPageSite? site;
         private int supressExpandEvents = 0;
         private bool? slowSettingsEnabled;
@@ -16,9 +17,52 @@ namespace ControlsSample
         public TreeViewPage()
         {
             InitializeComponent();
-            
+
+            panelHeader.Add("Actions", stackPanel1);
+            panelHeader.Add("Settings", stackPanel2);
+            panelHeader.Add("Events", stackPanel3);
+            pageControl.Children.Insert(0, panelHeader);
+            panelHeader.SelectedTab = panelHeader.Tabs[0];
+
+            ControlSet buttons = new(
+                addItemButton,
+                removeItemButton,
+                addManyItemsButton,
+                clearButton,
+                expandAllButton,
+                collapseAllButton,
+                expandAllChildrenButton,
+                collapseAllChildrenButton,
+                beginSelectedLabelEditingButton,
+                ensureLastItemVisibleButton,
+                editorButton,
+                scrollLastItemIntoViewButton,
+                focusLastItemButton,
+                modifyLastItemButton,
+                addLastItemSiblingButton,
+                dummyButton);
+            buttons.SuggestedWidthToMax();
+
             treeView.Items.ItemInserted += Items_ItemInserted;
             treeView.Items.ItemRemoved += Items_ItemRemoved;
+            treeView.MouseUp += TreeView_MouseUp;
+            treeView.PreviewMouseUp += TreeView_PreviewMouseUp;
+            treeView.MouseLeftButtonUp += TreeView_MouseLeftButtonUp;
+        }
+
+        private void TreeView_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            /*site?.LogEvent($"TreeView: MouseLeftButtonUp");*/
+        }
+
+        private void TreeView_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            /*site?.LogEvent($"TreeView: PreviewMouseUp");*/
+        }
+
+        private void TreeView_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            /*site?.LogEvent($"TreeView: MouseUp");*/
         }
 
         public IPageSite? Site
@@ -36,15 +80,6 @@ namespace ControlsSample
         private void AddDefaultItems()
         {
             AddItems(10);
-        }
-
-        private static TreeViewItem? GetLastItem(TreeViewItem? parent, ICollection<TreeViewItem> children)
-        {
-            if (!children.Any())
-                return parent;
-
-            var child = children.Last();
-            return GetLastItem(child, child.Items);
         }
 
         private void AddManyItemsButton_Click(object? sender, EventArgs e)
@@ -106,34 +141,33 @@ namespace ControlsSample
             site?.LogEvent($"TreeView: SelectionChanged. SelectedItems: ({s})");
         }
 
-        private void TreeView_ExpandedChanged(
-            object? sender, 
-            TreeViewItemExpandedChangedEventArgs e)
+        private void TreeView_ExpandedChanged(object? sender, TreeViewEventArgs e)
         {
             if (supressExpandEvents > 0)
                 return;
-            site?.LogEvent($"TreeView: ExpandedChanged. Item: '{e.Item.Text}', IsExpanded: {e.Item.IsExpanded}");
+            var exp = e.Item.IsExpanded;
+            site?.LogEvent($"TreeView: ExpandedChanged. Item: '{e.Item.Text}', IsExpanded: {exp}");
         }
 
-        private void TreeView_BeforeLabelEdit(
-            object? sender, 
-            TreeViewItemLabelEditEventArgs e)
+        private void TreeView_BeforeLabelEdit(object? sender, TreeViewEditEventArgs e)
         {
             e.Cancel = cancelBeforeLabelEditEventsCheckBox.IsChecked;
-            site?.LogEvent($"TreeView: BeforeLabelEdit. Item: '{e.Item.Text}', Label: '{e.Label ?? "<null>"}'");
+            var s = e.Label ?? "<null>";
+            site?.LogEvent($"TreeView: BeforeLabelEdit. Item: '{e.Item.Text}', Label: '{s}'");
         }
 
         private void TreeView_AfterLabelEdit(
             object? sender, 
-            TreeViewItemLabelEditEventArgs e)
+            TreeViewEditEventArgs e)
         {
             e.Cancel = cancelAfterLabelEditEventsCheckBox.IsChecked;
-            site?.LogEvent($"TreeView: AfterLabelEdit. Item: '{e.Item.Text}', Label: '{e.Label ?? "<null>"}'");
+            var s = e.Label ?? "<null>";
+            site?.LogEvent($"TreeView: AfterLabelEdit. Item: '{e.Item.Text}', Label: '{s}'");
         }
 
         private void TreeView_BeforeExpand(
             object? sender, 
-            TreeViewItemExpandedChangingEventArgs e)
+            TreeViewCancelEventArgs e)
         {
             if (supressExpandEvents > 0)
                 return;
@@ -143,7 +177,7 @@ namespace ControlsSample
 
         private void TreeView_BeforeCollapse(
             object? sender, 
-            TreeViewItemExpandedChangingEventArgs e)
+            TreeViewCancelEventArgs e)
         {
             if (supressExpandEvents > 0)
                 return;
@@ -193,7 +227,8 @@ namespace ControlsSample
 
         private void AllowMultipleSelectionCheckBox_CheckedChanged(object? sender, EventArgs e)
         {
-            treeView.SelectionMode = allowMultipleSelectionCheckBox.IsChecked ? TreeViewSelectionMode.Multiple : TreeViewSelectionMode.Single;
+            treeView.SelectionMode = allowMultipleSelectionCheckBox.IsChecked ? 
+                TreeViewSelectionMode.Multiple : TreeViewSelectionMode.Single;
         }
 
         private void AllowLabelEditingCheckBox_CheckedChanged(object? sender, EventArgs e)
@@ -206,12 +241,7 @@ namespace ControlsSample
 
         private void RemoveItemButton_Click(object? sender, EventArgs e)
         {
-            treeView.BeginUpdate();
-            IReadOnlyList<TreeViewItem> items = treeView.SelectedItems;
-            treeView.ClearSelected();
-            foreach (var item in items)
-                item.Remove();
-            treeView.EndUpdate();
+            treeView.RemoveSelected();
         }
 
         private void AddItemButton_Click(object? sender, EventArgs e)
@@ -219,57 +249,53 @@ namespace ControlsSample
             treeView.Items.Add(new TreeViewItem("Item " + GenItemIndex(), 0));
         }
 
-        private void BeginSelectedLabelEditingButton_Click(object sender, EventArgs e)
+        private void BeginSelectedLabelEditingButton_Click(object? sender, EventArgs e)
         {
             treeView.SelectedItem?.BeginLabelEdit();
         }
 
-        private void ExpandAllButton_Click(object sender, EventArgs e)
+        private void ExpandAllButton_Click(object? sender, EventArgs e)
         {
             supressExpandEvents++;
             treeView.ExpandAll();
             supressExpandEvents--;
         }
 
-        private void CollapseAllButton_Click(object sender, EventArgs e)
+        private void CollapseAllButton_Click(object? sender, EventArgs e)
         {
             supressExpandEvents++;
             treeView.CollapseAll();
             supressExpandEvents--;
         }
 
-        private void ExpandAllChildrenButton_Click(object sender, EventArgs e) => 
+        private void ExpandAllChildrenButton_Click(object? sender, EventArgs e) => 
             treeView.SelectedItem?.ExpandAll();
 
-        private void CollapseAllChildrenButton_Click(object sender, EventArgs e) => 
+        private void CollapseAllChildrenButton_Click(object? sender, EventArgs e) => 
             treeView.SelectedItem?.CollapseAll();
 
-        private void EnsureLastItemVisibleButton_Click(object sender, System.EventArgs e) 
-            => GetLastItem(null, treeView.Items)?.EnsureVisible();
+        private void EnsureLastItemVisibleButton_Click(object? sender, System.EventArgs e) 
+            => treeView.LastItem?.EnsureVisible();
 
-        private void ScrollLastItemIntoViewButton_Click(object sender, System.EventArgs e)
-            => GetLastItem(null, treeView.Items)?.ScrollIntoView();
+        private void ScrollLastItemIntoViewButton_Click(object? sender, System.EventArgs e)
+            => treeView.LastItem?.ScrollIntoView();
 
         private void FocusLastItemButton_Click(object? sender, System.EventArgs e)
         {
-            var item = GetLastItem(null, treeView.Items);
-            if (item != null)
-            {
-                treeView.SetFocus();
-                item.IsFocused = true;
-            }
+            treeView.SelectAndShowItem(treeView.LastItem);
         }
 
         private void TreeView_MouseLeftButtonDown(
             object? sender, MouseButtonEventArgs e)
         {
             var result = treeView.HitTest(e.GetPosition(treeView));
-            site?.LogEvent($"HitTest result: Item: '{result.Item?.Text ?? "<none>"}, Location: {result.Location}'");
+            var s = result.Item?.Text ?? "<none>";
+            site?.LogEvent($"HitTest result: Item: '{s}, Location: {result.Location}'");
         }
 
-        private void ModifyLastItemButton_Click(object sender, System.EventArgs e)
+        private void ModifyLastItemButton_Click(object? sender, System.EventArgs e)
         {
-            var item = GetLastItem(null, treeView.Items);
+            var item = treeView.LastItem;
             if (item != null)
             {
                 item.EnsureVisible();
@@ -283,18 +309,16 @@ namespace ControlsSample
             }
         }
 
-        private void ClearItemsButton_Click(object sender, System.EventArgs e)
+        private void ClearItemsButton_Click(object? sender, System.EventArgs e)
         {
-            treeView.BeginUpdate();
-            treeView.Items.Clear();
-            treeView.EndUpdate();
+            treeView.RemoveAll();
         }
 
         private void AddLastItemSiblingButton_Click(
             object? sender, 
             EventArgs e)
         {
-            var item = GetLastItem(null, treeView.Items);
+            var item = treeView.LastItem;
             if (item != null)
             {
                 var collection = item.Parent == null ? 
@@ -333,19 +357,22 @@ namespace ControlsSample
             hasBorderButton.Enabled = fastRecreate;
         }
 
-        private void HasBorderButton_Click(object sender, System.EventArgs e)
+        private void EditorButton_Click(object? sender, System.EventArgs e)
+        {
+            DialogFactory.EditItemsWithListEditor(treeView);
+        }
+
+        private void HasBorderButton_Click(object? sender, System.EventArgs e)
         {
             treeView.HasBorder = !treeView.HasBorder;
         }
 
-        private void Items_ItemRemoved(object sender, 
-            CollectionChangeEventArgs<TreeViewItem> e)
+        private void Items_ItemRemoved(object? sender, int index, TreeViewItem item)
         {
             UpdateSlowRecreate();
         }
 
-        private void Items_ItemInserted(object sender, 
-            CollectionChangeEventArgs<TreeViewItem> e)
+        private void Items_ItemInserted(object? sender, int index, TreeViewItem item)
         {
             UpdateSlowRecreate();
         }

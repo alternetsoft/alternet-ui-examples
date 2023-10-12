@@ -18,6 +18,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="MainWindow.uixml" />
     <None Remove="ColorSelector\ColorSelector.uixml" />
     <None Remove="Resources\CommandIcons\Redo.png" />
     <None Remove="Resources\CommandIcons\Undo.png" />
@@ -38,6 +39,6 @@
     <EmbeddedResource Include="Resources\ToolIcons\Pen.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.300-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.404-beta" />
   </ItemGroup>
 </Project>

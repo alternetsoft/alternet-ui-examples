@@ -31,6 +31,11 @@ namespace ControlsSample
             }
         }
 
+        private void Editor_Click(object? sender, System.EventArgs e)
+        {
+            DialogFactory.EditItemsWithListEditor(comboBox);
+        }
+
         private void SetSelectedItemToNullButton_Click(object? sender, EventArgs e)
         {
             comboBox.SelectedItem = null;
@@ -78,7 +83,8 @@ namespace ControlsSample
         {
             if (ignoreEvents)
                 return;
-            site?.LogEvent($"ComboBox: SelectedItemChanged. SelectedIndex: {(comboBox.SelectedIndex == null ? "<null>" : comboBox.SelectedIndex.ToString())}");
+            var s = (comboBox.SelectedIndex == null ? "<null>" : comboBox.SelectedIndex.ToString());
+            site?.LogEvent($"ComboBox: SelectedItemChanged. SelectedIndex: {s}");
         }
 
         private void AllowTextEditingCheckBox_CheckedChanged(object? sender, EventArgs e)
@@ -113,7 +119,7 @@ namespace ControlsSample
             return isEditable;
         }
 
-        private void SelectTextRangeButton_Click(object sender, System.EventArgs e)
+        private void SelectTextRangeButton_Click(object? sender, System.EventArgs e)
         {
             if (!CheckComboBoxIsEditable())
                 return;
@@ -121,7 +127,7 @@ namespace ControlsSample
             comboBox.SelectTextRange(2, 3);
         }
 
-        private void GetTextSelectionButton_Click(object sender, System.EventArgs e)
+        private void GetTextSelectionButton_Click(object? sender, System.EventArgs e)
         {
             if (!CheckComboBoxIsEditable())
                 return;
@@ -129,18 +135,23 @@ namespace ControlsSample
             var start = comboBox.TextSelectionStart;
             var length = comboBox.TextSelectionLength;
             var selectedText = comboBox.Text.Substring(start, length);
-            var message = $"ComboBox text selection is: [{start}..{start + length}], selected text: '{selectedText}'";
+            var message = $"[{start}..{start + length}], selected text: '{selectedText}'";
             site?.LogEvent("ComboBox Text Selection: " + message);
         }
 
-        private void SetTextToAbcButton_Click(object sender, System.EventArgs e)
+        private void SetItem_Click(object? sender, System.EventArgs e)
+        {
+            comboBox.Items[2] = "hello";
+        }
+
+        private void SetTextToAbcButton_Click(object? sender, System.EventArgs e)
         {
             if (!CheckComboBoxIsEditable())
                 return;
             comboBox.Text = "abc";
         }
 
-        private void SetTextToOneButton_Click(object sender, System.EventArgs e)
+        private void SetTextToOneButton_Click(object? sender, System.EventArgs e)
         {
             comboBox.Text = "One";
         }

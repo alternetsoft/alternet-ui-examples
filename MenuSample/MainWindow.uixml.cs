@@ -9,10 +9,12 @@ namespace MenuSample
     public partial class MainWindow : Window
     {
         private const string ResPrefix = "embres:MenuSample.Resources.Icons.Small.";
+        private readonly CardPanelHeader panelHeader = new();
+        private int newItemIndex = 0;
         Toolbar? toolbar;
         ToolbarItem? dynamicToolbarItemsSeparator;
         ToolbarItem? checkableToolbarItem;
-        private bool IsDebugBackground = false;
+        private readonly bool IsDebugBackground = false;
 
         public MainWindow()
         {
@@ -44,17 +46,18 @@ namespace MenuSample
 
             this.Closing += MainWindow_Closing;
 
-            /*if (WebBrowser.GetBackendOS() == WebBrowserBackendOS.Windows)
-            {
-                AddVertToolbar();
-                AddBottomToolbar();
-            }*/
-
             contextMenuBorder.BorderColor = Color.Red;
-            contextMenuBorder.BorderWidth = new Thickness(0, 1, 0, 1);
+            contextMenuBorder.BorderWidth = new Thickness(2, 2, 2, 2);
 
             contextMenuLabel.Font = Control.DefaultFont.AsBold;
             contextMenuBorder.PerformLayout();
+
+            panelHeader.Add("Menu", menuPanel);
+            panelHeader.Add("ToolBar", toolbarPanel);
+            panelHeader.Add("StatusBar", statusPanel);
+            mainPanel.Children.Insert(0, panelHeader);
+            panelHeader.SelectedTab = panelHeader.Tabs[0];
+
         }
 
         private void ImageTextVertical()
@@ -69,52 +72,7 @@ namespace MenuSample
             }
         }
 
-        /*private ToolbarPanel CreateVertToolbar()
-        {
-            var vertToolbar = new ToolbarPanel()
-            {
-            };
-            vertToolbar.Toolbar.IsVertical = true;
-            vertToolbar.Toolbar.ItemTextVisible = false;
-            vertToolbar.Toolbar.ImageToText = ToolbarImageToText.Vertical;
-
-            var item1 = new ToolbarItem("Calendar", ToolbarItem_Click)
-            {
-                ToolTip = "Calendar Toolbar Item",
-                Image = ImageSet.FromUrl($"{ResPrefix}Calendar16.png")
-            };
-
-            var item2 = new ToolbarItem("Photo", ToolbarItem_Click)
-            {
-                ToolTip = "Photo Toolbar Item",
-                Image = ImageSet.FromUrl($"{ResPrefix}Photo16.png")
-            };
-            vertToolbar.Toolbar.Items.Add(item1);
-            vertToolbar.Toolbar.Items.Add(item2);
-
-            return vertToolbar;
-        }*/
-
-        /*private void AddVertToolbar()
-        {
-            ToolbarPanel Add(int colIndex)
-            {
-                var vertToolbar = CreateVertToolbar();
-                Grid.SetRowColumn(vertToolbar, 1, colIndex);
-                Grid.SetRowSpan(vertToolbar, 2);
-                mainGrid.Children.Add(vertToolbar);
-                SetDebugBackground(vertToolbar.Toolbar);
-                return vertToolbar;
-            }
-
-            var vertToolbar = Add(0);
-            vertToolbar.Margin = new(5, 0, 0, 0);
-
-            var vertToolbar2 = Add(2);
-            vertToolbar2.Margin = new(0, 0, 5, 0);
-        }*/
-
-        private void SetDebugBackground(Control control)
+        internal void SetDebugBackground(Control control)
         {
             if (!IsDebugBackground)
                 return;
@@ -129,7 +87,7 @@ namespace MenuSample
 
         private void TimerEvent(object? sender, EventArgs e)
         {
-            if (this.IsDisposed || clockStatusBarPanel!.IsDisposed)
+            if (this.IsDisposed || statusBar!.IsDisposed)
                 return;
             clockStatusBarPanel.Text = System.DateTime.Now.ToString("HH:mm:ss");
         }
@@ -138,43 +96,9 @@ namespace MenuSample
         readonly int dynamicToolbarItemsSeparatorIndex;
         readonly int clockStatusBarPanelIndex;
 
-        /*private void AddBottomToolbar()
-        {
-            var bottomToolbar = new ToolbarPanel();
-            bottomToolbar.Toolbar.NoDivider = true;
-            bottomToolbar.Margin = new(5, 0, 5, 0);
-            bottomToolbar.Toolbar.ImageToText =
-                ToolbarImageToText.Vertical;
-
-            SetDebugBackground(bottomToolbar.Toolbar);
-
-            var item1 = new ToolbarItem("Calendar", ToolbarItem_Click)
-            {
-                ToolTip = "Calendar Toolbar Item",
-                Image = ImageSet.FromUrl($"{ResPrefix}Calendar16.png")
-            };
-
-            var item2 = new ToolbarItem("Photo", ToolbarItem_Click)
-            {
-                ToolTip = "Photo Toolbar Item",
-                Image = ImageSet.FromUrl($"{ResPrefix}Photo16.png")
-            };
-            bottomToolbar.Toolbar.Items.Add(item1);
-            bottomToolbar.Toolbar.Items.Add(item2);
-            Grid.SetRowColumn(bottomToolbar, 3, 0);
-            Grid.SetColumnSpan(bottomToolbar, 3);
-            mainGrid.Children.Add(bottomToolbar);
-            bottomToolbar.Toolbar.Realize();
-            //bottomToolbar.Toolbar.RecreateWindow();
-        }*/
-
         private void InitToolbar()
         {
-            //var toolbarPanel = new ToolbarPanel();
-            //toolbarPanel.Margin = new(5, 0, 5, 0);
             toolbar = Toolbar;
-            //SetDebugBackground(toolbar);
-            //toolbar.NoDivider = true;
 
             var calendarToolbarItem = new ToolbarItem("Calendar", ToolbarItem_Click)
             {
@@ -227,34 +151,39 @@ namespace MenuSample
             dynamicToolbarItemsSeparator = new ToolbarItem("-");
             toolbar?.Items.Add(dynamicToolbarItemsSeparator);
 
-            //Grid.SetRowColumn(toolbarPanel,0,0);
-            //Grid.SetColumnSpan(toolbarPanel, 3);
-            //mainGrid.Children.Add(toolbarPanel);
-            //toolbarPanel.Toolbar.Realize();
+            Application.Current.LogMessage += Current_LogMessage;
+        }
+
+        private void Current_LogMessage(object? sender, LogMessageEventArgs e)
+        {
+            LogEvent(e.Message);
         }
 
         private void PlatformSpecificInitialize()
         {
-            bool runningUnderMacOS = WebBrowser.GetBackendOS() == WebBrowserBackendOS.MacOS;
-            roleControlsPanel.Visible = runningUnderMacOS;
+            roleControlsPanel.Visible = Application.IsMacOs;
         }
 
         public Command? SaveCommand { get; private set; }
         public Command? ExportToPngCommand { get; private set; }
 
-        private void OpenMenuItem_Click(object sender, EventArgs e) => LogEvent("Open");
+        private void OpenMenuItem_Click(object? sender, EventArgs e) =>
+            LogEvent("Open");
 
-        private void SaveEnabledMenuItem_Click(object sender, EventArgs e) => SaveCommand!.RaiseCanExecuteChanged();
+        private void SaveEnabledMenuItem_Click(object? sender, EventArgs e) =>
+            SaveCommand!.RaiseCanExecuteChanged();
 
-        private void ExportToPdfMenuItem_Click(object sender, EventArgs e) => LogEvent("Export to PDF");
+        private void ExportToPdfMenuItem_Click(object? sender, EventArgs e) =>
+            LogEvent("Export to PDF");
 
-        private void ExportToPngMenuItem_Click(object sender, EventArgs e) => LogEvent("Export to PNG");
+        private void ExportToPngMenuItem_Click(object? sender, EventArgs e) =>
+            LogEvent("Export to PNG");
 
-        private void OptionsMenuItem_Click(object sender, EventArgs e) => LogEvent("Options");
+        private void OptionsMenuItem_Click(object? sender, EventArgs e) => LogEvent("Options");
 
-        private void ExitMenuItem_Click(object sender, EventArgs e) => Close();
+        private void ExitMenuItem_Click(object? sender, EventArgs e) => Close();
 
-        private void AboutMenuItem_Click(object sender, EventArgs e) =>
+        private void AboutMenuItem_Click(object? sender, EventArgs e) =>
             LogEvent("AlterNET UI Menu Sample Application.");
 
         MenuItem? dynamicItemsMenuItem;
@@ -270,23 +199,12 @@ namespace MenuSample
             return dynamicItemsMenuItem;
         }
 
-        private void AddDynamicMenuItemMenuItem_Click(object sender, EventArgs e)
+        private void AddDynamicMenuItemMenuItem_Click(object? sender, EventArgs e)
         {
             var parent = EnsureDynamicItemsMenuItem();
 
-            int GetNextItemNumber()
-            {
-                if (parent.Items.Count == 0)
-                    return 1;
-
-                return (int)parent.Items.Last().Tag! + 1;
-            }
-
-            var number = GetNextItemNumber();
-            parent.Items.Add(new MenuItem("Item " + number, DynamicMenuItem_Click)
-            {
-                Tag = number
-            });
+            var number = GenItemIndex();
+            parent.Items.Add(new MenuItem("Item " + number, DynamicMenuItem_Click));
         }
 
         private void DynamicMenuItem_Click(object? sender, EventArgs e)
@@ -295,7 +213,7 @@ namespace MenuSample
             LogEvent("Dynamic item clicked: " + item.Text);
         }
 
-        private void RemoveLastDynamicMenuItemMenuItem_Click(object sender, EventArgs e)
+        private void RemoveLastDynamicMenuItemMenuItem_Click(object? sender, EventArgs e)
         {
             var parent = dynamicItemsMenuItem;
             if (parent == null)
@@ -313,7 +231,7 @@ namespace MenuSample
             }
         }
 
-        private void ToggleExitEnabledMenuItem_Click(object sender, EventArgs e)
+        private void ToggleExitEnabledMenuItem_Click(object? sender, EventArgs e)
         {
             exitMenuItem.Enabled = !exitMenuItem.Enabled;
             UpdateControls();
@@ -321,18 +239,19 @@ namespace MenuSample
 
         private void UpdateControls()
         {
-            toggleExitEnabledMenuItem.Text = (exitMenuItem.Enabled ? "Disable" : "Enable") + " Exit Menu Item";
+            toggleExitEnabledMenuItem.Text =
+                (exitMenuItem.Enabled ? "Disable" : "Enable") + " Exit Menu Item";
             toggleSeparatorMenuItem.Text = separatorMenuItem.Text == "-" ? 
                 "Separator item to normal" : "Normal item to separator";
         }
 
-        private void ContinousScrollingMenuItem_Click(object sender, EventArgs e)
+        private void ContinousScrollingMenuItem_Click(object? sender, EventArgs e)
         {
             continousScrollingMenuItem.Checked = true;
             pageScrollingMenuItem.Checked = false;
         }
 
-        private void PageScrollingMenuItem_Click(object sender, EventArgs e)
+        private void PageScrollingMenuItem_Click(object? sender, EventArgs e)
         {
             continousScrollingMenuItem.Checked = false;
             pageScrollingMenuItem.Checked = true;
@@ -343,7 +262,7 @@ namespace MenuSample
             LogEvent("Grid item is checked: " + ((MenuItem)sender).Checked);
         }
 
-        private void ToggleSeparatorMenuItem_Click(object sender, System.EventArgs e)
+        private void ToggleSeparatorMenuItem_Click(object? sender, System.EventArgs e)
         {
             if (separatorMenuItem.Text == "-")
                 separatorMenuItem.Text = "[Text instead of separator]";
@@ -353,22 +272,22 @@ namespace MenuSample
             UpdateControls();
         }
 
-        private void SetAboutMenuItemRoleToNone_Click(object sender, EventArgs e)
+        private void SetAboutMenuItemRoleToNone_Click(object? sender, EventArgs e)
         {
             aboutMenuItem.Role = MenuItemRoles.None;
         }
 
-        private void SetOptionsMenuItemRoleToNone_Click(object sender, EventArgs e)
+        private void SetOptionsMenuItemRoleToNone_Click(object? sender, EventArgs e)
         {
             optionsMenuItem.Role = MenuItemRoles.None;
         }
 
-        private void SetOptionsMenuItemRoleToPreferences_Click(object sender, EventArgs e)
+        private void SetOptionsMenuItemRoleToPreferences_Click(object? sender, EventArgs e)
         {
             optionsMenuItem.Role = MenuItemRoles.Preferences;
         }
 
-        private void ContextMenuBorder_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        private void ContextMenuBorder_MouseRightButtonUp(object? sender, MouseButtonEventArgs e)
         {
             new ExampleContextMenu().Show(contextMenuBorder, e.GetPosition(contextMenuBorder));
         }
@@ -386,8 +305,10 @@ namespace MenuSample
 
         private int lastEventNumber = 1;
 
-        void LogEvent(string message)
+        void LogEvent(string? message)
         {
+            if (message is null)
+                return;
             eventsListBox.Items.Add($"{lastEventNumber++}. {message}");
             eventsListBox.SelectedIndex = eventsListBox.Items.Count - 1;
         }
@@ -405,12 +326,12 @@ namespace MenuSample
 
         private void AddDynamicToolbarItem()
         {
-            int number = toolbar!.Items.Count - dynamicToolbarItemsSeparatorIndex;
+            int number = GenItemIndex();
 
             string text = "Item " + number;
             var item = new ToolbarItem(text)
             {
-                Image = toolbar.Items[0].Image,
+                Image = toolbar!.Items[0].Image,
                 ToolTip = text + " Description"
             };
 
@@ -418,12 +339,12 @@ namespace MenuSample
             toolbar.Items.Add(item);
         }
 
-        private void AddDynamicToolbarItemButton_Click(object sender, EventArgs e)
+        private void AddDynamicToolbarItemButton_Click(object? sender, EventArgs e)
         {
             AddDynamicToolbarItem();
         }
 
-        private void RemoveLastDynamicToolbarItemButton_Click(object sender, EventArgs e)
+        private void RemoveLastDynamicToolbarItemButton_Click(object? sender, EventArgs e)
         {
             if (toolbar!.Items.Count == dynamicToolbarItemsSeparatorIndex + 1)
                 return;
@@ -488,7 +409,7 @@ namespace MenuSample
             AddDynamicStatusBarPanel();
         }
 
-        private void RemoveLastDynamicStatusBarPanelButton_Click(object sender, System.EventArgs e)
+        private void RemoveLastDynamicStatusBarPanelButton_Click(object? sender, System.EventArgs e)
         {
             if (statusBar!.Panels.Count == clockStatusBarPanelIndex + 1)
                 return;
@@ -497,12 +418,18 @@ namespace MenuSample
 
         private void AddDynamicStatusBarPanel()
         {
-            int number = statusBar!.Panels.Count - clockStatusBarPanelIndex;
+            int number = GenItemIndex();
             string text = "Panel " + number;
             statusBar.Panels.Add(new StatusBarPanel(text));
         }
 
-        private void ShowSizingGripCheckBox_CheckedChanged(object sender, System.EventArgs e)
+        private int GenItemIndex()
+        {
+            newItemIndex++;
+            return newItemIndex;
+        }
+
+        private void ShowSizingGripCheckBox_CheckedChanged(object? sender, System.EventArgs e)
         {
             if(statusBar!=null)
                 statusBar.SizingGripVisible = showSizingGripCheckBox.IsChecked;

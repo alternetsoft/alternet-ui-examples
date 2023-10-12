@@ -1,12 +1,13 @@
 ﻿using Alternet.UI;
 using Alternet.Drawing;
+using System;
 
 namespace ControlsSample
 {
     internal partial class MainWindow : Window, IPageSite
     {
         private readonly PageContainer pageContainer = new();
-        private readonly TreeView eventsControl = new();
+        private readonly ListBox eventsControl = new();
         private readonly Grid mainGrid = new();
         private readonly Control mainGridParent = new();
         private readonly LinkLabel? linkLabel;
@@ -16,10 +17,10 @@ namespace ControlsSample
 
         public MainWindow()
         {
+            Application.Current.LogMessage += Application_LogMessage;
+
             Icon = ImageSet.FromUrlOrNull("embres:ControlsSample.Sample.ico");
             InitializeComponent();
-
-            eventsControl.MakeAsListBox();
 
             mainGrid.RowDefinitions.Add(new RowDefinition
             {
@@ -60,6 +61,9 @@ namespace ControlsSample
             };
             linkLabel2.LinkClicked += LinkLabel_LinkClicked;
 
+            linkLabel.VisitedColor = linkLabel.NormalColor;
+            linkLabel2.VisitedColor = linkLabel.NormalColor;
+
             headerPanel.Children.Add(linkLabel);
             headerPanel.Children.Add(linkLabel2);
 
@@ -73,37 +77,76 @@ namespace ControlsSample
 
             var pages = pageContainer.Pages;
 
-            void AddPage(string title, Control control)
+            void AddPage(string title, CreateControlAction action)
             {
-                pages.Add(new PageContainer.Page(title,control));
+                var item = new PageContainer.Page(title, action);
+                pages.Add(item);
             }
 
-            AddPage("Tree View", new TreeViewPage { Site = this });
-            AddPage("List View", new ListViewPage { Site = this });
-            AddPage("List Box", new ListBoxPage { Site = this });
-            AddPage("Combo Box", new ComboBoxPage { Site = this });
-            AddPage("Check List Box", new CheckListBoxPage { Site = this });
-            AddPage("Tab Control", new TabControlPage { Site = this });
-            AddPage("Progress Bar", new ProgressBarPage { Site = this });
-            AddPage("Button", new ButtonPage { Site = this });
-            AddPage("Slider", new SliderPage { Site = this });
-            AddPage("Grid", new GridPage { Site = this });
-            AddPage("Numeric Input", new NumericInputPage { Site = this });
-            AddPage("Radio Button", new RadioButtonsPage { Site = this });
-            AddPage("Check Box", new CheckBoxesPage { Site = this });
-            AddPage("Text Input", new TextInputPage { Site = this });
-            AddPage("Date Time", new DateTimePage { Site = this });
-            AddPage("Notify Icon", new NotifyIconPage { Site = this });
-            AddPage("Web Browser", new WebBrowserPage { Site = this });
-            AddPage("Splitter Panel", new SplitterPanelPage { Site = this });
-            AddPage("Layout Panel",new LayoutPanelPage { Site = this });
-            AddPage("All Samples", new AllSamplesPage { Site = this });
+            AddPage("Tree View", CreateTreeViewPage);
+            AddPage("List View", CreateListViewPage);
+            AddPage("List Box", CreateListBoxPage);
+            AddPage("Combo Box", CreateComboBoxPage);
+            AddPage("Check List Box", CreateCheckListBoxPage);
+            AddPage("Progress Bar", CreateProgressBarPage);
+            AddPage("Button", CreateButtonPage);
+            AddPage("Slider", CreateSliderPage);
+            AddPage("Grid", CreateGridPage);
+            AddPage("Numeric Input", CreateNumericInputPage);
+            AddPage("Radio Button", CreateRadioButtonsPage);
+            AddPage("Check Box", CreateCheckBoxesPage);
+            AddPage("Text Input", CreateTextInputPage);
+            AddPage("Date Time", CreateDateTimePage);
+            if(NotifyIcon.IsAvailable)
+                AddPage("Notify Icon", CreateNotifyIconPage);
+            AddPage("Web Browser", CreateWebBrowserPage);
+            AddPage("Splitter Panel", CreateSplitterPanelPage);
+            AddPage("Layout Panel", CreateLayoutPanelPage);
+            if(Application.IsWindowsOS)
+                AddPage("Tab Control", CreateTabControlPage);
+            AddPage("All Samples", CreateAllSamplesPage);
 
             pageContainer.SelectedIndex = 0;
 
             mainGridParent.Padding = 10;
             mainGridParent.Children.Add(mainGrid);
             Children.Add(mainGridParent);
+#if DEBUG
+            LogEvent("Net Version = " + Environment.Version.ToString());
+#endif
+            if (pageContainer.PagesControl.CanAcceptFocus)
+                pageContainer.PagesControl.SetFocus();
+        }
+
+        Control CreateTreeViewPage() => new TreeViewPage() { Site = this };
+        Control CreateListViewPage() => new ListViewPage() { Site = this };
+        Control CreateListBoxPage() => new ListBoxPage() { Site = this };
+        Control CreateComboBoxPage() => new ComboBoxPage() { Site = this };
+        Control CreateCheckListBoxPage() => new CheckListBoxPage() { Site = this };
+        Control CreateTabControlPage() => new TabControlPage() { Site = this };
+        Control CreateProgressBarPage() => new ProgressBarPage() { Site = this };
+        Control CreateButtonPage() => new ButtonPage() { Site = this };
+        Control CreateSliderPage() => new SliderPage() { Site = this };
+        Control CreateGridPage() => new GridPage() { Site = this };
+        Control CreateNumericInputPage() => new NumericInputPage() { Site = this };
+        Control CreateRadioButtonsPage() => new RadioButtonsPage() { Site = this };
+        Control CreateCheckBoxesPage() => new CheckBoxesPage() { Site = this };
+        Control CreateTextInputPage() => new TextInputPage() { Site = this };
+        Control CreateDateTimePage() => new DateTimePage() { Site = this };
+        Control CreateNotifyIconPage() => new NotifyIconPage() { Site = this };
+        Control CreateWebBrowserPage() => new WebBrowserPage() { Site = this };
+        Control CreateSplitterPanelPage() => new SplitterPanelPage() { Site = this };
+        Control CreateLayoutPanelPage() => new LayoutPanelPage() { Site = this };
+        Control CreateAllSamplesPage() => new AllSamplesPage() { Site = this };
+
+        private void Application_LogMessage(object? sender, LogMessageEventArgs e)
+        {
+#if DEBUG
+            if (e.ReplaceLastMessage)
+                LogEventSmart(e.Message, e.MessagePrefix);
+            else
+                LogEvent(e.Message);
+#endif
         }
 
         private void LinkLabel_LinkClicked(
@@ -115,18 +158,39 @@ namespace ControlsSample
             LogEvent(linkLabel.Url);
         }
 
-        string? IPageSite.LastEventMessage => lastEventMessage;
+        public string? LastEventMessage => lastEventMessage;
 
-        void IPageSite.LogEvent(string message) => LogEvent(message);
-
-        void LogEvent(string message)
+        public void LogEventSmart(string? message, string? prefix)
         {
+            var s = lastEventMessage;
+            var b = s?.StartsWith(prefix ?? string.Empty) ?? false;
+
+            var item = eventsControl.LastRootItem;
+
+            if (b && item is not null)
+            {
+                eventsControl.LastRootItem = ConstructMessage(message);
+                eventsControl.SelectedIndex = eventsControl.Items.Count-1;
+            }
+            else
+                LogEvent(message);
+        }
+
+        private string ConstructMessage(string? message)
+        {
+            var s = $"{lastEventNumber++}. {message}";
+            return s;
+        }
+
+        public void LogEvent(string? message)
+        {
+            if (message is null)
+                return;
             lastEventMessage = message;
 
-            var s = $"{lastEventNumber++}. {message}";
-            var item = new TreeViewItem(s);
+            var item = new TreeViewItem(ConstructMessage(message));
             eventsControl.Items.Add(item);
-            eventsControl.SelectedItem = item;
+            eventsControl.SelectedItem = eventsControl.LastRootItem;
         }
     }
 }

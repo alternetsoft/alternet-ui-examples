@@ -16,11 +16,20 @@ namespace HelloWorldSample
             //BindingOperations.SetBinding(myDataTextBox, TextBox.TextProperty, myBinding);
 
             DataContext = new MyData(System.DateTime.Now);
+
+            SetSizeToContent();
         }
 
         private void ShowDataButton_Click(object? sender, EventArgs e)
         {
-            MessageBox.Show("MyDataProperty: " + ((MyData)DataContext!).MyDataProperty);
+            LogControl.Add("MyDataProperty: " + ((MyData)DataContext!).MyDataProperty);
+            LogControl.SelectAndShowItem(LogControl.LastItem);
+        }
+
+        private void UpdateDataButton_Click(object? sender, EventArgs e)
+        {
+            ((MyData)DataContext!).MyDataProperty =
+                "Last bound time was " + DateTime.Now.ToLongTimeString(); ;
         }
 
         public class MyData : INotifyPropertyChanged
@@ -38,13 +47,14 @@ namespace HelloWorldSample
                 set
                 {
                     myDataProperty = value;
-                    OnPropertyChanged("MyDataProperty");
+                    OnPropertyChanged(nameof(MyDataProperty));
                 }
             }
 
             public event PropertyChangedEventHandler? PropertyChanged;
 
-            private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            private void OnPropertyChanged(string propertyName) =>
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

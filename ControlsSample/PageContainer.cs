@@ -1,13 +1,30 @@
 ﻿using Alternet.Base.Collections;
+using Alternet.Drawing;
 using Alternet.UI;
 
 namespace ControlsSample
 {
+    public delegate Control CreateControlAction();
+
     public class PageContainer : Control
     {
         private readonly TreeView pagesControl;
-        private readonly Control activePageHolder;
+        private readonly Control activePageHolder = new()
+        {
+        };
+
         private readonly Grid grid;
+        private readonly VerticalStackPanel waitLabelContainer = new()
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            Size = new Size(400, 400),
+        };
+        private readonly Label waitLabel = new()
+        {
+            Text = "Page is loading...",
+            Margin = new Thickness(100, 100, 0, 0),
+        };
 
         public PageContainer()
         {
@@ -21,7 +38,7 @@ namespace ControlsSample
 
             pagesControl = new()
             {
-                Width = 140,
+                SuggestedWidth = 140,
             };
             pagesControl.MakeAsListBox();
 
@@ -29,9 +46,10 @@ namespace ControlsSample
             grid.Children.Add(pagesControl);
             Grid.SetColumn(pagesControl, 0);
 
-            activePageHolder = new Control();
             grid.Children.Add(activePageHolder);
             Grid.SetColumn(activePageHolder, 1);
+
+            waitLabel.Parent = waitLabelContainer;
 
             Pages.ItemInserted += Pages_ItemInserted;
         }
@@ -46,6 +64,8 @@ namespace ControlsSample
             }
         }
 
+        public TreeView PagesControl => pagesControl;
+
         public Collection<Page> Pages { get; } = new Collection<Page>();
 
         private void PagesListBox_SelectionChanged(object? sender, System.EventArgs e)
@@ -53,32 +73,66 @@ namespace ControlsSample
             SetActivePageControl();
         }
 
-        private void Pages_ItemInserted(object? sender, CollectionChangeEventArgs<Page> e)
+        private void Pages_ItemInserted(object? sender, int index, Page item)
         {
-            pagesControl.Items.Insert(e.Index, new TreeViewItem(e.Item.Title));
+            pagesControl.Items.Insert(index, new TreeViewItem(item.Title));
         }
 
         private void SetActivePageControl()
         {
-            activePageHolder.SuspendLayout();
-            activePageHolder.Children.Clear();
+            if (SelectedIndex == null)
+                return;
 
-            if (SelectedIndex != null)
-                activePageHolder.Children.Add(Pages[SelectedIndex.Value].Control);
-            activePageHolder.ResumeLayout();
+            activePageHolder.SuspendLayout();
+            try
+            {
+                activePageHolder.GetVisibleChildOrNull()?.Hide();
+                var page = Pages[SelectedIndex.Value];
+                var loaded = page.ControlCreated;
+
+                if (!loaded)
+                {
+                    waitLabelContainer.Parent = activePageHolder;
+                    waitLabelContainer.Visible = true;
+                    waitLabelContainer.Refresh();
+                    Application.DoEvents();
+                }
+
+                var control = page.Control;
+                control.Parent = activePageHolder;
+                control.Visible = true;
+                control.PerformLayout();
+                waitLabelContainer.Visible = false;
+            }
+            finally
+            {
+                activePageHolder.ResumeLayout();
+            }
         }
 
         public class Page
         {
-            public Page(string title, Control control)
+            private readonly CreateControlAction action;
+            private Control? control;
+
+            public Page(string title, CreateControlAction action)
             {
                 Title = title;
-                Control = control;
+                this.action = action;
             }
 
             public string Title { get; }
 
-            public Control Control { get; }
+            public bool ControlCreated => control != null;
+
+            public Control Control
+            {
+                get
+                {
+                    control ??= action();
+                    return control;
+                }
+            }
         }
     }
 }

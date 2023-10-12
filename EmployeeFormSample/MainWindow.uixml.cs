@@ -10,6 +10,9 @@ namespace EmployeeFormSample
 {
     public partial class MainWindow : Window
     {
+/*
+        private readonly CardPanelHeader panelHeader = new();
+*/
         public MainWindow()
         {
             Icon = ImageSet.FromUrlOrNull("embres:EmployeeFormSample.Sample.ico");
@@ -25,7 +28,7 @@ namespace EmployeeFormSample
             {
                 FirstName = "Alice",
                 LastName = "Jameson",
-                BirthDate = new System.DateTime(1993, 10, 2).ToShortDateString(),
+                BirthDate = new System.DateTime(1993, 10, 2),
                 Title = "Customer Success Manager",
                 Prefix = EmployeePrefix.Mrs,
                 Address = "143 Coolidge St.",
@@ -37,7 +40,7 @@ namespace EmployeeFormSample
                 Email = "AliceJ@mycompany.com",
                 Skype = "AliceJ12",
                 Department = Department.Sales,
-                HireDate = new System.DateTime(2018, 3, 5).ToShortDateString(),
+                HireDate = new System.DateTime(2018, 3, 5),
                 Status = Status.Salaried
             };
 
@@ -65,9 +68,18 @@ namespace EmployeeFormSample
             // On Linux height of the ComboBox is greater than height of the TextBox.
             // We need to increase height of all window's TextBoxes.
             LayoutFactory.AdjustTextBoxesHeight(this);
+/*
+            panelHeader.Add("Information", infoPanel);
+            panelHeader.Add("Contacts", contactsPanel);
+            panelHeader.Add("Evaluations", evalPanel);
+            tabControlPanel.Children.Insert(0, panelHeader);
+            panelHeader.SelectedTab = panelHeader.Tabs[0];
+*/
+            this.MinimumSize = new(900, 700);
+            this.SetSizeToContent();
         }
 
-        private void MainWindow_LayoutUpdated(object sender, EventArgs e)
+        private void MainWindow_LayoutUpdated(object? sender, EventArgs e)
         {
         }        
 

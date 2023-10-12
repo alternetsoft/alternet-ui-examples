@@ -35,6 +35,11 @@ namespace ControlsSample
             }
         }
 
+        private void EditorButton_Click(object? sender, System.EventArgs e)
+        {
+            DialogFactory.EditItemsWithListEditor(listBox);
+        }
+
         private int GenItemIndex()
         {
             newItemIndex++;
@@ -89,8 +94,11 @@ namespace ControlsSample
         {
             listBox.Parent?.BeginUpdate();
 
-            listBox.SelectionMode = allowMultipleSelectionCheckBox.IsChecked ?
-                ListBoxSelectionMode.Multiple : ListBoxSelectionMode.Single;
+            var b = allowMultipleSelectionCheckBox.IsChecked;
+
+            listBox.SelectionMode = b ? ListBoxSelectionMode.Multiple : ListBoxSelectionMode.Single;
+
+            selectItemAtIndices2And4Button.Enabled = b;
 
             listBox.Parent?.EndUpdate();
         }

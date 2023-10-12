@@ -39,6 +39,10 @@ namespace ControlsSample
             folder1 = Path.GetFullPath(folder1);
             folder2 = Path.GetFullPath(folder2);
 
+            var trimmed = PathUtils.TrimEndDirectorySeparator(folder2);
+            if (trimmed is not null && trimmed.EndsWith("Samples"))
+                folder1 = folder2;
+
             List<string> csproj = new();
 
             static IEnumerable<string> EnumProjects(string path)
@@ -51,19 +55,18 @@ namespace ControlsSample
             }
 
             var files1 = EnumProjects(folder1);
-            var files2 = EnumProjects(folder2);
 
             csproj.AddRange(files1);
-            csproj.AddRange(files2);
 
             for (int i = csproj.Count-1; i >=0 ; i--)
             {
-                if (csproj[i].EndsWith("ControlsSample.csproj"))
+                if (csproj[i].EndsWith("/ControlsSample.csproj") ||
+                    csproj[i].EndsWith(@"\ControlsSample.csproj"))
                 {
                     csproj.RemoveAt(i);
                     continue;
                 }
-                if(csproj[i].EndsWith("Sample.csproj"))
+                if(csproj[i].EndsWith("Sample.csproj") || csproj[i].EndsWith("Test.csproj"))
                     continue;
                 csproj.RemoveAt(i);
             }
