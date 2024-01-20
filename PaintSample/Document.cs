@@ -1,33 +1,55 @@
 using Alternet.Drawing;
 using System;
 using System.IO;
+using Alternet.UI;
 
 namespace PaintSample
 {
     public class Document : IDisposable
     {
+        private readonly Control control;
         private bool isDisposed;
 
-        private Bitmap? bitmap;
+        private Image? bitmap;
 
-        private Action<DrawingContext>? previewAction;
+        private Action<Graphics>? previewAction;
 
-        public Document()
+        public Document(Control control)
         {
-            Bitmap = CreateBitmap();
+            this.control = control;
+            Bitmap = CreateBitmap(control);
             Dirty = false;
         }
 
-        public Document(string fileName)
+        public Document(Control control, string fileName)
         {
+            this.control = control;
             Bitmap = LoadBitmap(fileName);
             FileName = fileName;
             Dirty = false;
         }
 
+        public Control Control => control;
+
         public void Save(string fileName)
         {
-            Bitmap.Save(fileName);
+            var saveAllFormats = false;
+
+
+            var extensions = Image.GetExtensionsForSave();
+
+            if(saveAllFormats)
+                foreach (var ext in extensions)
+                {
+                    var newName = Path.ChangeExtension(fileName, ext);
+                    if(!Bitmap.Save(newName))
+                        Application.Log($"Error saving: {newName}");
+                }
+            else
+            {
+                if (!Bitmap.Save(fileName))
+                    Application.Log($"Error saving: {fileName}");
+            }
             Dirty = false;
             FileName = fileName;
             RaiseChanged();
@@ -39,17 +61,14 @@ namespace PaintSample
 
         public event EventHandler? Changed;
 
-        public Bitmap Bitmap
+        public Image Bitmap
         {
             get => bitmap ?? throw new Exception();
             set
             {
                 if (bitmap == value)
                     return;
-
-                if (bitmap != null)
-                    bitmap.Dispose();
-
+                bitmap?.Dispose();
                 bitmap = value;
                 OnChanged();
             }
@@ -61,7 +80,7 @@ namespace PaintSample
             RaiseChanged();
         }
 
-        public Action<DrawingContext>? PreviewAction
+        public Action<Graphics>? PreviewAction
         {
             get => previewAction;
             set
@@ -73,12 +92,12 @@ namespace PaintSample
 
         public bool Dirty { get; private set; }
 
-        public void Modify(Action<DrawingContext> action)
+        public void Modify(Action<Graphics> action)
         {
-            using (var dc = DrawingContext.FromImage(Bitmap))
+            using (var dc = Graphics.FromImage(Bitmap))
                 action(dc);
 
-            using (var dc = DrawingContext.FromImage(Bitmap)) { }
+            using (var dc = Graphics.FromImage(Bitmap)) { }
 
             OnChanged();
         }
@@ -88,11 +107,11 @@ namespace PaintSample
             OnChanged();
         }
 
-        public void Paint(DrawingContext drawingContext)
+        public void Paint(Control control, Graphics drawingContext)
         {
-            drawingContext.DrawImage(Bitmap, new Point());
-            if (previewAction != null)
-                previewAction(drawingContext);
+            drawingContext.FillRectangle(Brushes.White, Bitmap.BoundsDip(control));
+            drawingContext.DrawImage(Bitmap, PointD.Empty);
+            previewAction?.Invoke(drawingContext);
         }
 
         public void Dispose()
@@ -116,18 +135,20 @@ namespace PaintSample
             }
         }
 
-        private Bitmap CreateBitmap()
+        private Bitmap CreateBitmap(Control control)
         {
-            var bitmap = new Bitmap(new Size(600, 600));
-            using var dc = DrawingContext.FromImage(bitmap);
-            dc.FillRectangle(new SolidBrush(BackgroundColor), new Rect(new Point(), bitmap.Size));
+            var pixelSize = control.PixelFromDip(new SizeD(600, 600));
+            var bitmap = new Bitmap(pixelSize, control);
+            using var dc = Graphics.FromImage(bitmap);
+            dc.FillRectangle(new SolidBrush(BackgroundColor), bitmap.BoundsDip(control)); 
             return bitmap;
         }
 
         private Bitmap LoadBitmap(string fileName)
         {
-            using (var stream = File.OpenRead(fileName))
-                return new Bitmap(new Bitmap(stream));
+            var image = new GenericImage(fileName);
+            image.ResizeNoScale((600, 600), (0, 0), Color.White);
+            return (Bitmap)image;
         }
 
         private void RaiseChanged()

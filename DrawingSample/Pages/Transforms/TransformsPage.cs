@@ -83,7 +83,7 @@ namespace DrawingSample
             }
         }
 
-        public override void Draw(DrawingContext dc, Rect bounds)
+        public override void Draw(Graphics dc, RectD bounds)
         {
             dc.PushTransform(GetTransform());
 
@@ -100,9 +100,9 @@ namespace DrawingSample
             return control;
         }
 
-        private static void DrawScene(DrawingContext dc)
+        private static void DrawScene(Graphics dc)
         {
-            var outerFrame = new Rect(10, 10, 200, 300);
+            var outerFrame = new RectD(10, 10, 200, 300);
             var innerFrame = outerFrame.InflatedBy(-10, -10);
 
             void DrawFrame()
@@ -126,7 +126,7 @@ namespace DrawingSample
 
                 var pathRadius = 80;
 
-                Point GetPointOnCircle(double r, double a) => MathUtils.GetPointOnCircle(center, r, a);
+                PointD GetPointOnCircle(double r, double a) => MathUtils.GetPointOnCircle(center, r, a);
 
                 path.StartFigure(GetPointOnCircle(pathRadius, 0));
 
@@ -138,7 +138,7 @@ namespace DrawingSample
 
                 path.CloseFigure();
 
-                var ellipseRect = new Rect(center - new Size(pathRadius, pathRadius), new Size(pathRadius * 2, pathRadius * 2));
+                var ellipseRect = new RectD(center - new SizeD(pathRadius, pathRadius), new SizeD(pathRadius * 2, pathRadius * 2));
                 dc.FillEllipse(Brushes.Tomato, ellipseRect);
                 dc.DrawPath(Pens.Black, path);
                 dc.DrawEllipse(outerCirclePen, ellipseRect);
@@ -157,13 +157,13 @@ namespace DrawingSample
             dc.DrawImage(Resources.LogoImage, innerFrame.InflatedBy(-10, -10).TopLeft);
         }
 
-        private static void DrawSubTransformedPart(DrawingContext dc)
+        private static void DrawSubTransformedPart(Graphics dc)
         {
             dc.PushTransform(TransformMatrix.CreateTranslation(210, 50));
             dc.PushTransform(TransformMatrix.CreateScale(2, 2));
             dc.PushTransform(TransformMatrix.CreateRotation(10));
 
-            var r = new Rect(10, 10, 100, 200);
+            var r = new RectD(10, 10, 100, 200);
             dc.DrawRectangle(Pens.Blue, r);
             //dc.DrawText(
             //    "This rectangle is drawn with additional transforms pushed on stack.",

@@ -12,8 +12,6 @@ namespace InputSample
         {
             InitializeComponent();
 
-            InputManager.Current.PreProcessInput += InputManager_PreProcessInput;
-
             mouseCaptureLabel.Text = MouseUncapturedLabel;
 
             SetSizeToContent();
@@ -24,13 +22,13 @@ namespace InputSample
         const string MouseUncapturedLabel = "Press mouse button here to capture mouse.";
         const string MouseCapturedLabel = "Release mouse button anywhere to release the capture.";
 
-        protected override void OnMouseDown(MouseButtonEventArgs e)
+        protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
             UpdateMouseButtons();
         }
 
-        protected override void OnMouseUp(MouseButtonEventArgs e)
+        protected override void OnMouseUp(MouseEventArgs e)
         {
             base.OnMouseUp(e);
             UpdateMouseButtons();
@@ -53,7 +51,7 @@ namespace InputSample
             var s = $"{sLeft} {sMiddle} {sRight} {sExtended1} {sExtended2}";
 
             buttonInfo.Text = s;
-            Application.DoEvents();
+            buttonInfo.Refresh();
         }
 
         private void Current_Idle(object? sender, EventArgs e)
@@ -62,11 +60,6 @@ namespace InputSample
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                InputManager.Current.PreProcessInput -= InputManager_PreProcessInput;
-            }
-
             base.Dispose(disposing);
         }
 
@@ -75,18 +68,18 @@ namespace InputSample
             MessageBox.Show("Hello!", "Button Clicked");
         }
 
-        private void MouseCaptureBorder_MouseDown(object sender, MouseButtonEventArgs e)
+        private void MouseCaptureBorder_MouseDown(object sender, MouseEventArgs e)
         {
             mouseCaptureBorder.CaptureMouse();
             mouseCaptureLabel.Text = MouseCapturedLabel;
-            Application.DoEvents();
+            mouseCaptureLabel.Refresh();
         }
 
-        private void MouseCaptureBorder_MouseUp(object sender, MouseButtonEventArgs e)
+        private void MouseCaptureBorder_MouseUp(object sender, MouseEventArgs e)
         {
             mouseCaptureBorder.ReleaseMouseCapture();
             mouseCaptureLabel.Text = MouseUncapturedLabel;
-            Application.DoEvents();
+            mouseCaptureLabel.Refresh();
         }
 
         private void MouseCaptureBorder_MouseCaptureLost(object sender, EventArgs e)
@@ -104,18 +97,6 @@ namespace InputSample
             LogMessage(lbWindow, "MouseCaptureBorder_MouseLeave");
         }
 
-        private void InputManager_PreProcessInput(object sender, PreProcessInputEventArgs e)
-        {
-            if (cancelMouseMoveInputCheckBox.IsChecked)
-            {
-                if (e.Input is MouseEventArgs ke)
-                {
-                    if (e.Input.RoutedEvent == MouseMoveEvent)
-                        e.Cancel();
-                }
-            }
-        }
-
         private void LogMessage(ListBox lb, string m)
         {
             var messageNumber = 0;
@@ -128,7 +109,7 @@ namespace InputSample
             lb.Tag = messageNumber;
 
             lb.SelectedIndex = lb.Items.Count - 1;
-            Application.DoEvents();
+            lb.Refresh();
         }
 
         private void LogMouseMove(
@@ -141,7 +122,7 @@ namespace InputSample
 
         private void LogMouseButton(
             ListBox lb,
-            MouseButtonEventArgs e,
+            MouseEventArgs e,
             string objectName,
             string eventName,
             IInputElement element) =>
@@ -151,7 +132,7 @@ namespace InputSample
 
         private void LogMouseWheel(
             ListBox lb,
-            MouseWheelEventArgs e,
+            MouseEventArgs e,
             string objectName,
             string eventName,
             IInputElement element) =>
@@ -161,31 +142,17 @@ namespace InputSample
 
         private void HelloButton_MouseMove(object sender, MouseEventArgs e) =>
             LogMouseMove(lbButton, e, "HelloButton", "Move", (IInputElement)sender);
-        private void HelloButton_PreviewMouseMove(object sender, MouseEventArgs e) =>
-            LogMouseMove(lbButton, e, "HelloButton", "PreviewMove", (IInputElement)sender);
 
-        private void HelloButton_MouseDown(object sender, MouseButtonEventArgs e) =>
+        private void HelloButton_MouseDown(object sender, MouseEventArgs e) =>
             LogMouseButton(lbButton, e, "HelloButton", "Down", (IInputElement)sender);
-        private void HelloButton_PreviewMouseDown(object sender, MouseButtonEventArgs e) =>
-            LogMouseButton(lbButton, e, "HelloButton", "PreviewDown", (IInputElement)sender);
         
-        private void HelloButton_MouseUp(object sender, MouseButtonEventArgs e) =>
+        private void HelloButton_MouseUp(object sender, MouseEventArgs e) =>
             LogMouseButton(lbButton, e, "HelloButton", "Up", (IInputElement)sender);
-        private void HelloButton_PreviewMouseUp(object sender, MouseButtonEventArgs e) =>
-            LogMouseButton(lbButton, e, "HelloButton", "PreviewUp", (IInputElement)sender);
 
-        private void StackPanel_PreviewMouseMove(object sender, MouseEventArgs e)
-        {
-            LogMouseMove(lbStackPanel, e, "StackPanel", "PreviewMove", (IInputElement)sender);
+        static string FormatPoint(PointD pt) => FormatPoint(new PointI((int)pt.X, (int)pt.Y));
+        static string FormatPoint(PointI pt) => $"{pt.X}, {pt.Y}";
 
-            var control = (Control)sender;
-            UpdateMousePositionLabel(control, e.GetPosition(control));
-        }
-
-        static string FormatPoint(Point pt) => FormatPoint(new Int32Point((int)pt.X, (int)pt.Y));
-        static string FormatPoint(Int32Point pt) => $"{pt.X}, {pt.Y}";
-
-        private void UpdateMousePositionLabel(Control control, Point clientPosition)
+        private void UpdateMousePositionLabel(Control control, PointD clientPosition)
         {
             var screenPosition = control.ClientToScreen(clientPosition);
             var devicePosition = control.ScreenToDevice(screenPosition);
@@ -196,50 +163,34 @@ namespace InputSample
                 $"[Device: {FormatPoint(devicePosition)}]]";
 
             mousePositionLabel.Text = text;
-            Application.DoEvents();
+            mousePositionLabel.Refresh();
         }
 
         private void StackPanel_MouseMove(object sender, MouseEventArgs e) =>
             LogMouseMove(lbStackPanel, e, "StackPanel", "Move", (IInputElement)sender);
 
-        private void StackPanel_MouseDown(object sender, MouseButtonEventArgs e) =>
+        private void StackPanel_MouseDown(object sender, MouseEventArgs e) =>
             LogMouseButton(lbStackPanel, e, "StackPanel", "Down", (IInputElement)sender);
-        private void StackPanel_PreviewMouseDown(object sender, MouseButtonEventArgs e) =>
-            LogMouseButton(lbStackPanel, e, "StackPanel", "PreviewDown", (IInputElement)sender);
 
-        private void StackPanel_MouseUp(object sender, MouseButtonEventArgs e) =>
+        private void StackPanel_MouseUp(object sender, MouseEventArgs e) =>
             LogMouseButton(lbStackPanel, e, "StackPanel", "Up", (IInputElement)sender);
-        private void StackPanel_PreviewMouseUp(object sender, MouseButtonEventArgs e) =>
-            LogMouseButton(lbStackPanel, e, "StackPanel", "PreviewUp", (IInputElement)sender);
 
         private void Window_MouseMove(object sender, MouseEventArgs e) =>
             LogMouseMove(lbWindow, e, "Window", "Move", (IInputElement)sender);
-        private void Window_PreviewMouseMove(object sender, MouseEventArgs e) =>
-            LogMouseMove(lbWindow, e, "Window", "PreviewMove", (IInputElement)sender);
 
-        private void Window_MouseDown(object sender, MouseButtonEventArgs e) =>
+        private void Window_MouseDown(object sender, MouseEventArgs e) =>
             LogMouseButton(lbWindow, e, "Window", "Down", (IInputElement)sender);
-        private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e) =>
-            LogMouseButton(lbWindow, e, "Window", "PreviewDown", (IInputElement)sender);
 
-        private void Window_MouseUp(object sender, MouseButtonEventArgs e) =>
+        private void Window_MouseUp(object sender, MouseEventArgs e) =>
             LogMouseButton(lbWindow, e, "Window", "Up", (IInputElement)sender);
-        private void Window_PreviewMouseUp(object sender, MouseButtonEventArgs e) =>
-            LogMouseButton(lbWindow, e, "Window", "PreviewUp", (IInputElement)sender);
 
-        private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e) =>
+        private void Window_MouseDoubleClick(object sender, MouseEventArgs e) =>
             LogMouseButton(lbWindow, e, "Window", "DoubleClick", (IInputElement)sender);
-        private void Window_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e) =>
-            LogMouseButton(lbWindow, e, "Window", "PreviewDoubleClick", (IInputElement)sender);
 
-        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) =>
+        private void Window_MouseLeftButtonDown(object sender, MouseEventArgs e) =>
             LogMouseButton(lbWindow, e, "Window", "LeftBtnDown", (IInputElement)sender);
-        private void Window_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) =>
-            LogMouseButton(lbWindow, e, "Window", "PreviewLeftBtnDown", (IInputElement)sender);
 
-        private void Window_MouseWheel(object sender, MouseWheelEventArgs e) =>
+        private void Window_MouseWheel(object sender, MouseEventArgs e) =>
             LogMouseWheel(lbWindow, e, "Window", "Wheel", (IInputElement)sender);
-        private void Window_PreviewMouseWheel(object sender, MouseWheelEventArgs e) =>
-            LogMouseWheel(lbWindow, e, "Window", "PreviewWheel", (IInputElement)sender);
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using Alternet.UI;
 
 namespace LayoutSample
@@ -13,9 +14,9 @@ namespace LayoutSample
             SetSizeToContent();
         }
 
-        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        protected override void OnKeyDown(KeyEventArgs e)
         {
-            base.OnPreviewKeyDown(e);
+            base.OnKeyDown(e);
 
             if (e.Key == Key.N)
             {
@@ -35,15 +36,15 @@ namespace LayoutSample
 
         private void UpdateTextBox1IsFocusedValueLabel()
         {
-            textBox1IsFocusedValueLabel.Text = textBox1.IsFocused.ToString();
+            textBox1IsFocusedValueLabel.Text = textBox1.Focused.ToString();
         }
 
-        private void TextBox1_GotFocus(object sender, Alternet.UI.RoutedEventArgs e)
+        private void TextBox1_GotFocus(object sender, EventArgs e)
         {
             UpdateTextBox1IsFocusedValueLabel();
         }
 
-        private void TextBox1_LostFocus(object sender, Alternet.UI.RoutedEventArgs e)
+        private void TextBox1_LostFocus(object sender, EventArgs e)
         {
             UpdateTextBox1IsFocusedValueLabel();
         }

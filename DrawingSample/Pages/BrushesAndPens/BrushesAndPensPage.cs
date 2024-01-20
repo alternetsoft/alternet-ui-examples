@@ -22,7 +22,7 @@ namespace DrawingSample
 
         private BrushHatchStyle hatchStyle = BrushHatchStyle.DiagonalCross;
 
-        private PenDashStyle penDashStyle = PenDashStyle.Dash;
+        private DashStyle penDashStyle = DashStyle.Dash;
 
         private LineJoin lineJoin = LineJoin.Miter;
 
@@ -139,7 +139,7 @@ namespace DrawingSample
             }
         }
 
-        public PenDashStyle PenDashStyle
+        public DashStyle PenDashStyle
         {
             get => penDashStyle;
             set
@@ -175,7 +175,7 @@ namespace DrawingSample
                 new ShapeType(CreateRectangle),
                 new ShapeType(CreateEllipse));
 
-        public override void Draw(DrawingContext dc, Rect bounds)
+        public override void Draw(Graphics dc, RectD bounds)
         {
             if (Canvas == null)
                 throw new Exception();
@@ -202,9 +202,9 @@ namespace DrawingSample
             return control;
         }
 
-        private static RectangleShape CreateRectangle(Random random, Rect bounds, Brush fill, Pen stroke)
+        private static RectangleShape CreateRectangle(Random random, RectD bounds, Brush fill, Pen stroke)
         {
-            var rect = new Rect(
+            var rect = new RectD(
                 random.Next(0, (int)bounds.Width / 2),
                 random.Next(0, (int)bounds.Height / 2),
                 random.Next((int)bounds.Width / 5, (int)bounds.Width / 3),
@@ -212,9 +212,9 @@ namespace DrawingSample
             return new RectangleShape(rect, fill, stroke);
         }
 
-        private static EllipseShape CreateEllipse(Random random, Rect bounds, Brush fill, Pen stroke)
+        private static EllipseShape CreateEllipse(Random random, RectD bounds, Brush fill, Pen stroke)
         {
-            var rect = new Rect(
+            var rect = new RectD(
                 random.Next(0, (int)bounds.Width / 2),
                 random.Next(0, (int)bounds.Height / 2),
                 random.Next((int)bounds.Width / 5, (int)bounds.Width / 3),
@@ -228,7 +228,7 @@ namespace DrawingSample
             Canvas?.Invalidate();
         }
 
-        private IEnumerable<Shape> CreateShapes(Random random, Rect bounds, Brush fill, Pen stroke)
+        private IEnumerable<Shape> CreateShapes(Random random, RectD bounds, Brush fill, Pen stroke)
         {
             if (includedShapeTypes.Length == 0)
                 yield break;
@@ -271,8 +271,8 @@ namespace DrawingSample
                 
                 BrushType.LinearGradient =>
                     new LinearGradientBrush(
-                        new Point(0,0),
-                        new Point(200, 200),
+                        new PointD(0,0),
+                        new PointD(200, 200),
                         new[]
                         {
                             new GradientStop(Color.FromArgb(c.R, c.G, c.B), 0),
@@ -282,9 +282,9 @@ namespace DrawingSample
                 
                 BrushType.RadialGradient =>
                     new RadialGradientBrush(
-                        new Point(200, 200),
+                        new PointD(200, 200),
                         200,
-                        new Point(200, 200),
+                        new PointD(200, 200),
                         new[]
                         {
                             new GradientStop(Color.FromArgb(c.R, c.G, c.B), 0),
@@ -308,7 +308,7 @@ namespace DrawingSample
 
             protected Pen Stroke { get; }
 
-            public abstract void Draw(DrawingContext dc);
+            public abstract void Draw(Graphics dc);
         }
 
         public class ShapeType
@@ -318,7 +318,7 @@ namespace DrawingSample
                 ShapeFactory = shapeFactory;
             }
 
-            public delegate Shape Factory(Random random, Rect bounds, Brush fill, Pen stroke);
+            public delegate Shape Factory(Random random, RectD bounds, Brush fill, Pen stroke);
 
             public Factory ShapeFactory { get; }
         }
@@ -338,14 +338,14 @@ namespace DrawingSample
 
         private class RectangleShape : Shape
         {
-            private Rect rectangle;
+            private RectD rectangle;
 
-            public RectangleShape(Rect rectangle, Brush fill, Pen stroke) : base(fill, stroke)
+            public RectangleShape(RectD rectangle, Brush fill, Pen stroke) : base(fill, stroke)
             {
                 this.rectangle = rectangle;
             }
 
-            public override void Draw(DrawingContext dc)
+            public override void Draw(Graphics dc)
             {
                 dc.FillRectangle(Fill, rectangle);
                 dc.DrawRectangle(Stroke, rectangle);
@@ -354,14 +354,14 @@ namespace DrawingSample
 
         private class EllipseShape : Shape
         {
-            private Rect bounds;
+            private RectD bounds;
 
-            public EllipseShape(Rect bounds, Brush fill, Pen stroke) : base(fill, stroke)
+            public EllipseShape(RectD bounds, Brush fill, Pen stroke) : base(fill, stroke)
             {
                 this.bounds = bounds;
             }
 
-            public override void Draw(DrawingContext dc)
+            public override void Draw(Graphics dc)
             {
                 dc.FillEllipse(Fill, bounds);
                 dc.DrawEllipse(Stroke, bounds);

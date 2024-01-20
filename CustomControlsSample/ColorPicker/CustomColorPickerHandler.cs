@@ -8,7 +8,7 @@ namespace CustomControlsSample
     {
         private bool isPressed;
 
-        private Popup? popup;
+        private PopupGridColors? popup;
 
         protected override bool NeedsPaint => true;
 
@@ -21,28 +21,25 @@ namespace CustomControlsSample
                     return;
 
                 isPressed = value;
-                Refresh();
-
-                // Popup hangs complete Linux system
-                if (!Application.IsWindowsOS && MainWindow.DisableCustomColorPopup)
-                    return;
-
-                if (isPressed)
-                    OpenPopup();
+                Control.Refresh();
             }
         }
 
-        private Popup Popup
+        private PopupGridColors Popup
         {
             get
             {
                 if (popup == null)
                 {
-                    popup = new Popup();
-
-                    var border = new Border();
-                    border.Children.Add(GetColorButtonsGrid());
-                    popup.Children.Add(border);
+                    popup = new()
+                    {
+                        /*Owner = Control.ParentWindow,*/
+                        Name = "Popup",
+                        HideOnEnter = false,
+                        HideOnDoubleClick = false,
+                    };
+                    popup.Disposed += Popup_Disposed;
+                    popup.VisibleChanged += Popup_VisibleChanged;
                     popup.SetSizeToContent();
                 }
 
@@ -50,62 +47,16 @@ namespace CustomControlsSample
             }
         }
 
-        Color[] colors = new[]
+        private void Popup_VisibleChanged(object? sender, EventArgs e)
         {
-            Color.IndianRed,
-            Color.LightSalmon,
-            Color.Firebrick,
-            Color.DarkRed,
-
-            Color.ForestGreen,
-            Color.YellowGreen,
-            Color.PaleGreen,
-            Color.Olive,
-
-            Color.PowderBlue,
-            Color.DodgerBlue,
-            Color.DarkBlue,
-            Color.SteelBlue,
-
-            Color.Silver,
-            Color.LightSlateGray,
-            Color.DarkSlateGray,
-            Color.Black
-        };
-
-        Grid GetColorButtonsGrid()
-        {
-            int RowCount = 4;
-            int ColumnCount = 4;
-
-            var grid = new Grid();
-
-            for (int y = 0; y < ColumnCount; y++)
-                grid.ColumnDefinitions.Add(new ColumnDefinition());
-
-            for (int x = 0; x < RowCount; x++)
-                grid.RowDefinitions.Add(new RowDefinition());
-
-            int i = 0;
-            for (int x = 0; x < RowCount; x++)
-            {
-                for (int y = 0; y < ColumnCount; y++)
-                {
-                    var button = new ColorButton { Value = colors[i++] };
-                    button.Click += ColorButton_Click;
-                    grid.Children.Add(button);
-                    Grid.SetRow(button, y);
-                    Grid.SetColumn(button, x);
-                }
-            }
-
-            return grid;
+            if (Popup.Visible || Popup.PopupResult != ModalResult.Accepted)
+                return;
+            Control.Value = Popup.Value;
         }
 
-        private void ColorButton_Click(object? sender, EventArgs e)
+        private void Popup_Disposed(object? sender, EventArgs e)
         {
-            Control.Value = ((ColorPicker)sender!).Value;
-            Popup.Hide();
+            popup = null;
         }
 
         SolidBrush? colorBrush;
@@ -121,29 +72,51 @@ namespace CustomControlsSample
             }
         }
 
-        public override void OnPaint(DrawingContext dc)
+        public override void OnPaint(Graphics dc)
         {
-            var bounds = ClientRectangle;
+            var bounds = Control.ClientRectangle;
             dc.FillRectangle(GetBackgroundBrush(), bounds);
             dc.DrawRectangle(CustomControlsColors.BorderPen, bounds);
             dc.FillRectangle(ColorBrush, bounds.InflatedBy(-5, -5));
         }
 
-        public override Size GetPreferredSize(Size availableSize)
+        public override SizeD GetPreferredSize(SizeD availableSize)
         {
-            return new Size(30, 30);
+            return new SizeD(30, 30);
         }
 
         protected override void OnAttach()
         {
             base.OnAttach();
-            UserPaint = true;
+            Control.UserPaint = true;
             Control.ValueChanged += Control_ValueChanged;
             Control.MouseMove += Control_MouseMove;
             Control.MouseEnter += Control_MouseEnter;
+            Control.KeyDown += Control_KeyDown;
             Control.MouseLeave += Control_MouseLeave;
+            Control.GotFocus += Control_GotFocus;
+            Control.LostFocus += Control_LostFocus;
             Control.MouseLeftButtonDown += Control_MouseLeftButtonDown;
             Control.MouseLeftButtonUp += Control_MouseLeftButtonUp;
+        }
+
+        private void Control_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if(e.Key == Key.Enter)
+            {
+                e.Handled = true;
+                OpenPopup();
+            }
+        }
+
+        private void Control_LostFocus(object? sender, EventArgs e)
+        {
+            Control.Refresh();
+        }
+
+        private void Control_GotFocus(object? sender, EventArgs e)
+        {
+            Control.Refresh();
         }
 
         protected override void OnDetach()
@@ -154,58 +127,60 @@ namespace CustomControlsSample
             Control.MouseLeave -= Control_MouseLeave;
             Control.MouseLeftButtonDown -= Control_MouseLeftButtonDown;
             Control.MouseLeftButtonUp -= Control_MouseLeftButtonUp;
+            Control.GotFocus -= Control_GotFocus;
+            Control.LostFocus -= Control_LostFocus;
 
             base.OnDetach();
         }
 
         private void Control_MouseLeave(object? sender, EventArgs e)
         {
-            Refresh();
+            Control.Refresh();
         }
 
         private void Control_MouseEnter(object? sender, EventArgs e)
         {
-            Refresh();
+            Control.Refresh();
         }
 
-        private void Control_MouseMove(object sender, MouseEventArgs e)
+        private void Control_MouseMove(object? sender, MouseEventArgs e)
         {
-            Refresh();
+            Control.Refresh();
         }
 
-        private void Control_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Control_MouseLeftButtonDown(object? sender, MouseEventArgs e)
         {
             IsPressed = true;
         }
 
-        private void Control_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void Control_MouseLeftButtonUp(object? sender, MouseEventArgs e)
         {
             IsPressed = false;
+            OpenPopup();
         }
 
         private void Control_ValueChanged(object? sender, EventArgs e)
         {
             colorBrush = null;
-            Refresh();
+            Control.Refresh();
         }
 
         private Brush GetBackgroundBrush()
         {
             if (IsPressed)
                 return CustomControlsColors.BackgroundPressedBrush;
-            if (IsMouseOver)
+            if (Control.IsMouseOver)
                 return CustomControlsColors.BackgroundHoveredBrush;
+            if(IsFocused)
+                return CustomControlsColors.BackgroundFocusedBrush;
 
             return CustomControlsColors.BackgroundBrush;
         }
 
         private void OpenPopup()
         {
-            Control.BeginInvoke(() =>
-            {
-                Popup.Location = Control.ClientToScreen(ClientRectangle.BottomLeft);
-                Popup.Show();
-            });
+            if(Application.IsWindowsOS)
+                Popup.ShowPopup(this.Control);
         }
     }
 }

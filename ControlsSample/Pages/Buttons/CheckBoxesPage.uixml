@@ -1,0 +1,38 @@
+﻿<Control x:Class="ControlsSample.CheckBoxesPage"
+        xmlns="http://schemas.alternetsoft.com/ui/2021"
+        xmlns:x="http://schemas.alternetsoft.com/ui/2021/uixml"
+        xmlns:local="clr-namespace:ControlsSample;assembly=ControlsSample">
+  <StackPanel Orientation="Vertical" Padding="10" >
+    <GroupBox Title="CheckBox" Padding="5">
+      <StackPanel Orientation="Vertical" Margin="5">
+        <CheckBox Text="Some Text" Margin="0,0,0,5" IsChecked="true" Name="checkBox"/>
+      </StackPanel>
+    </GroupBox>
+    <GroupBox Title="Options" Margin="0,5,0,0" Padding="5">
+      <VerticalStackPanel>
+        <StackPanel Orientation="Horizontal" Margin="5">
+          <CheckBox Text="Three States" Margin="0,0,0,0" IsChecked="false" Name="threeStatesCheckBox"/>
+          <CheckBox Text="Align Right" Margin="5,0,0,0" IsChecked="false" Name="alignRightCheckBox"/>
+          <CheckBox Text="Allow All States For User" Margin="5,0,0,0" IsChecked="false"
+                    Name="allowAllStatesForUserCheckBox"/>
+        </StackPanel>
+        <HorizontalStackPanel>
+          <Button Text="IsChecked = false" Margin="5" Name="isCheckedFalseButton"/>
+          <Button Text="IsChecked = true" Margin="5" Name="isCheckedTrueButton"/>
+          <Button Text="Text = empty" Margin="5" Name="textEmptyButton"/>
+        </HorizontalStackPanel>
+        <HorizontalStackPanel>
+          <Button Text="State = Unchecked" Margin="5" Name="checkStateUncheckedButton"/>
+          <Button Text="State = Checked" Margin="5" Name="checkStateCheckedButton"/>
+          <Button Text="State = Indeterm" Margin="5" Name="checkStateIndeterminateButton"/>
+        </HorizontalStackPanel>
+      </VerticalStackPanel>
+    </GroupBox>
+    <GroupBox Title="Binding" Margin="0,5,0,0">
+      <StackPanel Orientation="Vertical" Margin="5">
+        <Label Name="boundLabel" Margin="5"></Label>
+      </StackPanel>
+    </GroupBox>
+
+  </StackPanel>
+</Control>

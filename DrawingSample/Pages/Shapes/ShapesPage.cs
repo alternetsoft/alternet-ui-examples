@@ -61,31 +61,31 @@ namespace DrawingSample
 
         public Brush BackgroundBrush { get; private set; }
 
-        public override void Draw(DrawingContext dc, Rect bounds)
+        public override void Draw(Graphics dc, RectD bounds)
         {
             var s = shapes;
 
             var actions = new[]
             {
-                new Cell(nameof(s.DrawLine), s.DrawLine),
-                new Cell(nameof(s.DrawLines), s.DrawLines),
-                new Cell(nameof(s.DrawPolygon), s.DrawPolygon),
-                new Cell(nameof(s.FillPolygon), s.FillPolygon),
-                new Cell(nameof(s.DrawRectangle), s.DrawRectangle),
-                new Cell(nameof(s.FillRectangle), s.FillRectangle),
-                new Cell(nameof(s.DrawRectangles), s.DrawRectangles),
-                new Cell(nameof(s.FillRectangles), s.FillRectangles),
-                new Cell(nameof(s.DrawRoundedRectangle), s.DrawRoundedRectangle),
-                new Cell(nameof(s.FillRoundedRectangle), s.FillRoundedRectangle),
-                new Cell(nameof(s.DrawCircle), s.DrawCircle),
-                new Cell(nameof(s.FillCircle), s.FillCircle),
-                new Cell(nameof(s.DrawEllipse), s.DrawEllipse),
-                new Cell(nameof(s.FillEllipse), s.FillEllipse),
-                new Cell(nameof(s.DrawBezier), s.DrawBezier),
-                new Cell(nameof(s.DrawBeziers), s.DrawBeziers),
-                new Cell(nameof(s.DrawArc), s.DrawArc),
-                new Cell(nameof(s.FillPie), s.FillPie),
-                new Cell(nameof(s.DrawPie), s.DrawPie),
+                new Cell("Draw Line", s.DrawLine),
+                new Cell("Draw Lines", s.DrawLines),
+                new Cell("Draw Polygon", s.DrawPolygon),
+                new Cell("Fill Polygon", s.FillPolygon),
+                new Cell("Draw Rect", s.DrawRectangle),
+                new Cell("Fill Rect", s.FillRectangle),
+                new Cell("Draw Rects", s.DrawRectangles),
+                new Cell("Fill Rects", s.FillRectangles),
+                new Cell("Draw Rounded Rect", s.DrawRoundedRectangle),
+                new Cell("Fill Rounded Rect", s.FillRoundedRectangle),
+                new Cell("Draw Circle", s.DrawCircle),
+                new Cell("Fill Circle", s.FillCircle),
+                new Cell("Draw Ellipse", s.DrawEllipse),
+                new Cell("Fill Ellipse", s.FillEllipse),
+                new Cell("Draw Bezier", s.DrawBezier),
+                new Cell("Draw Beziers", s.DrawBeziers),
+                new Cell("Draw Arc", s.DrawArc),
+                new Cell("Fill Pie", s.FillPie),
+                new Cell("Draw Pie", s.DrawPie),
             };
 
             DrawShapesGrid(dc, bounds, actions);
@@ -98,8 +98,19 @@ namespace DrawingSample
             return control;
         }
 
-        private void DrawShapesGrid(DrawingContext dc, Rect bounds, Cell[] cells)
+        private void DrawShapesGrid(Graphics dc, RectD bounds, Cell[] cells)
         {
+            using var clip = new Region(bounds);
+            dc.Clip = clip;
+
+            var textFormat = new TextFormat
+            {
+                HorizontalAlignment = TextHorizontalAlignment.Center,
+                VerticalAlignment = TextVerticalAlignment.Bottom,
+                Wrapping = TextWrapping.Word,
+                Trimming = TextTrimming.Character,
+            };
+
             const int ColumnCount = 5;
             const double CellMargin = 0;
             var cellSize =
@@ -115,14 +126,18 @@ namespace DrawingSample
             {
                 var cell = cells[i];
 
-                var cellRect = new Rect(x, y, cellSize, cellSize);
+                var cellRect = new RectD(x, y, cellSize, cellSize);
                 if (cellRect.Width <= 0 || cellRect.Height <= 0)
                     continue;
 
                 var cellNameRect = cellRect.InflatedBy(-2, -2);
                 cellNameRect.Height -= 4;
 
-                var nameTextSize = dc.MeasureText(cell.Name, Control.DefaultFont);
+                var nameTextSize = dc.MeasureText(
+                    cell.Name,
+                    Control.DefaultFont,
+                    cellNameRect.Width,
+                    textFormat);
                 bool nameVisible = nameTextSize.Width <= cellNameRect.Width;
 
                 var cellContentFrameRect = cellNameRect.InflatedBy(-5, -5);
@@ -143,10 +158,7 @@ namespace DrawingSample
                 dc.FillRectangle(BackgroundBrush, cellContentFrameRect);
                 dc.DrawRectangle(cellBorderPen, cellContentFrameRect);
 
-                using var clip = new Region(cellContentFrameRect);
-                dc.Clip = clip;
                 cell.DrawAction(dc, cellContentRect);
-                dc.Clip = null;
 
                 if (nameVisible)
                 {
@@ -155,13 +167,7 @@ namespace DrawingSample
                         Control.DefaultFont,
                         Brushes.Black,
                         cellNameRect,
-                        new TextFormat
-                        {
-                            HorizontalAlignment = TextHorizontalAlignment.Center,
-                            VerticalAlignment = TextVerticalAlignment.Bottom,
-                            Wrapping = TextWrapping.None,
-                            Trimming = TextTrimming.Pixel
-                        });
+                        textFormat);
                 }
 
                 if ((i + 1) % ColumnCount == 0)
@@ -174,11 +180,13 @@ namespace DrawingSample
                     x += cellSize + CellMargin;
                 }
             }
+            
+            dc.Clip = null;
         }
 
         private class Cell
         {
-            public Cell(string name, Action<DrawingContext, Rect> drawAction)
+            public Cell(string name, Action<Graphics, RectD> drawAction)
             {
                 Name = name;
                 DrawAction = drawAction;
@@ -186,7 +194,7 @@ namespace DrawingSample
 
             public string Name { get; }
 
-            public Action<DrawingContext, Rect> DrawAction { get; }
+            public Action<Graphics, RectD> DrawAction { get; }
         }
     }
 }

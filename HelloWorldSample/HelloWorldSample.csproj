@@ -3,7 +3,7 @@
   <Import Project="..\CommonData\TargetFrameworks.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <Platforms>AnyCPU;x64;x86</Platforms>
+    <Platforms>AnyCPU;x86;x64</Platforms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
@@ -18,6 +18,6 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.404-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.503-beta" />
   </ItemGroup>
 </Project>

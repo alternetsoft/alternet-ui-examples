@@ -50,9 +50,9 @@ namespace CustomControlsSample
 
             protected override bool NeedsPaint => true;
 
-            public override void OnPaint(DrawingContext dc)
+            public override void OnPaint(Graphics dc)
             {
-                var bounds = ClientRectangle;
+                var bounds = Control.ClientRectangle;
                 var brush = GetBackgroundBrush();
                 if(brush !=null)
                     dc.FillRectangle(brush, bounds);
@@ -64,7 +64,7 @@ namespace CustomControlsSample
                 if (mark != null)
                 {
                     var markSize = minBoundsSize * 0.7;
-                    var markBounds = Rect.FromCenter(bounds.Center, new Size(markSize, markSize));
+                    var markBounds = RectD.FromCenter(bounds.Center, new SizeD(markSize, markSize));
 
                     if (mark == PlayerMark.X)
                     {
@@ -84,7 +84,7 @@ namespace CustomControlsSample
             {
                 base.OnAttach();
 
-                UserPaint = true;
+                Control.UserPaint = true;
                 Control.MouseMove += Control_MouseMove;
                 Control.MouseEnter += Control_MouseEnter;
                 Control.MouseLeave += Control_MouseLeave;
@@ -105,25 +105,25 @@ namespace CustomControlsSample
 
             private void Control_MouseLeave(object? sender, EventArgs e)
             {
-                Refresh();
+                Control.Refresh();
             }
 
             private void Control_MouseEnter(object? sender, EventArgs e)
             {
-                Refresh();
+                Control.Refresh();
             }
 
             private void Control_MouseMove(object sender, MouseEventArgs e)
             {
-                Refresh();
+                Control.Refresh();
             }
 
-            private void Control_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+            private void Control_MouseLeftButtonDown(object sender, MouseEventArgs e)
             {
                 Control.RaiseClick(EventArgs.Empty);
             }
 
-            private void Control_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+            private void Control_MouseLeftButtonUp(object sender, MouseEventArgs e)
             {
             }
 
@@ -132,10 +132,10 @@ namespace CustomControlsSample
                 if (Control.IsWinningCell)
                     return winningCellBrush;
 
-                if (IsMouseOver)
+                if (Control.IsMouseOver)
                     return CustomControlsColors.BackgroundHoveredBrush;
 
-                return null;// CustomControlsColors.BackgroundBrush;
+                return null;
             }
         }
     }

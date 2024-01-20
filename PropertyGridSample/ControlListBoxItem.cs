@@ -24,6 +24,10 @@ namespace PropertyGridSample
 
         public Type InstanceType => type;
 
+        public bool HasTicks { get; set; }
+
+        public bool HasMargins { get; set; }
+
         public object? EventInstance
         {
             get
@@ -67,7 +71,7 @@ namespace PropertyGridSample
         public static object CreateInstance(Type type)
         {
             var instance = Activator.CreateInstance(type);
-            if (!ObjectInitializers.Actions.TryGetValue(
+            if (!ObjectInit.Actions.TryGetValue(
                 type,
                 out Action<Object>? action))
                 return instance!;

@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace PaintSample
 {
-    public partial class ColorSelector : Control, ISelectedColors
+    public partial class ColorSelector : VerticalStackPanel, ISelectedColors
     {
-        private static readonly Color[] SwatchColors = new[]
-        {
+        private static readonly Color[] SwatchColors =
+        [
             Color.Black,
             Color.Blue,
             Color.Green,
@@ -18,13 +18,15 @@ namespace PaintSample
             Color.DarkGray,
             Color.LightGray,
             Color.White,
-        };
+        ];
 
-        private List<ColorSwatch> swatches = new List<ColorSwatch>();
-        private SelectedColorDisplay selectedColorDisplay = new ();
+        private readonly List<ColorSwatch> swatches = [];
+        private readonly SelectedColorDisplay selectedColorDisplay = new();
 
         public ColorSelector()
         {
+            Padding = 5;
+
             InitializeComponent();
 
             selectedColorDisplay.Margin = new Thickness(0,0,5,0);
@@ -33,7 +35,15 @@ namespace PaintSample
             container.Children.Add(selectedColorDisplay);
 
             CreateSwatches();
-            
+
+            LogListBox listBox = new()
+            {
+                HasBorder = false,
+                SuggestedSize = (200, 150),
+                Parent = bottomPanel,
+            };
+            listBox.BindApplicationLog();
+
             if (selectedColorDisplay != null)
                 selectedColorDisplay.SelectedColor = Color.Blue;
         }
@@ -45,23 +55,28 @@ namespace PaintSample
             if (container == null)
                 return;
 
+            var sizePixels = Alternet.UI.Toolbar.GetDefaultImageSize(this).Width;
+            var sizeDips = PixelToDip(sizePixels);
+
+            var biggerSize = sizeDips * 2;
+
             foreach (var color in SwatchColors)
             {
                 var swatch = new ColorSwatch(color)
                 {
                     VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(0, 0, 5, 0),
-                    ToolTip = color.Name
+                    Margin = (0, 5, 5, 5),
+                    SuggestedSize = biggerSize,
                 };
 
-                swatch.Click += Swatch_Click;
+                swatch.MouseLeftButtonDown += Swatch_MouseLeftButtonDown;
 
                 swatches.Add(swatch);
                 container.Children.Add(swatch);
             }
         }
 
-        private void Swatch_Click(object? sender, System.EventArgs e)
+        private void Swatch_MouseLeftButtonDown(object sender, MouseEventArgs e)
         {
             selectedColorDisplay.SelectedColor = ((ColorSwatch)sender!).SwatchColor;
         }

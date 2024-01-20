@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.IO;
 using Alternet.Drawing;
 using Alternet.UI;
 
@@ -15,24 +14,31 @@ namespace AuiManagerSample
         private const string ResPrefixPencil = $"{ResPrefix}Pencil16.png";
         private const string ResPrefixGraph = $"{ResPrefix}LineGraph16.png";
 
-        private readonly ImageSet ImageCalendar = ImageSet.FromUrl(ResPrefixCalendar);
-        private readonly ImageSet ImagePhoto = ImageSet.FromUrl(ResPrefixPhoto);
-        private readonly ImageSet ImagePencil = ImageSet.FromUrl(ResPrefixPencil);
-        private readonly ImageSet ImageGraph = ImageSet.FromUrl(ResPrefixGraph);
+        private static readonly Image ImageCalendar = Image.FromUrl(ResPrefixCalendar);
+        private static readonly Image ImagePhoto = Image.FromUrl(ResPrefixPhoto);
+        private static readonly Image ImagePencil = Image.FromUrl(ResPrefixPencil);
+        private static readonly Image ImageGraph = Image.FromUrl(ResPrefixGraph);
+
+        private static readonly Image ImageDisabledCalendar = ImageCalendar.ToGrayScale();
+        private static readonly Image ImageDisabledPhoto = ImagePhoto.ToGrayScale();
+        private static readonly Image ImageDisabledPencil = ImagePencil.ToGrayScale();
+        private static readonly Image ImageDisabledGraph = ImageGraph.ToGrayScale();
+
         private readonly AuiManager manager = new();
         private readonly LayoutPanel panel = new();
-        private readonly ListBox listBox3;
+        private readonly LogListBox logListBox;
         private readonly AuiToolbar toolbar4 = new();
         private readonly AuiNotebook notebook5;
         private readonly ListBox listBox5;
         private readonly ListBox listBox6;
         private readonly ContextMenu contextMenu = new();
-        private readonly ContextMenu contextMenu2 = new();
 
         private readonly int calendarToolId;
         private readonly int photoToolId;
         private readonly int pencilToolId;
         private readonly int graphToolId;
+
+        /*private readonly PopupListBox popupListBox = new();*/
 
         static MainWindow()
         {
@@ -43,18 +49,29 @@ namespace AuiManagerSample
                 AuiNotebookCreateStyle.ScrollButtons |
                 AuiNotebookCreateStyle.WindowListButton |
                 AuiNotebookCreateStyle.CloseOnAllTabs;
-            AuiToolbar.DefaultCreateStyle = 
+            AuiToolbar.DefaultCreateStyle =
                 //AuiToolbarCreateStyle.PlainBackground |
                 AuiToolbarCreateStyle.DefaultStyle;
         }
 
-        private ListBox CreateListBox(string paneName, Control? parent = null)
+        private ListBox CreateListBox(Control? parent = null)
         {
             ListBox listBox = new()
             {
                 HasBorder = false
             };
-            listBox.Add(paneName);
+            parent ??= panel;
+            parent.Children.Add(listBox);
+            listBox.SetBounds(0, 0, 200, 100, BoundsSpecified.Size);
+            return listBox;
+        }
+
+        private LogListBox CreateLogListBox(Control? parent = null)
+        {
+            LogListBox listBox = new()
+            {
+                HasBorder = false
+            };
             parent ??= panel;
             parent.Children.Add(listBox);
             listBox.SetBounds(0, 0, 200, 100, BoundsSpecified.Size);
@@ -63,9 +80,8 @@ namespace AuiManagerSample
 
         public MainWindow()
         {
-            Icon = ImageSet.FromUrlOrNull("embres:AuiManagerSample.Sample.ico");
+            Icon = new("embres:AuiManagerSample.Sample.ico");
             InitContextMenu();
-            InitLogContextMenu();
 
             InitializeComponent();
 
@@ -73,33 +89,35 @@ namespace AuiManagerSample
 
             manager.SetFlags(AuiManagerOption.Default | AuiManagerOption.AllowActivePane);
             manager.SetManagedWindow(panel);
+            manager.SetDefaultSplitterSashProps();
 
             // Left Pane
             var pane1 = manager.CreatePaneInfo();
             pane1.Name("pane1").Caption("Pane 1").Left().PaneBorder(false)
                 .TopDockable(false).BottomDockable(false);
-            var listBox1 = CreateListBox("Pane 1");
-            listBox1.Add("TopDockable(false)");
-            listBox1.Add("BottomDockable(false)");
+            var listBox1 = CreateListBox();
+            listBox1.Add("TopDock = false");
+            listBox1.Add("BottomDock = false");
             manager.AddPane(listBox1, pane1);
 
             // Right Pane
             var pane2 = manager.CreatePaneInfo();
             pane2.Name("pane2").Caption("Pane 2").Right().PaneBorder(false)
-                .TopDockable(false).BottomDockable(false).Image(ImageCalendar);
-            var listBox2 = CreateListBox("Pane 2");
-            listBox2.Add("TopDockable(false)");
-            listBox2.Add("BottomDockable(false)");
+                .TopDockable(false).BottomDockable(false).Image((ImageSet)ImageCalendar);
+            var listBox2 = CreateListBox();
+            listBox2.Add("TopDock = false");
+            listBox2.Add("BottomDock = false");
             manager.AddPane(listBox2, pane2);
 
             // Bottom Pane    
             var pane3 = manager.CreatePaneInfo();
             pane3.Name("pane3").Caption("Pane 3").Bottom().PaneBorder(false)
                 .LeftDockable(false).RightDockable(false);
-            listBox3 = CreateListBox("Pane 3");
-            listBox3.Add("LeftDockable(false)");
-            listBox3.Add("RightDockable(false)");
-            manager.AddPane(listBox3, pane3);
+            logListBox = CreateLogListBox();
+            logListBox.ContextMenu.Required();
+            logListBox.BindApplicationLog();
+            LogUtils.DebugLogVersion();
+            manager.AddPane(logListBox, pane3);
 
             // Toolbar pane
             var pane4 = manager.CreatePaneInfo();
@@ -107,17 +125,25 @@ namespace AuiManagerSample
 
             calendarToolId = toolbar4.AddTool(
                 "Calendar",
-                ImageCalendar,
-                "Calendar Hint");
+                (ImageSet)ImageCalendar,
+                "Calendar Hint",
+                null,
+                (ImageSet)ImageDisabledCalendar);
+            toolbar4.SetToolName(calendarToolId, "Calendar");
 
-            toolbar4.AddSeparator();
+            int separatorToolId = toolbar4.AddSeparator();
+            toolbar4.SetToolName(separatorToolId, "Separator");
 
             pencilToolId = toolbar4.AddTool(
                 "Pencil",
-                ImagePencil,
-                "Pencil Hint");
+                (ImageSet)ImagePencil,
+                "Pencil Hint",
+                null,
+                (ImageSet)ImageDisabledPencil);
+            toolbar4.SetToolName(pencilToolId, "Pencil");
 
-            toolbar4.AddLabel("Text1");
+            int labelToolId = toolbar4.AddLabel("Text1");
+            toolbar4.SetToolName(labelToolId, "Text1");
 
             var control4 = new ComboBox
             {
@@ -133,17 +159,23 @@ namespace AuiManagerSample
             };
 
             var comboBoxId = toolbar4.AddControl(control4);
+            toolbar4.SetToolName(comboBoxId, "ComboBox");
 
             photoToolId = toolbar4.AddTool(
                 "Photo",
-                ImagePhoto,
-                "Photo Hint");
+                (ImageSet)ImagePhoto,
+                "Photo Hint",
+                null,
+                (ImageSet)ImageDisabledPhoto);
+            toolbar4.SetToolName(photoToolId, "Photo");
 
             var textBoxId = toolbar4.AddControl(textBox4);
+            toolbar4.SetToolName(textBoxId, "TextBox");
 
-            var minHeight1 = toolbar4.GetToolMinHeight(comboBoxId);
-            var minHeight2 = toolbar4.GetToolMinHeight(textBoxId);
-            var minHeight = Math.Max(minHeight1, minHeight2);
+            var heights = toolbar4.GetToolMinHeights(comboBoxId, textBoxId);
+            Application.Log($"Editors MinHeights: {StringUtils.ToString<int>(heights)}");
+
+            var minHeight = toolbar4.GetToolMaxOfMinHeights(comboBoxId, textBoxId);
 
             // We need to specify min width. On MacOs without this call control's width
             // will be too small. Width and height here is not DIP, it's pixel.
@@ -153,13 +185,17 @@ namespace AuiManagerSample
             toolbar4.GrowToolMinSize(comboBoxId, 100, minHeight);
             toolbar4.GrowToolMinSize(textBoxId, 100, minHeight);
 
-            toolbar4.AddStretchSpacer();
+            int stretchSpacerId = toolbar4.AddStretchSpacer();
+            toolbar4.SetToolName(stretchSpacerId, "StretchSpacer");
 
             graphToolId = toolbar4.AddTool(
                 "Graph",
-                ImageGraph,
-                "Graph Hint");
+                (ImageSet)ImageGraph,
+                "Graph Hint",
+                null,
+                (ImageSet)ImageDisabledGraph);
             toolbar4.SetToolDropDown(graphToolId, true);
+            toolbar4.SetToolName(graphToolId, "Graph");
 
             toolbar4.Realize();
 
@@ -173,15 +209,18 @@ namespace AuiManagerSample
             var pane5 = manager.CreatePaneInfo();
             pane5.Name("pane5").CenterPane().PaneBorder(false);
             notebook5 = new AuiNotebook();
-            listBox5 = CreateListBox("ListBox 5");
-            listBox6 = CreateListBox("ListBox 6");
+            listBox5 = CreateListBox();
+            listBox6 = CreateListBox();
 
-            notebook5.AddPage(listBox5, "ListBox 5", false, ImagePencil);
-            notebook5.AddPage(listBox6, "ListBox 6", true, ImagePhoto);
+            notebook5.AddPage(listBox5, "ListBox 5", false, (ImageSet)ImagePencil);
+            listBox5.Add("This page can be closed");
+            notebook5.AddPage(listBox6, "ListBox 6", true, (ImageSet)ImagePhoto);
             listBox6.Add("This page can not be closed");
 
             panel.Children.Add(notebook5);
             manager.AddPane(notebook5, pane5);
+
+            // Other initializations.
 
             manager.ArtProvider.SetMetric(
                 AuiDockArtSetting.GradientType,
@@ -214,12 +253,16 @@ namespace AuiManagerSample
             notebook5.TabMiddleMouseUp += NotebookTabMiddleMouseUp;
             notebook5.TabRightMouseDown += NotebookTabRightMouseDown;
             notebook5.TabRightMouseUp += NotebookTabRightMouseUp;
-            notebook5.BgDclickMouse += NotebookBgDclickMouse;
+            notebook5.BgDoubleClick += NotebookBgDclickMouse;
 
-            toolbar4.SetToolDropDownOnEvent(photoToolId, AuiToolbarItemDropDownOnEvent.Click);
-            toolbar4.SetToolDropDownOnEvent(graphToolId, AuiToolbarItemDropDownOnEvent.ClickArrow);
-            toolbar4.SetToolDropDownMenu(photoToolId, contextMenu);
-            toolbar4.SetToolDropDownMenu(graphToolId, contextMenu);
+            if (!Application.IsMacOS)
+            {
+                // Under MacOs we have exceptions when drop down menus are shown.
+                toolbar4.SetToolDropDownOnEvent(photoToolId, AuiToolbarItemDropDownOnEvent.Click);
+                toolbar4.SetToolDropDownOnEvent(graphToolId, AuiToolbarItemDropDownOnEvent.ClickArrow);
+                toolbar4.SetToolDropDownMenu(photoToolId, contextMenu);
+                toolbar4.SetToolDropDownMenu(graphToolId, contextMenu);
+            }
 
             toolbar4.ToolCommand += Toolbar4_ToolCommand;
             toolbar4.ToolDropDown += ToolDropDown_Click;
@@ -228,24 +271,65 @@ namespace AuiManagerSample
             toolbar4.OverflowClick += Toolbar4_OverflowClick;
             toolbar4.ToolRightClick += Toolbar4_ToolRightClick;
 
-            listBox3.MouseRightButtonUp += Log_MouseRightButtonUp;
+            /*popupListBox.VisibleChanged += PopupListBox_VisibleChanged;*/
 
-            Log("Net Version = " + Environment.Version.ToString());
+            disableImagesMenuItem.Click += DisableImagesMenuItem_Click;
         }
 
-        private void Log_MouseRightButtonUp(object? sender, MouseButtonEventArgs e)
+        private void DisableImagesMenuItem_Click(object? sender, EventArgs e)
         {
-            contextMenu2.Show(listBox3, e.GetPosition(listBox3));
+            var newEnabled = !toolbar4.GetToolEnabled(calendarToolId);
+            toolbar4.EnableTool(calendarToolId, newEnabled);
+            toolbar4.EnableTool(photoToolId, newEnabled);
+            toolbar4.EnableTool(pencilToolId, newEnabled);
+            toolbar4.EnableTool(graphToolId, newEnabled);
+        }
+
+        internal void AddDefaultItems(ListControl control)
+        {
+            control.Add("One");
+            control.Add("Two");
+            control.Add("Three");
+            control.Add("Four");
+            control.Add("Five");
+            control.Add("Six");
+            control.Add("Seven");
+            control.Add("Eight");
+            control.Add("Nine");
+            control.Add("Ten");
+        }
+
+        private void ShowPopupListBoxButton_Click(object? sender, EventArgs e)
+        {
+            /*if (popupListBox.MainControl.Items.Count == 0)
+            {
+                popupListBox.MainControl.SuggestedSize = new(150, 300);
+                AddDefaultItems(popupListBox.MainControl);
+                popupListBox.MainControl.SelectFirstItem();
+            }
+
+            RectD toolRect = toolbar4.GetToolRect(toolbar4.EventToolId);
+            var pos = toolbar4.ClientToScreen(toolRect.Location);
+            var sz = (0, toolRect.Height);
+            popupListBox.ShowPopup(pos, sz);*/
+        }
+
+        private void PopupListBox_VisibleChanged(object? sender, EventArgs e)
+        {
+            /*if (popupListBox.Visible)
+                return;
+            var resultItem = popupListBox.ResultItem ?? "<null>";
+            Application.Log($"PopupResult: {popupListBox.PopupResult}, Item: {resultItem}");*/
         }
 
         private void Toolbar4_ToolCommand(object? sender, EventArgs e)
         {
-            Log("ToolCommand");
+            Log($"Toolbar: ToolCommand {toolbar4.EventToolNameOrId}");
         }
 
         private void Toolbar4_ToolRightClick(object? sender, EventArgs e)
         {
-            Log($"Toolbar: ToolRightClick {toolbar4.EventToolId}");
+            Log($"Toolbar: ToolRightClick {toolbar4.EventToolNameOrId}");
         }
 
         private void Toolbar4_OverflowClick(object? sender, EventArgs e)
@@ -255,7 +339,7 @@ namespace AuiManagerSample
 
         private void Toolbar4_ToolMiddleClick(object? sender, EventArgs e)
         {
-            Log($"Toolbar: ToolMiddleClick {toolbar4.EventToolId}");
+            Log($"Toolbar: ToolMiddleClick {toolbar4.EventToolNameOrId}");
         }
 
         private void Toolbar4_BeginDrag(object? sender, EventArgs e)
@@ -265,28 +349,29 @@ namespace AuiManagerSample
 
         private void Log(string s)
         {
-            listBox3.Add(s);
-            listBox3.SelectLastItem();
+            Application.Log(s);
         }
 
         private void CalendarButton_Click(object? sender, EventArgs e)
         {
-            Log("Calendar clicked");
+            Log("Tool Calendar clicked");
         }
 
         private void PhotoButton_Click(object? sender, EventArgs e)
         {
-            Log("Photo clicked");
+            Log("Tool Photo clicked");
         }
 
         private void PencilButton_Click(object? sender, EventArgs e)
         {
-            Log("Pencil clicked");
+            Log("Tool Pencil clicked");
+            ShowPopupListBoxButton_Click(sender, e);
         }
 
         private void ToolDropDown_Click(object? sender, EventArgs e)
         {
-            Log("ToolDropDown");
+            var isDropDownClicked = toolbar4.EventIsDropDownClicked;
+            Log($"Toolbar: ToolDropDown {toolbar4.EventToolNameOrId}, DropDownPart = {isDropDownClicked}");
         }
 
         private void NotebookPageClose(object? sender, CancelEventArgs e)
@@ -359,7 +444,7 @@ namespace AuiManagerSample
 
         private void NotebookBgDclickMouse(object? sender, EventArgs e)
         {
-            LogNotebook("BgDclickMouse");
+            LogNotebook("BgDoubleClick");
         }
 
         private void LogNotebook(string s)
@@ -394,15 +479,5 @@ namespace AuiManagerSample
             contextMenu.Items.Add(menuItem2);
         }
 
-        private void InitLogContextMenu()
-        {
-            MenuItem menuItem1 = new()
-            {
-                Text = "Clear",
-            };
-            menuItem1.Click += (sender, e) => { listBox3.Items.Clear(); };
-
-            contextMenu2.Items.Add(menuItem1);
-        }
     }
 }

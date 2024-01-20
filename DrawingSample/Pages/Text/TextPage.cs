@@ -1,8 +1,8 @@
-﻿using Alternet.Drawing;
-using Alternet.UI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Alternet.Drawing;
+using Alternet.UI;
 
 namespace DrawingSample
 {
@@ -12,15 +12,13 @@ namespace DrawingSample
             "Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit." +
             " Suspendisse tincidunt orci vitae arcu congue commodo. Proin fermentum rhoncus dictum.";
 
-        private static readonly Font fontInfoFont = new(FontFamily.GenericMonospace, 8);
         private static readonly Brush fontInfoBrush = Brushes.Black;
-        private static readonly Pen textWidthLimitPen = new(Color.Gray, 1, PenDashStyle.Dash);
+        private static readonly Pen textWidthLimitPen = new(Color.Gray, 1, DashStyle.Dash);
         private Paragraph[]? paragraphs;
-        private double fontSize = 10;
         private FontStyle fontStyle;
         private string customFontFamilyName = Control.DefaultFont.FontFamily.Name;
 
-        private int textWidthLimit = 500;
+        private int textWidthLimit = 450;
         private int textHeightValue = 40;
 
         private bool textWidthLimitEnabled = true;
@@ -33,6 +31,16 @@ namespace DrawingSample
         private TextTrimming trimming = TextTrimming.Pixel;
 
         private TextWrapping wrapping = TextWrapping.Character;
+
+        private static readonly Font fontInfoFont;
+        private static double fontSize;
+
+        static TextPage()
+        {
+            var defaultSize = Control.DefaultFont.SizeInPoints;
+            fontInfoFont = new(FontFamily.GenericMonospace, defaultSize);
+            fontSize = defaultSize;
+        }
 
         public override string Name => "Text";
 
@@ -60,14 +68,14 @@ namespace DrawingSample
 
         public bool Underlined
         {
-            get => GetFontStyle(FontStyle.Underlined);
-            set => SetFontStyle(FontStyle.Underlined, value);
+            get => GetFontStyle(FontStyle.Underline);
+            set => SetFontStyle(FontStyle.Underline, value);
         }
 
         public bool Strikethrough
         {
-            get => GetFontStyle(FontStyle.Strikethrough);
-            set => SetFontStyle(FontStyle.Strikethrough, value);
+            get => GetFontStyle(FontStyle.Strikeout);
+            set => SetFontStyle(FontStyle.Strikeout, value);
         }
 
         public string CustomFontFamilyName
@@ -177,7 +185,7 @@ namespace DrawingSample
             }
         }
 
-        public override void Draw(DrawingContext dc, Rect bounds)
+        public override void Draw(Graphics dc, RectD bounds)
         {
             paragraphs ??= CreateParagraphs().ToArray();
 
@@ -190,7 +198,7 @@ namespace DrawingSample
             double y = 20;
             foreach (var paragraph in paragraphs)
             {
-                dc.DrawText(paragraph.FontInfo, fontInfoFont, fontInfoBrush, new Point(x, y));
+                dc.DrawText(paragraph.FontInfo, fontInfoFont, fontInfoBrush, new PointD(x, y));
                 y += dc.MeasureText(paragraph.FontInfo, fontInfoFont).Height + 3;
 
                 double textHeight;
@@ -208,11 +216,11 @@ namespace DrawingSample
                 }
 
                 if (TextWidthLimitEnabled)
-                    dc.DrawText(LoremIpsum, paragraph.Font, new SolidBrush(color), new Rect(x, y, TextWidthLimit, textHeight), textFormat);
+                    dc.DrawText(LoremIpsum, paragraph.Font, new SolidBrush(color), new RectD(x, y, TextWidthLimit, textHeight), textFormat);
                 else if (TextHeightSet)
-                    dc.DrawText(LoremIpsum, paragraph.Font, new SolidBrush(color), new Rect(x, y, TextWidthLimitEnabled ? TextWidthLimit : double.MaxValue, textHeight), textFormat);
+                    dc.DrawText(LoremIpsum, paragraph.Font, new SolidBrush(color), new RectD(x, y, TextWidthLimitEnabled ? TextWidthLimit : double.MaxValue, textHeight), textFormat);
                 else
-                    dc.DrawText(LoremIpsum, paragraph.Font, new SolidBrush(color), new Point(x, y), textFormat);
+                    dc.DrawText(LoremIpsum, paragraph.Font, new SolidBrush(color), new PointD(x, y), textFormat);
 
                 y += textHeight + 20;
 
@@ -221,7 +229,7 @@ namespace DrawingSample
             }
 
             if (TextWidthLimitEnabled)
-                dc.DrawLine(textWidthLimitPen, new Point(TextWidthLimit + x, bounds.Top), new Point(TextWidthLimit + x, bounds.Bottom));
+                dc.DrawLine(textWidthLimitPen, new PointD(TextWidthLimit + x, bounds.Top), new PointD(TextWidthLimit + x, bounds.Bottom));
         }
 
         protected override Control CreateSettingsControl()

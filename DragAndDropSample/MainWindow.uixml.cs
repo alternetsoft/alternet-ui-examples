@@ -11,24 +11,23 @@ namespace DragAndDropSample
     public partial class MainWindow : Window
     {
         private static readonly string[] SupportedFormats =
-            new[] { DataFormats.Text, DataFormats.Files, DataFormats.Bitmap };
+            [DataFormats.Text, DataFormats.Files, DataFormats.Bitmap];
 
-        private Image testBitmap;
+        private readonly Bitmap testBitmap;
 
         public MainWindow()
         {
-            Icon = ImageSet.FromUrlOrNull("embres:DragAndDropSample.Sample.ico");
+            Icon = new("embres:DragAndDropSample.Sample.ico");
 
             InitializeComponent();
 
-            testBitmap = new Bitmap(new Size(64, 64));
+            var sizePixels = PixelFromDip(new SizeD(64, 64));
+            testBitmap = new Bitmap(sizePixels);
 
             SetSizeToContent();
-        }
 
-        private void CopyButton_Click(object sender, System.EventArgs e)
-        {
-            Clipboard.SetDataObject(GetDataObject());
+            eventsListBox.BindApplicationLog();
+            eventsListBox.ContextMenu.Required();
         }
 
         private DragDropEffects GetDropEffect(DragDropEffects defaultEffect)
@@ -40,18 +39,18 @@ namespace DragAndDropSample
             if (allowedEffects.Count == 1)
                 return allowedEffects.Single();
 
-            if ((Keyboard.Modifiers & ModifierKeys.Alt) != 0
+            if ((Keyboard.Modifiers & Alternet.UI.ModifierKeys.Alt) != 0
                 && allowedEffects.Contains(DragDropEffects.Link))
                 return DragDropEffects.Link;
 
-            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0
+            if ((Keyboard.Modifiers & Alternet.UI.ModifierKeys.Control) != 0
                 && allowedEffects.Contains(DragDropEffects.Copy))
                 return DragDropEffects.Copy;
 
             if (allowedEffects.Contains(defaultEffect))
                 return defaultEffect;
 
-            return allowedEffects.First();
+            return allowedEffects[0];
         }
 
         private IReadOnlyList<DragDropEffects> GetAllowedEffects()
@@ -113,23 +112,37 @@ namespace DragAndDropSample
                 LogEvent(message);
         }
 
+        private void PasteButton_Click(object sender, System.EventArgs e)
+        {
+            var value = Clipboard.GetDataObject();
+            if (IsDataObjectSupported(value))
+                LogEvent($"Pasted Data: {GetStringFromDropResultObject((object?)value)}");
+            else
+                LogEvent("Clipboard doesn't contain data in a supported format.");
+        }
+
+        private void CopyButton_Click(object sender, System.EventArgs e)
+        {
+            var dataObject = GetDataObject();
+            Clipboard.SetDataObject(dataObject);
+        }
+
         private IDataObject GetDataObject()
         {
             var result = new DataObject();
 
             if (textFormatCheckBox!.IsChecked)
-                result.SetData(DataFormats.Text, "Test data string.");
+                result.SetText("Test data string.");
 
             if (filesFormatCheckBox!.IsChecked)
-                result.SetData(DataFormats.Files,
-                    new string[]
-                    {
+                result.SetFiles(
+                    [
                         (Assembly.GetEntryAssembly() ?? throw new Exception()).Location,
                         typeof(Application).Assembly.Location
-                    });
+                    ]);
 
             if (bitmapFormatCheckBox!.IsChecked)
-                result.SetData(DataFormats.Bitmap, testBitmap);
+                result.SetBitmap(testBitmap);
 
             return result;
         }
@@ -151,18 +164,9 @@ namespace DragAndDropSample
             };
         }
 
-        private void PasteButton_Click(object sender, System.EventArgs e)
-        {
-            var value = Clipboard.GetDataObject();
-            if (IsDataObjectSupported(value))
-                LogEvent($"Pasted Data: {GetStringFromDropResultObject((object?)value)}");
-            else
-                LogEvent("Clipboard doesn't contain data in a supported format.");
-        }
-
         bool isDragging = false;
 
-        private void DragSource_MouseDown(object sender, Alternet.UI.MouseButtonEventArgs e)
+        private void DragSource_MouseDown(object sender, Alternet.UI.MouseEventArgs e)
         {
             isDragging = true;
         }
@@ -180,7 +184,7 @@ namespace DragAndDropSample
             }
         }
 
-        private void DragSource_MouseUp(object sender, Alternet.UI.MouseButtonEventArgs e)
+        private void DragSource_MouseUp(object sender, Alternet.UI.MouseEventArgs e)
         {
             isDragging = false;
         }

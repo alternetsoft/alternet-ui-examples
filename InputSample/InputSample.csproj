@@ -22,6 +22,6 @@
     <None Remove="MouseInputWindow.uixml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.404-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.503-beta" />
   </ItemGroup>
 </Project>

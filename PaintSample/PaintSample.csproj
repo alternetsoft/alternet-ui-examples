@@ -8,6 +8,7 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ApplicationIcon>../CommonData/Sample.ico</ApplicationIcon>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="build\**" />
@@ -26,9 +27,24 @@
     <None Remove="Resources\ToolIcons\Eraser.png" />
     <None Remove="Resources\ToolIcons\FloodFill.png" />
     <None Remove="Resources\ToolIcons\Pen.png" />
+    <None Remove="SampleImages\love-text-free-png-image.jpeg" />
+    <None Remove="SampleImages\love-text-free-png-image.png" />
+    <None Remove="SampleImages\love-text-free-png-image_64x64.ico" />
+    <None Remove="SampleImages\penguin-love-couple.svg" />
     <None Remove="Toolbar\Toolbar.uixml" />
     <None Remove="Tools\AirbrushToolOptionsControl.uixml" />
     <None Remove="Tools\PenLikeToolOptionsControl.uixml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SampleImages\love-text-free-png-image.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleImages\love-text-free-png-image_64x64.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleImages\penguin-love-couple.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\CommandIcons\Redo.png" />
@@ -39,6 +55,6 @@
     <EmbeddedResource Include="Resources\ToolIcons\Pen.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.404-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.503-beta" />
   </ItemGroup>
 </Project>

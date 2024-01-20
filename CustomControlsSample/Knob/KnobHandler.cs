@@ -8,23 +8,15 @@ namespace CustomControlsSample
 {
     public class KnobHandler : SliderHandler
     {
-        private Brush gaugeBackgroundBrush = new SolidBrush(Color.Parse("#484854"));
-
-        private Pen gaugeBorderPen = new Pen(Color.Parse("#9EAABA"), 2);
-
-        private Pen knobBorderPen = new Pen(Color.Black, 2);
-
-        private Pen largeTickPen = new Pen(Color.Black, 2);
-
-        private Pen smallTickPen = new Pen(Color.Parse("#FFFFFF"), 2);
-
-        private Pen knobPointerPen1 = new Pen(Color.Parse("#FC4154"), 3);
-
-        private Pen knobPointerPen2 = new Pen(Color.Parse("#FF827D"), 1);
-
+        private readonly SolidBrush gaugeBackgroundBrush = new((Color)"#484854");
+        private readonly Pen gaugeBorderPen = new((Color)"#9EAABA", 2);
+        private readonly Pen knobBorderPen = new(Color.Black, 2);
+        private readonly Pen largeTickPen = new(Color.Black, 2);
+        private readonly Pen smallTickPen = new((Color)"#FFFFFF", 2);
+        private readonly Pen knobPointerPen1 = new((Color)"#FC4154", 3);
+        private readonly Pen knobPointerPen2 = new((Color)"#FF827D", 1);
         private bool dragging = false;
-
-        private Point dragStartPosition;
+        private PointD dragStartPosition;
 
         public override SliderOrientation Orientation { get; set; }
 
@@ -32,9 +24,9 @@ namespace CustomControlsSample
 
         protected override bool NeedsPaint => true;
 
-        public override void OnPaint(DrawingContext dc)
+        public override void OnPaint(Graphics dc)
         {
-            var bounds = ClientRectangle;
+            var bounds = Control.ClientRectangle;
 
             var gaugeBounds = bounds.InflatedBy(-2, -2);
             var scaleBounds = gaugeBounds.InflatedBy(-4, -4);
@@ -42,18 +34,17 @@ namespace CustomControlsSample
             dc.FillRectangle(gaugeBackgroundBrush, gaugeBounds);
 
 
-            using var scaleGradientBrush = new LinearGradientBrush(new Point(0, 0), new Point(0, scaleBounds.Height),
+            using var scaleGradientBrush = new LinearGradientBrush(new PointD(0, 0), new PointD(0, scaleBounds.Height),
                 new[]
                 {
-                        new GradientStop(Color.Parse("#1B222C"), 0),
-                        new GradientStop(Color.Parse("#80767E"), 0.5),
-                        new GradientStop(Color.Parse("#0C1013"), 1),
+                        new GradientStop((Color)"#1B222C", 0),
+                        new GradientStop((Color)"#80767E", 0.5),
+                        new GradientStop((Color)"#0C1013", 1),
                 });
 
             dc.FillRectangle(scaleGradientBrush, scaleBounds);
 
             dc.DrawRectangle(gaugeBorderPen, gaugeBounds);
-
 
             var center = GetControlCenter();
             double controlRadius = GetControlRadius();
@@ -62,12 +53,12 @@ namespace CustomControlsSample
             var knobPadding = largeTickLength * 0.5;
             var knobRadius = controlRadius - largeTickLength - knobPadding;
 
-            using var knobGradientBrush = new LinearGradientBrush(new Point(0, 0), new Point(knobRadius * 2, knobRadius * 2),
+            using var knobGradientBrush = new LinearGradientBrush(new PointD(0, 0), new PointD(knobRadius * 2, knobRadius * 2),
                 new[]
                 {
-                    new GradientStop(Color.Parse("#A9A9A9"), 0),
-                    new GradientStop(Color.Parse("#676767"), 0.5),
-                    new GradientStop(Color.Parse("#353535"), 1),
+                    new GradientStop((Color)"#A9A9A9", 0),
+                    new GradientStop((Color)"#676767", 0.5),
+                    new GradientStop((Color)"#353535", 1),
                 });
 
             dc.FillCircle(knobGradientBrush, center, knobRadius);
@@ -89,10 +80,10 @@ namespace CustomControlsSample
 
             const double DegreesToRadians = Math.PI / 180;
 
-            Point GetScalePoint(double angle, double radius)
+            PointD GetScalePoint(double angle, double radius)
             {
                 var radians = angle * DegreesToRadians;
-                return center + new Size(radius * Math.Cos(radians), radius * Math.Sin(radians));
+                return center + new SizeD(radius * Math.Cos(radians), radius * Math.Sin(radians));
             }
 
             var pointerEndPoint1 = GetScalePoint(pointerAngle, knobRadius * 0.95);
@@ -113,15 +104,15 @@ namespace CustomControlsSample
             DrawTicks(largeTickPen, scaleRange / largeTicksCount, largeTickLength);
         }
 
-        public override Size GetPreferredSize(Size availableSize)
+        public override SizeD GetPreferredSize(SizeD availableSize)
         {
-            return new Size(100, 100);
+            return new SizeD(100, 100);
         }
 
         protected override void OnAttach()
         {
             base.OnAttach();
-            UserPaint = true;
+            Control.UserPaint = true;
             Control.ValueChanged += Control_ValueChanged;
             Control.MouseMove += Control_MouseMove;
             Control.MouseEnter += Control_MouseEnter;
@@ -146,24 +137,24 @@ namespace CustomControlsSample
 
         private double GetControlRadius()
         {
-            var bounds = ClientRectangle;
+            var bounds = Control.ClientRectangle;
             var gaugePadding = 10;
             return Math.Min(bounds.Width, bounds.Height) / 2 - gaugePadding;
         }
 
-        private Point GetControlCenter()
+        private PointD GetControlCenter()
         {
-            return ClientRectangle.Center;
+            return Control.ClientRectangle.Center;
         }
 
         private void Control_MouseLeave(object sender, EventArgs e)
         {
-            Refresh();
+            Control.Refresh();
         }
 
         private void Control_MouseEnter(object sender, EventArgs e)
         {
-            Refresh();
+            Control.Refresh();
         }
 
         private void Control_MouseMove(object sender, MouseEventArgs e)
@@ -187,7 +178,7 @@ namespace CustomControlsSample
             }
         }
 
-        private void Control_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Control_MouseLeftButtonDown(object sender, MouseEventArgs e)
         {
             CaptureMouse();
 
@@ -201,14 +192,14 @@ namespace CustomControlsSample
             }
         }
 
-        private void Control_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void Control_MouseLeftButtonUp(object sender, MouseEventArgs e)
         {
             ReleaseMouseCapture();
 
             dragging = false;
         }
 
-        private void Control_MouseWheel(object sender, MouseWheelEventArgs e)
+        private void Control_MouseWheel(object sender, MouseEventArgs e)
         {
             int pos;
             int m;
@@ -237,7 +228,7 @@ namespace CustomControlsSample
 
         private void Control_ValueChanged(object sender, EventArgs e)
         {
-            Refresh();
+            Control.Refresh();
         }
     }
 }

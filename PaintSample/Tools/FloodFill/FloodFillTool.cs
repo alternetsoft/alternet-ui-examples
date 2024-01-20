@@ -11,14 +11,14 @@ namespace PaintSample
         {
         }
 
-        protected override void OnMouseDown(MouseButtonEventArgs e)
+        protected override void OnMouseDown(MouseEventArgs e)
         {
             if (e.ChangedButton != MouseButton.Left)
                 return;
 
             var point = e.GetPosition(Canvas);
 
-            if (!new Rect(new Point(), Document.Bitmap.Size).Contains(point))
+            if (!new RectD(new PointD(), Document.Bitmap.SizeDip(Canvas)).Contains(point))
                 return;
 
             UndoService.Do(() => Document.Modify(dc => dc.FloodFill(new SolidBrush(SelectedColors.Stroke), point)));

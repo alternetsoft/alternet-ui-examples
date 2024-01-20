@@ -8,16 +8,20 @@ namespace CustomControlsSample
 {
     internal partial class MainWindow : Window
     {
+        private readonly Data data = new();
         private readonly CustomColorPicker colorPicker;
         private readonly TicTacToeControl ticTacToe;
         private readonly KnobControl knobControl;
         private readonly GaugeControl gaugeControl;
+        private readonly ListBox logListBox;
 
         public MainWindow()
         {
-            Icon = ImageSet.FromUrlOrNull("embres:CustomControlsSample.Sample.ico");
+            Name = "MainWindow";
 
-            DataContext = new Data();
+            Icon = new("embres:CustomControlsSample.Sample.ico");
+
+            DataContext = data;
 
             InitializeComponent();
 
@@ -48,6 +52,14 @@ namespace CustomControlsSample
                 Margin = new Thickness(5,0,0,0),
             };
 
+            logListBox = new()
+            {
+                Margin = 5,
+                SuggestedWidth = 150,
+                SuggestedHeight = 100,
+                Visible = false,
+            };
+
             Binding myBinding = new ("IntValue") 
             { 
                 Mode = BindingMode.TwoWay,
@@ -61,17 +73,34 @@ namespace CustomControlsSample
                 knobControl,
                 KnobControl.ValueProperty,
                 myBinding);
+            data.PropertyChanged += Data_PropertyChanged;
 
             SuspendLayout();
             colorPickerStackPanel.Children.Add(colorPicker);
             ticTacToeStackPanel.Children.Add(ticTacToe);
             slidersStackPanel.Children.Add(knobControl);
             slidersStackPanel.Children.Add(gaugeControl);
+
+            logListBox.Parent = ticTacToeStackPanel;
+
             ResumeLayout(true);
             this.SetSizeToContent();
+
+            Application.Current.LogMessage += Current_LogMessage;            
         }
 
-        public static bool DisableCustomColorPopup { get; set; } = true;
+        private void Data_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            intValueLabel.Text = data.IntValue.ToString();
+        }
+
+        private void Current_LogMessage(object? sender, LogMessageEventArgs e)
+        {
+            logListBox.Add(e.Message!);
+            logListBox.SelectLastItem();
+        }
+
+        public static bool DisableCustomColorPopup { get; set; } = false;
 
         class Data : INotifyPropertyChanged
         {

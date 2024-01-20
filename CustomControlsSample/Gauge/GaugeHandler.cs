@@ -8,15 +8,15 @@ namespace CustomControlsSample.Gauge
 {
     public class GaugeHandler : ProgressBarHandler
     {
-        private Brush gaugeBackgroundBrush = new SolidBrush(Color.Parse("#484854"));
+        private readonly SolidBrush gaugeBackgroundBrush = new((Color)"#484854");
 
-        private Pen gaugeBorderPen = new Pen(Color.Parse("#9EAABA"), 2);
+        private readonly Pen gaugeBorderPen = new((Color)"#9EAABA", 2);
 
-        private Font font = Alternet.UI.Control.DefaultFont;
+        private readonly Font font = Font.Default;
 
-        private Pen pointerPen1 = new Pen(Color.Parse("#FC4154"), 3);
+        private readonly Pen pointerPen1 = new((Color)"#FC4154", 3);
 
-        private Pen pointerPen2 = new Pen(Color.Parse("#FF827D"), 1);
+        private readonly Pen pointerPen2 = new((Color)"#FF827D", 1);
 
         public override bool IsIndeterminate { get; set; }
 
@@ -24,14 +24,14 @@ namespace CustomControlsSample.Gauge
 
         protected override bool NeedsPaint => true;
 
-        public override Size GetPreferredSize(Size availableSize)
+        public override SizeD GetPreferredSize(SizeD availableSize)
         {
-            return new Size(200, 100);
+            return new SizeD(200, 100);
         }
 
-        public override void OnPaint(DrawingContext dc)
+        public override void OnPaint(Graphics dc)
         {
-            var bounds = ClientRectangle;
+            var bounds = Control.ClientRectangle;
 
             var gaugeBounds = bounds.InflatedBy(-2, -2);
             var scaleBounds = gaugeBounds.InflatedBy(-4, -4);
@@ -39,12 +39,13 @@ namespace CustomControlsSample.Gauge
             dc.FillRectangle(gaugeBackgroundBrush, gaugeBounds);
 
 
-            using var scaleGradientBrush = new LinearGradientBrush(new Point(0, 0), new Point(0, scaleBounds.Height),
+            using var scaleGradientBrush =
+                new LinearGradientBrush(new PointD(0, 0), new PointD(0, scaleBounds.Height),
                 new[]
                 {
-                        new GradientStop(Color.Parse("#1B222C"), 0),
-                        new GradientStop(Color.Parse("#80767E"), 0.5),
-                        new GradientStop(Color.Parse("#0C1013"), 1),
+                        new GradientStop((Color)"#1B222C", 0),
+                        new GradientStop((Color)"#80767E", 0.5),
+                        new GradientStop((Color)"#0C1013", 1),
                 });
 
             dc.FillRectangle(scaleGradientBrush, scaleBounds);
@@ -74,10 +75,10 @@ namespace CustomControlsSample.Gauge
                     if (value > Control.Maximum)
                         break;
 
-                    var startPoint = new Point(ticksStartX, y + shift);
-                    dc.DrawLine(Pens.White, startPoint, new Point(scaleBounds.Right, y + shift));
+                    var startPoint = new PointD(ticksStartX, y + shift);
+                    dc.DrawLine(Pens.White, startPoint, new PointD(scaleBounds.Right, y + shift));
 
-                    dc.DrawText(value.ToString(), font, Brushes.White, startPoint - new Size(fontMaxSize.Width * 0.6, fontMaxSize.Height / 2));
+                    dc.DrawText(value.ToString(), font, Brushes.White, startPoint - new SizeD(fontMaxSize.Width * 0.6, fontMaxSize.Height / 2));
 
                     y += yStep;
                 }
@@ -86,8 +87,8 @@ namespace CustomControlsSample.Gauge
             DrawTicks(scaleBounds.Left + scaleBounds.Width * 0.45, 0);
             DrawTicks(scaleBounds.Left + scaleBounds.Width * 0.7, 0.5);
 
-            var pointerLineStartPoint = new Point(scaleBounds.Left, bounds.Center.Y);
-            var pointerLineEndPoint = new Point(scaleBounds.Right, bounds.Center.Y);
+            var pointerLineStartPoint = new PointD(scaleBounds.Left, bounds.Center.Y);
+            var pointerLineEndPoint = new PointD(scaleBounds.Right, bounds.Center.Y);
             dc.DrawLine(pointerPen1, pointerLineStartPoint, pointerLineEndPoint);
             dc.DrawLine(pointerPen2, pointerLineStartPoint, pointerLineEndPoint);
         }
@@ -95,7 +96,7 @@ namespace CustomControlsSample.Gauge
         protected override void OnAttach()
         {
             base.OnAttach();
-            UserPaint = true;
+            Control.UserPaint = true;
             Control.ValueChanged += Control_ValueChanged;
         }
 
@@ -108,7 +109,7 @@ namespace CustomControlsSample.Gauge
 
         private void Control_ValueChanged(object sender, EventArgs e)
         {
-            Refresh();
+            Control.Refresh();
         }
     }
 }

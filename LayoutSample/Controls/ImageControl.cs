@@ -26,20 +26,20 @@ namespace LayoutSample
             }
         }
 
-        public override Size GetPreferredSize(Size availableSize)
+        public override SizeD GetPreferredSize(SizeD availableSize)
         {
             var image = Image;
             if (image == null)
-                return new Size();
+                return new SizeD();
 
-            var size = image.Size;
+            var size = image.SizeDip(this);
             var zoom = Zoom;
-            return new Size(size.Width * zoom, size.Height * zoom);
+            return new SizeD(size.Width * zoom, size.Height * zoom);
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            var bounds = Handler.ClientRectangle;
+            var bounds = ClientRectangle;
             e.DrawingContext.FillRectangle(Brushes.White, bounds);
 
             var image = Image;

@@ -14,29 +14,40 @@ namespace PropertyGridSample
 {
     public partial class MainWindow : Window
     {
-        internal readonly PanelAuiManager panel = new();
+        private static readonly Thickness controlPadding = new (15, 15, 15, 15);
 
-        private readonly StackPanel controlPanel = new()
+        internal readonly SplittedPanelEx panel = new();
+
+        private readonly Control controlPanel = new()
         {
-            Padding = new(15, 15, 15, 15),
+        };
+
+        private readonly Panel parentParent = new()
+        {
+            Padding = (5, 15, 5, 15),
+        };
+
+        private readonly Border controlPanelBorder = new()
+        {
+            BorderColor = Color.Red,
             HorizontalAlignment = HorizontalAlignment.Left,
             VerticalAlignment = VerticalAlignment.Top,
+            Padding = 0,
         };
+
+        private readonly ContextMenuStrip propGridContextMenu = new();
+        private readonly MenuItem resetMenu;
 
         private bool updatePropertyGrid = false;
 
         static MainWindow()
         {
-#if DEBUG
-            Application.LogFileIsEnabled = false;
-#endif
             InitSampleLocalization();
 
             AuiNotebook.DefaultCreateStyle = AuiNotebookCreateStyle.Top;
 
             // Registers known collection property editors.
             PropertyGrid.RegisterCollectionEditors();
-
         }
 
         private static void InitSampleLocalization()
@@ -45,7 +56,7 @@ namespace PropertyGridSample
             KnownColorStrings.Default.Custom = "Custom...";
 
             // Sample localization of color name
-            KnownColorStrings.Default.Azure = "azure color";
+            KnownColorStrings.Default.Azure = "Azure color";
 
             // Sample localization of Enum property values
             var brushTypeChoices = PropertyGrid.GetChoices<BrushType>();
@@ -70,41 +81,37 @@ namespace PropertyGridSample
             items.Add("Height");
             items.Add("Left");
             items.Add("Top");
-            items.Add("SuggestedWidth");
-            items.Add("SuggestedHeight");
+            /*items.Add("SuggestedWidth");
+            items.Add("SuggestedHeight");*/
         }
 
         public PropertyGrid PropGrid => panel.PropGrid;
 
         public MainWindow()
         {
-/*
-            controlPanel.RowDefinitions.Add(
-                new RowDefinition { Height = new GridLength(15, GridUnitType.Pixel) });
-            controlPanel.RowDefinitions.Add(
-                new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
-            controlPanel.RowDefinitions.Add(
-                new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            Activated += MainWindow_Activated;
+            Deactivated += MainWindow_Deactivated;
 
-            controlPanel.ColumnDefinitions.Add(
-                new ColumnDefinition { Width = new GridLength(15, GridUnitType.Pixel) });
-            controlPanel.ColumnDefinitions.Add(
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
-            controlPanel.ColumnDefinitions.Add(
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-*/
+            resetMenu = propGridContextMenu.Add(CommonStrings.Default.ButtonReset);
+            resetMenu.Click += ResetMenu_Click;
+
+            propGridContextMenu.Opening += PropGridContextMenu_Opening;
+
+            controlPanelBorder.Normal.Paint += BorderSettings.DrawDesignCorners;
+            controlPanelBorder.Normal.DrawDefaultBorder = false;
+
             panel.BindApplicationLog();
 
             PropGrid.ApplyFlags |= PropertyGridApplyFlags.PropInfoSetValue
                 | PropertyGridApplyFlags.ReloadAfterSetValue;
+            PropGrid.PropertyRightClick += PropGrid_PropertyRightClick;
             PropGrid.Features = PropertyGridFeature.QuestionCharInNullable;
             PropertyGridSettings.Default = new(this);
             PropGrid.ProcessException += PropertyGrid_ProcessException;
             InitIgnorePropNames(PropGrid.IgnorePropNames);
             PropGrid.CreateStyleEx = PropertyGridCreateStyleEx.AlwaysAllowFocus;
-            panel.EventGrid.Required();
 
-            Icon = ImageSet.FromUrlOrNull("embres:PropertyGridSample.Sample.ico");
+            Icon = new("embres:PropertyGridSample.Sample.ico");
 
             InitializeComponent();
 
@@ -113,15 +120,15 @@ namespace PropertyGridSample
             panel.LeftTreeView.SelectionChanged += ControlsListBox_SelectionChanged;
             panel.LogControl.Required();
             panel.PropGrid.Required();
-            panel.EventGrid.Required();
+            panel.ActionsControl.Required();
 
-            panel.CenterNotebook.AddPage(controlPanel, "Preview", true);
+            controlPanel.Parent = controlPanelBorder;
 
-            panel.CenterNotebook.SizeChanged += CenterNotebook_SizeChanged;
-            panel.CenterNotebook.LayoutUpdated += CenterNotebook_LayoutUpdated;
-            panel.LeftTreeView.SizeChanged += LeftTreeView_SizeChanged;
+            var parentParentColor = SystemColors.Window;
 
-            panel.Manager.Update();
+            controlPanelBorder.Parent = parentParent;
+
+            parentParent.Parent = panel.FillPanel;
 
             InitToolBox();
 
@@ -144,16 +151,9 @@ namespace PropertyGridSample
             PropGrid.AddActionTrigger(
                 PropertyGridKeyboardAction.ActionNextProperty,
                 Key.DownArrow,
-                ModifierKeys.Control);
+                Alternet.UI.ModifierKeys.Control);
 
-            static void SetPropertyGridDefaults(PropertyGrid pg)
-            {
-                pg.CenterSplitter();
-                pg.SetVerticalSpacing();
-            }
-
-            SetPropertyGridDefaults(panel.PropGrid);
-            SetPropertyGridDefaults(panel.EventGrid);
+            panel.PropGrid.SuggestedInitDefaults();
 
             panel.LeftTreeView.SelectedItem = panel.LeftTreeView.FirstItem;
 
@@ -161,43 +161,142 @@ namespace PropertyGridSample
             RunTests();
 
             ComponentDesigner.InitDefault();
-            ComponentDesigner.Default!.PropertyChanged += Default_PropertyChanged;
+            ComponentDesigner.SafeDefault.PropertyChanged += Designer_PropertyChanged;
+            ComponentDesigner.SafeDefault.MouseLeftButtonDown += Designer_MouseLeftButtonDown;
 
-            controlPanel.MouseDown += ControlPanel_MouseDown;
+            panel.FillPanel.MouseDown += ControlPanel_MouseDown;
             controlPanel.DragStart += ControlPanel_DragStart;
 
             panel.WriteWelcomeLogMessages();
-
-            panel.RightNotebook.PageChanged += RightNotebook_PageChanged;
         }
+
+        private void MainWindow_Deactivated(object? sender, EventArgs e)
+        {
+            Application.LogIf("Window Deactivated", false);
+        }
+
+        private void MainWindow_Activated(object? sender, EventArgs e)
+        {
+            Application.LogIf("Window Activated", false);
+        }
+
+        private void PropGrid_PropertyRightClick(object? sender, EventArgs e)
+        {
+            var selectedProp = PropGrid.GetSelection();
+            if (selectedProp == null)
+                return;
+            PropGrid.ShowPopupMenu(propGridContextMenu);
+        }
+
+        private bool CanResetProp(IPropertyGridItem? item)
+        {
+            if (item is null || item.PropInfo is null || item.Instance is null)
+                return false;
+            var nullable = AssemblyUtils.GetNullable(item.PropInfo);
+            var value = item.PropInfo.GetValue(item.Instance);
+            var resetMethod = AssemblyUtils.GetResetPropMethod(item.Instance, item.PropInfo.Name);
+            var hasDevaultAttr = AssemblyUtils.GetDefaultValue(item.PropInfo, out _);
+            return hasDevaultAttr || resetMethod != null || (nullable && value is not null);
+        }
+
+        private void ResetProp(IPropertyGridItem? item)
+        {
+            if (item is null || item.PropInfo is null || item.Instance is null)
+                return;
+
+            var resetMethod = AssemblyUtils.GetResetPropMethod(item.Instance, item.PropInfo.Name);
+            if (resetMethod is not null)
+            {
+                resetMethod.Invoke(item.Instance, []);
+                PropGrid.ReloadPropertyValue(item);
+                return;
+            }
+            var hasDevaultAttr = AssemblyUtils.GetDefaultValue(item.PropInfo, out var defValue);
+            if (hasDevaultAttr)
+            {
+                item.PropInfo.SetValue(item.Instance, defValue);
+                PropGrid.ReloadPropertyValue(item);
+                return;
+            }
+
+            var nullable = AssemblyUtils.GetNullable(item.PropInfo);
+            var value = item.PropInfo.GetValue(item.Instance);
+            if (nullable && value is not null)
+            {
+                item.PropInfo.SetValue(item.Instance, null);
+                PropGrid.ReloadPropertyValue(item);
+                return;
+            }
+        }
+
+        private void ResetMenu_Click(object? sender, EventArgs e)
+        {
+            var selectedProp = PropGrid.GetSelection();
+            Application.Log($"Reset: {selectedProp?.DefaultName}");
+            ResetProp(selectedProp);
+        }
+
+        private void PropGridContextMenu_Opening(object? sender, CancelEventArgs e)
+        {
+            var mousePos = Mouse.GetPosition(PropGrid);
+            var column = PropGrid.GetHitTestColumn(mousePos);
+            if (column != 0)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            var selectedProp = PropGrid.GetSelection();
+
+            resetMenu.Enabled = CanResetProp(selectedProp);
+        }
+
+        private static void Designer_MouseLeftButtonDown(object? sender, MouseEventArgs e)
+        {
+            /*if(sender is Control control)
+            {
+                var name = control.Name ?? control.GetType().Name;
+                Application.LogNameValue("MouseLeftButtonDown", name);
+            }*/
+
+            /*
+            if (sender is not GroupBox groupBox)
+                return;
+            Application.LogNameValue("groupBox.GetTopBorderForSizer", groupBox.GetTopBorderForSizer());
+            Application.LogNameValue("groupBox.GetOtherBorderForSizer", groupBox.GetOtherBorderForSizer());
+            Application.LogNameValue("groupBox.IntrinsicPreferredSizePadding", groupBox.IntrinsicPreferredSizePadding);
+            Application.LogNameValue("groupBox.Padding", groupBox.Padding);
+            Application.LogNameValue("groupBox.IntrinsicLayoutPadding", groupBox.IntrinsicLayoutPadding);
+            */
+        }
+
+        internal bool LogSize { get; set; } = false;
 
         private void LeftTreeView_SizeChanged(object? sender, EventArgs e)
         {
-            Application.Log("LeftTreeView_SizeChanged");
+            if(LogSize)
+                Application.Log("LeftTreeView_SizeChanged");
         }
 
         private void CenterNotebook_LayoutUpdated(object? sender, EventArgs e)
         {
-            Application.Log("CenterNotebook_LayoutUpdated");
+            if (LogSize)
+                Application.Log("CenterNotebook_LayoutUpdated");
         }
 
         private void CenterNotebook_SizeChanged(object? sender, EventArgs e)
         {
-            Application.Log("CenterNotebook_SizeChanged");
+            if (LogSize)
+                Application.Log("CenterNotebook_SizeChanged");
         }
 
-        private void RightNotebook_PageChanged(object? sender, EventArgs e)
-        {
-            updatePropertyGrid = true;
-        }
-
-        private void Default_PropertyChanged(object? sender, PropertyChangeEventArgs e)
+        private void Designer_PropertyChanged(object? sender, ObjectPropertyChangedEventArgs e)
         {
             var item = panel.LeftTreeView.SelectedItem as ControlListBoxItem;
             var type = item?.InstanceType;
-            if (type == typeof(WelcomeControl))
+            if (type == typeof(WelcomePage))
                 return;
-            if(item?.Instance == e.Instance)
+            if(item?.Instance == e.Instance || e.Instance is null)
                 updatePropertyGrid = true;
         }
 
@@ -219,95 +318,74 @@ namespace PropertyGridSample
                 if (PropGrid.FirstItemInstance == instance)
                     return;
                 PropGrid.SetProps(instance, true);
-                UpdateEventsPropertyGrid(instance);
                 return;
             }
 
             void DoAction()
             {
                 controlPanel.GetVisibleChildOrNull()?.Hide();
-                var item = panel.LeftTreeView.SelectedItem as ControlListBoxItem;
-                var type = item?.InstanceType;
-
-                if (item?.Instance is Control control)
+                if (panel.LeftTreeView.SelectedItem is not ControlListBoxItem item)
                 {
-                    if(control.Name == null)
-                    {
-                        var s = control.GetType().ToString();
-                        var splitted = s.Split('.');
-                        control.Name = splitted[splitted.Length - 1] + LogUtils.GenNewId().ToString();
-                    }
-
-                    /*if (control.SuggestedHeight < 100)
-                        control.SuggestedHeight = 100;
-                    if (control.SuggestedWidth < 100)
-                        control.SuggestedWidth = 100;*/
-
-                    if(control.Parent == null)
-                    {
-                        control.VerticalAlignment = VerticalAlignment.Top;
-                        control.MinWidth = 100;
-                        control.Parent = controlPanel;
-                    }
-
-                    control.Visible = true;
-			        control.PerformLayout();
-                    Application.Current.ProcessPendingEvents();
+                    PropGrid.Clear();
+                    return;
                 }
 
-                if (type == typeof(WelcomeControl))
+                var type = item.InstanceType;
+
+                if (item.Instance is Control control)
                 {
-                    InitDefaultPropertyGrid();
-                    UpdateEventsPropertyGrid(null);
+                    parentParent.DoInsideLayout(() =>
+                    {
+                        controlPanelBorder.HasBorder = item.HasTicks &&
+                            !control.FlagsAndAttributes.HasFlag("NoDesignBorder");
+
+                        if (control.Name == null)
+                        {
+                            var s = control.GetType().ToString();
+                            var splitted = s.Split('.');
+                            control.Name = splitted[splitted.Length - 1] + LogUtils.GenNewId().ToString();
+                        }
+
+                        if (control.Parent == null)
+                        {
+                            control.VerticalAlignment = VerticalAlignment.Top;
+                            control.Parent = controlPanel;
+                        }
+
+                        control.Visible = true;
+                    });
                 }
                 else
                 {
-                    var selection = panel.RightNotebook.GetSelection();
-                    if (selection == panel.PropGridPage?.Index)
-                    {
-                        PropGrid.SetProps(item?.PropInstance, true);
-                        panel.EventGrid.Clear();
-                    }
-                    else
-                    if (selection == panel.EventGridPage?.Index)
-                    {
-                        PropGrid.Clear();
-                        UpdateEventsPropertyGrid(item?.EventInstance);
-                    }
-                    else
-                    {
-                        PropGrid.Clear();
-                        panel.EventGrid.Clear();
-                    }
+                    controlPanelBorder.HasBorder = false;
+                }
+
+                if (type == typeof(WelcomePage))
+                {
+                    Application.AddIdleTask(InitDefaultPropertyGrid);
+                    SetBackground(SystemColors.Window);
+                    panel.RemoveActions();
+                }
+                else
+                {
+                    Application.AddIdleTask(() => {
+                        PropGrid.SetProps(item.PropInstance, true);
+                        PropGrid.Refresh();
+                    });
+                    
+                    SetBackground(SystemColors.Control);
+                    panel.RemoveActions();
+                    panel.AddActions(type);
                 }
             }
 
-            void UpdateEventsPropertyGrid(object? instance)
-            {
-                panel.EventGrid.DoInsideUpdate(() =>
-                {
-                    panel.EventGrid.Clear();
-                    if (instance == null)
-                        return;
-                    var events = AssemblyUtils.EnumEvents(instance.GetType(), true);
+            DoAction();
 
-                    foreach(var item in events)
-                    {
-                        var prop = panel.EventGrid.CreateBoolItem(item.Name, null, false);
-                        panel.EventGrid.SetPropertyReadOnly(prop, true);
-                        panel.EventGrid.Add(prop);
-                    }
-                });
-            }
-
-            controlPanel.SuspendLayout();
-            try
+            void SetBackground(Color color)
             {
-                DoAction();
-            }
-            finally
-            {
-                controlPanel.ResumeLayout();
+                parentParent.BackgroundColor = color;
+                controlPanelBorder.BackgroundColor = color;
+                controlPanel.BackgroundColor = color;
             }
         }
 

@@ -6,22 +6,11 @@ namespace DrawingSample
 {
     internal partial class MainWindow : Window
     {
-        private DrawingPage[] drawingPages = new DrawingPage[]
-        {
-            new ShapesPage(),
-            new TextPage(),
-            new BrushesAndPensPage(),
-            new GraphicsPathPage(),
-            new TransformsPage(),
-            new ClippingPage(),
-            new ImagesPage(),
-        };
-
         private TabPage? selectedPage;
 
         public MainWindow()
         {
-            Icon = ImageSet.FromUrlOrNull("embres:DrawingSample.Sample.ico");
+            Icon = new("embres:DrawingSample.Sample.ico");
 
             InitializeComponent();
             InitializePages();
@@ -29,6 +18,17 @@ namespace DrawingSample
 
         private void InitializePages()
         {
+            DrawingPage[] drawingPages =
+            [
+                new ShapesPage(),
+                new TextPage(),
+                new BrushesAndPensPage(),
+                new GraphicsPathPage(),
+                new TransformsPage(),
+                new ClippingPage(),
+                new ImagesPage(this),
+            ];
+
             foreach (var page in drawingPages)
                 tabControl.Pages.Add(CreateTabPage(page));
 
@@ -51,7 +51,7 @@ namespace DrawingSample
             return tabPage;
         }
 
-        private void TabControl_SelectedPageChanged(object? sender, SelectedTabPageChangedEventArgs e)
+        private void TabControl_SelectedPageChanged(object? sender, EventArgs e)
         {
             if (selectedPage != null)
                 ((DrawingPage)selectedPage.Tag!).OnDeactivated();

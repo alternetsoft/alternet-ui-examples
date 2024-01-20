@@ -30,7 +30,7 @@ namespace CustomControlsSample
                         return;
 
                     isPressed = value;
-                    Refresh();
+                    Control.Refresh();
                 }
             }
 
@@ -47,23 +47,23 @@ namespace CustomControlsSample
                 }
             }
 
-            public override void OnPaint(DrawingContext dc)
+            public override void OnPaint(Graphics dc)
             {
-                var bounds = ClientRectangle;
+                var bounds = Control.ClientRectangle;
                 dc.FillRectangle(GetBackgroundBrush(), bounds);
                 dc.FillRectangle(ColorBrush, bounds.InflatedBy(-2, -2));
             }
 
-            public override Size GetPreferredSize(Size availableSize)
+            public override SizeD GetPreferredSize(SizeD availableSize)
             {
-                return new Size(30, 30);
+                return new SizeD(30, 30);
             }
 
             protected override void OnAttach()
             {
                 base.OnAttach();
 
-                UserPaint = true;
+                Control.UserPaint = true;
                 Control.ValueChanged += Control_ValueChanged;
                 Control.MouseMove += Control_MouseMove;
                 Control.MouseEnter += Control_MouseEnter;
@@ -86,26 +86,26 @@ namespace CustomControlsSample
 
             private void Control_MouseLeave(object? sender, EventArgs e)
             {
-                Refresh();
+                Control.Refresh();
             }
 
             private void Control_MouseEnter(object? sender, EventArgs e)
             {
-                Refresh();
+                Control.Refresh();
             }
 
             private void Control_MouseMove(object sender, MouseEventArgs e)
             {
-                Refresh();
+                Control.Refresh();
             }
 
-            private void Control_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+            private void Control_MouseLeftButtonDown(object sender, MouseEventArgs e)
             {
                 IsPressed = true;
                 Control.RaiseClick(EventArgs.Empty);
             }
 
-            private void Control_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+            private void Control_MouseLeftButtonUp(object sender, MouseEventArgs e)
             {
                 IsPressed = false;
             }
@@ -113,14 +113,14 @@ namespace CustomControlsSample
             private void Control_ValueChanged(object? sender, EventArgs e)
             {
                 colorBrush = null;
-                Refresh();
+                Control.Refresh();
             }
 
             private Brush GetBackgroundBrush()
             {
                 if (IsPressed)
                     return CustomControlsColors.BackgroundPressedBrush;
-                if (IsMouseOver)
+                if (Control.IsMouseOver)
                     return CustomControlsColors.BackgroundHoveredBrush;
 
                 return CustomControlsColors.BackgroundBrush;

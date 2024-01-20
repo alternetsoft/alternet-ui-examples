@@ -7,14 +7,11 @@ namespace DrawingSample
 {
     internal sealed class ClippingPage : DrawingPage
     {
+        private readonly Timer timer;
+        private readonly List<ClipAreaPart> clipAreaParts = [];
+
         private double x;
-
-        private Timer timer;
-
         private bool mouseDown;
-
-        private List<ClipAreaPart> clipAreaParts = new List<ClipAreaPart>();
-
         private ClipOperation selectedClipOperation = ClipOperation.Union;
 
         public ClippingPage()
@@ -49,11 +46,11 @@ namespace DrawingSample
             timer.Stop();
         }
 
-        public override void Draw(DrawingContext dc, Rect bounds)
+        public override void Draw(Graphics dc, RectD bounds)
         {
-            Point[] GetPolygonPoints()
+            PointD[] GetPolygonPoints()
             {
-                var lines = new List<Point>();
+                var lines = new List<PointD>();
                 var r = Math.Min(bounds.Width, bounds.Height) * 0.3;
                 var c = bounds.Center;
                 for (double a = 0; a <= 360; a += 10)
@@ -61,7 +58,9 @@ namespace DrawingSample
                     lines.Add(MathUtils.GetPointOnCircle(c, r, a));
                 }
 
+#pragma warning disable
                 return lines.ToArray();
+#pragma warning restore
             }
 
             using var region = new Region(GetPolygonPoints());
@@ -125,19 +124,19 @@ namespace DrawingSample
             return control;
         }
 
-        private static void DrawScene(DrawingContext dc, Rect bounds)
+        private static void DrawScene(Graphics dc, RectD bounds)
         {
             var random = new Random(0);
 
             for (int i = 0; i < 1000; i++)
                 dc.FillRectangle(
                     Brushes.White,
-                    new Rect(random.Next(-(int)bounds.Width, (int)bounds.Width), random.Next(-(int)bounds.Height, (int)bounds.Height), 5, 5));
+                    new RectD(random.Next(-(int)bounds.Width, (int)bounds.Width), random.Next(-(int)bounds.Height, (int)bounds.Height), 5, 5));
 
             for (int i = 0; i < 100; i++)
                 dc.DrawImage(
                     Resources.LogoImage,
-                    new Point(random.Next(-(int)bounds.Width, (int)bounds.Width), random.Next(-(int)bounds.Height, (int)bounds.Height)));
+                    new PointD(random.Next(-(int)bounds.Width, (int)bounds.Width), random.Next(-(int)bounds.Height, (int)bounds.Height)));
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
@@ -146,19 +145,22 @@ namespace DrawingSample
                 AddClipAreaPart(e.GetPosition(Canvas));
         }
 
-        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Canvas_MouseLeftButtonDown(object sender, MouseEventArgs e)
         {
             AddClipAreaPart(e.GetPosition(Canvas));
             Canvas!.CaptureMouse();
             mouseDown = true;
         }
 
-        private void AddClipAreaPart(Point position)
+        private void AddClipAreaPart(PointD position)
         {
-            clipAreaParts.Add(new ClipAreaPart(SelectedClipOperation, Rect.FromCenter(position, new Size(20, 20))));
+            clipAreaParts.Add(
+                new ClipAreaPart(
+                    SelectedClipOperation,
+                    RectD.FromCenter(position, new SizeD(20, 20))));
         }
 
-        private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void Canvas_MouseLeftButtonUp(object sender, MouseEventArgs e)
         {
             if (!mouseDown)
                 return;
@@ -199,7 +201,7 @@ namespace DrawingSample
 
         private class ClipAreaPart
         {
-            public ClipAreaPart(ClipOperation operation, Rect bounds)
+            public ClipAreaPart(ClipOperation operation, RectD bounds)
             {
                 Operation = operation;
                 Bounds = bounds;
@@ -207,7 +209,7 @@ namespace DrawingSample
 
             public ClipOperation Operation { get; }
 
-            public Rect Bounds { get; }
+            public RectD Bounds { get; }
         }
     }
 }

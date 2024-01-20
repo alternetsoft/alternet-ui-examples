@@ -30,7 +30,17 @@
     <None Remove="Html\SampleArchive\Images\panda2.jpg" />
     <None Remove="Html\SampleArchive\root.html" />
     <None Remove="Html\SampleArchive\Styles\default.css" />
+    <None Remove="Resources\Animation\Alternet.gif" />
+    <None Remove="Resources\Animation\HourGlass.gif" />
+    <None Remove="Resources\Animation\Spinner.gif" />
+    <None Remove="Resources\ButtonImages\ButtonImageDisabled.svg" />
     <None Remove="Resources\ButtonImages\ButtonImageFocused.png" />
+    <None Remove="Resources\ButtonImages\ButtonImageFocused.svg" />
+    <None Remove="Resources\ButtonImages\ButtonImageHovered.svg" />
+    <None Remove="Resources\ButtonImages\ButtonImageNormal.svg" />
+    <None Remove="Resources\ButtonImages\ButtonImagePressed.svg" />
+    <None Remove="Resources\icon-48x48.png" />
+    <None Remove="Resources\logo-128x128.png" />
     <None Remove="Resources\SamplePandaPdf.pdf" />
     <None Remove="Resources\Svg\arrow-left.svg" />
     <None Remove="Resources\Svg\arrow-right.svg" />
@@ -45,7 +55,6 @@
     <None Remove="WebBrowserPage.uixml" />
     <None Remove="ListBoxPage.uixml" />
     <None Remove="ListViewPage.uixml" />
-    <None Remove="MainWindow.uixml" />
     <None Remove="NumericInputPage.uixml" />
     <None Remove="ProgressBarPage.uixml" />
     <None Remove="RadioButtonsPage.uixml" />
@@ -67,11 +76,21 @@
     <None Remove="TreeViewPage.uixml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\Animation\Alternet.gif" />
+    <EmbeddedResource Include="Resources\Animation\HourGlass.gif" />
+    <EmbeddedResource Include="Resources\Animation\Plant.gif" />
+    <EmbeddedResource Include="Resources\Animation\Spinner.gif" />
     <EmbeddedResource Include="Resources\ButtonImages\ButtonImageDisabled.png" />
+    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageDisabled.svg" />
     <EmbeddedResource Include="Resources\ButtonImages\ButtonImageFocused.png" />
+    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageFocused.svg" />
     <EmbeddedResource Include="Resources\ButtonImages\ButtonImageHovered.png" />
+    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageHovered.svg" />
     <EmbeddedResource Include="Resources\ButtonImages\ButtonImageNormal.png" />
+    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageNormal.svg" />
     <EmbeddedResource Include="Resources\ButtonImages\ButtonImagePressed.png" />
+    <EmbeddedResource Include="Resources\ButtonImages\ButtonImagePressed.svg" />
+    <EmbeddedResource Include="Resources\icon-48x48.png" />
     <EmbeddedResource Include="Resources\ImageListIcons\Large\Calendar32.png" />
     <EmbeddedResource Include="Resources\ImageListIcons\Large\LineGraph32.png" />
     <EmbeddedResource Include="Resources\ImageListIcons\Large\Pencil32.png" />
@@ -80,6 +99,7 @@
     <EmbeddedResource Include="Resources\ImageListIcons\Small\LineGraph16.png" />
     <EmbeddedResource Include="Resources\ImageListIcons\Small\Pencil16.png" />
     <EmbeddedResource Include="Resources\ImageListIcons\Small\Photo16.png" />
+    <EmbeddedResource Include="Resources\logo-128x128.png" />
     <EmbeddedResource Include="Resources\Logo16x16.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -109,12 +129,6 @@
     <Content Include="Resources\SamplePandaPdf.pdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="runsample.bat">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="runsample.sh">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
@@ -130,49 +144,49 @@
     <Resource Include="Resources\Svg\xmark.svg" />
   </ItemGroup>
   <ItemGroup>
-    <UIXml Update="ButtonPage.uixml">
+    <UIXml Update="Pages\Buttons\ButtonPage.uixml">
       <SubType>Designer</SubType>
     </UIXml>
-    <UIXml Update="CheckBoxesPage.uixml">
+    <UIXml Update="Pages\Buttons\CheckBoxesPage.uixml">
       <SubType>Designer</SubType>
     </UIXml>
-    <UIXml Update="TextInputPage.uixml">
+    <UIXml Update="Pages\Text\TextInputPage.uixml">
       <SubType>Designer</SubType>
     </UIXml>
-    <UIXml Update="RadioButtonsPage.uixml">
+    <UIXml Update="Pages\Buttons\RadioButtonsPage.uixml">
       <SubType>Designer</SubType>
     </UIXml>
-    <UIXml Update="NumericInputPage.uixml">
+    <UIXml Update="Pages\Other\NumericInputPage.uixml">
       <SubType>Designer</SubType>
     </UIXml>
-    <UIXml Update="SliderPage.uixml">
+    <UIXml Update="Pages\SliderProgressBar\SliderPage.uixml">
       <SubType>Designer</SubType>
     </UIXml>
-    <UIXml Update="ProgressBarPage.uixml">
+    <UIXml Update="Pages\SliderProgressBar\ProgressBarPage.uixml">
       <SubType>Designer</SubType>
     </UIXml>
-    <UIXml Update="ComboBoxPage.uixml">
+    <UIXml Update="Pages\ListControls\ComboBoxPage.uixml">
       <Generator>MSBuild:Compile</Generator>
     </UIXml>
-    <UIXml Update="ListViewPage.uixml">
+    <UIXml Update="Pages\TreeAndListView\ListViewPage.uixml">
       <Generator>MSBuild:Compile</Generator>
     </UIXml>
-    <UIXml Update="GridPage.uixml">
+    <UIXml Update="Pages\Layout\GridPage.uixml">
       <SubType>Designer</SubType>
     </UIXml>
-    <UIXml Update="WebBrowserPage.uixml">
+    <UIXml Update="Pages\Other\WebBrowserPage.uixml">
       <SubType>Designer</SubType>
     </UIXml>
-    <UIXml Update="NotifyIconPage.uixml">
+    <UIXml Update="Pages\Other\NotifyIconPage.uixml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </UIXml>
-    <UIXml Update="TreeViewPage.uixml">
+    <UIXml Update="Pages\TreeAndListView\TreeViewPage.uixml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </UIXml>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.404-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.503-beta" />
   </ItemGroup>
 </Project>

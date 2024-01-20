@@ -1,35 +1,67 @@
+using System;
 using Alternet.Drawing;
 using Alternet.UI;
-using System;
 
 namespace WindowPropertiesSample
 {
     public partial class MainWindow : Window
     {
-        private readonly CardPanelHeader panelHeader = new();
-        private TestWindow? testWindow;
+        private readonly CardPanelHeader panelHeader;
+        private readonly SetBoundsProperties setBoundsProperties;
 
-        private int lastEventNumber = 1;
+        private TestWindow? testWindow;
 
         public MainWindow()
         {
-            Icon = ImageSet.FromUrlOrNull(
-                "embres:WindowPropertiesSample.Sample.ico");
+            panelHeader = new();
+            setBoundsProperties = new(this);
+            Icon = new("embres:WindowPropertiesSample.Sample.ico");
 
             InitializeComponent();
 
-            stateComboBox.AddEnumValues(typeof(WindowState));
-            startLocationComboBox.AddEnumValues(typeof(WindowStartLocation),
-                WindowStartLocation.Default);
-            sizeToContentModeComboBox.AddEnumValues(typeof(WindowSizeToContentMode),
-                WindowSizeToContentMode.WidthAndHeight);
+            stateComboBox.AddEnumValues<WindowState>();
+            startLocationComboBox.AddEnumValues(WindowStartLocation.Default);
+            startLocationComboBox.Add("250, 250, 450, 450");
+            startLocationComboBox.Add("50,50,500,500");
+            sizeToContentModeComboBox.AddEnumValues(WindowSizeToContentMode.WidthAndHeight);
             UpdateControls();
 
             panelHeader.Add("Actions", actionsPanel);
             panelHeader.Add("Settings", settingsPanel);
             panelHeader.Add("Bounds", boundsPanel);
-            pageControl.Children.Insert(0, panelHeader);
-            panelHeader.SelectedTab = panelHeader.Tabs[0];
+            pageControl.Children.Prepend(panelHeader);
+            panelHeader.SelectFirstTab();
+
+            eventsListBox.BindApplicationLog();
+            eventsListBox.ContextMenu.Required();
+        }
+
+        private void Page1Button_Click(object? sender, EventArgs e)
+        {
+            panelHeader.SelectedTabIndex = 0;
+        }
+
+        private void Page2Button_Click(object? sender, EventArgs e)
+        {
+            panelHeader.SelectedTabIndex = 1;
+        }
+
+        private void Page3Button_Click(object? sender, EventArgs e)
+        {
+            panelHeader.SelectedTabIndex = 2;
+        }
+
+        private void PopupSetBounds_AfterHide(object? sender, EventArgs e)
+        {
+            var rect = (setBoundsProperties.X, setBoundsProperties.Y, setBoundsProperties.Width, setBoundsProperties.Height);
+            testWindow?.SetBounds(rect, setBoundsProperties.Flags);
+        }
+
+        private void PropertiesButton_Click(object? sender, EventArgs e)
+        {
+            if (testWindow is null)
+                return;
+            WindowPropertyGrid.ShowDefault(null, testWindow);
         }
 
         private void CreateAndShowWindowButton_Click(object sender, EventArgs e)
@@ -54,13 +86,28 @@ namespace WindowPropertiesSample
 
             testWindow.ShowModal();
 
-            LogEvent("ModalResult: " + testWindow.ModalResult);
+            Application.Log("ModalResult: " + testWindow.ModalResult);
             testWindow.Dispose();
             OnWindowClosed();
         }
 
         private void CreateWindowAndSetProperties()
         {
+            WindowStartLocation? sLocation = null;
+            var startLocationItem = startLocationComboBox.SelectedItem;
+
+            if (startLocationItem is WindowStartLocation)
+            {
+                sLocation = (WindowStartLocation)startLocationComboBox.SelectedItem!;
+            }
+
+            if (startLocationItem is string s)
+            {
+                var parsed = RectD.Parse(s);
+                Window.DefaultBounds = parsed;
+                sLocation = WindowStartLocation.Manual;
+            }
+
             testWindow = new TestWindow();
 
             if (setOwnerCheckBox.IsChecked)
@@ -80,8 +127,10 @@ namespace WindowPropertiesSample
             testWindow.HasBorder = hasBorderCheckBox.IsChecked;
             testWindow.HasTitleBar = hasTitleBarCheckBox.IsChecked;
 
-            testWindow.StartLocation = (WindowStartLocation)startLocationComboBox.SelectedItem!;
-            testWindow.Location = new Point();
+            if (sLocation is not null)
+            {
+                testWindow.StartLocation = sLocation.Value;
+            }
 
             testWindow.EndInit();
 
@@ -96,17 +145,19 @@ namespace WindowPropertiesSample
 
         private void TestWindow_LocationChanged(object? sender, EventArgs e)
         {
-            LogEvent("LocationChanged. Bounds: "+testWindow?.Bounds.ToString());
+            var s = "LocationChanged. Bounds: ";
+            Application.LogReplace(s + testWindow?.Bounds.ToString(), s);
         }
 
         private void TestWindow_SizeChanged(object? sender, EventArgs e)
         {
-            LogEvent("SizeChanged. Bounds: "+testWindow?.Bounds.ToString());
+            var s = "SizeChanged. Bounds: ";
+            Application.LogReplace(s + testWindow?.Bounds.ToString(), s);
         }
 
         private void TestWindow_StateChanged(object? sender, EventArgs e)
         {
-            LogEvent("StateChanged"); 
+            Application.Log("StateChanged");
             UpdateWindowState();
         }
 
@@ -118,7 +169,7 @@ namespace WindowPropertiesSample
         private void UpdateActiveWindowInfoLabel()
         {
             var title = ActiveWindow?.Title ?? "N/A";
-            activeWindowTitleLabel.Text =  title;
+            activeWindowTitleLabel.Text = title;
 
             if (testWindow != null)
                 isWindowActiveLabel.Text = "Test window active: " + (testWindow.IsActive ? "Yes" : "No");
@@ -128,57 +179,59 @@ namespace WindowPropertiesSample
 
         private void TestWindow_Deactivated(object? sender, EventArgs e)
         {
-            LogEvent("Deactivated");
+            Application.Log("Deactivated");
             UpdateActiveWindowInfoLabel();
         }
 
         private void TestWindow_Activated(object? sender, EventArgs e)
         {
-            LogEvent("Activated");
+            Application.Log("Activated");
             UpdateActiveWindowInfoLabel();
-        }
-
-        private void LogEvent(string message)
-        {
-            if (eventsListBox.IsDisposed)
-                return;
-
-            eventsListBox.Items.Add($"{lastEventNumber++}. {message}");
-            eventsListBox.SelectedIndex = eventsListBox.Items.Count - 1;
         }
 
         private void UpdateControls()
         {
-            var haveTestWindow = testWindow != null;
+            Application.AddIdleTask(Fn);
 
-            hideWindowCheckBox.Enabled = haveTestWindow;
-            createAndShowWindowButton.Enabled = !haveTestWindow;
-            createAndShowModalWindowButton.Enabled = !haveTestWindow;
-            startLocationComboBox.Enabled = !haveTestWindow;
+            void Fn(object? data)
+            {
+                var haveTestWindow = testWindow != null;
 
-            activateButton.Enabled = haveTestWindow;
-            addOwnedWindow.Enabled = haveTestWindow;
-            stateComboBox.Enabled = haveTestWindow;
+                if(eventsListBox.CanFocus)
+                    eventsListBox.SetFocus();
 
-            sizeToContentModeComboBox.Enabled = haveTestWindow;
-            setSizeToContentButton.Enabled = haveTestWindow;
-            setSizeButton.Enabled = haveTestWindow;
-            setClientSizeButton.Enabled = haveTestWindow;
-            setBoundsButton.Enabled = haveTestWindow;
-            increaseLocationButton.Enabled = haveTestWindow;
-            setMinMaxSizeButton.Enabled = haveTestWindow;
-            if (!haveTestWindow)
-                currentBoundsLabel.Text = string.Empty;
+                Group(
+                    createAndShowWindowButton,
+                    createAndShowModalWindowButton,
+                    startLocationComboBox).Enabled(!haveTestWindow);
 
-            setIcon1Button.Enabled = haveTestWindow;
-            setIcon2Button.Enabled = haveTestWindow;
+                Group(
+                    hideWindowCheckBox,
+                    activateButton,
+                    addOwnedWindow,
+                    stateComboBox,
+                    sizeToContentModeComboBox,
+                    setSizeToContentButton,
+                    setSizeButton,
+                    setClientSizeButton,
+                    setBoundsButton,
+                    increaseLocationButton,
+                    setMinMaxSizeButton,
+                    setIcon1Button,
+                    setIcon2Button,
+                    clearIconButton,
+                    propertiesButton).Enabled(haveTestWindow);
 
-            UpdateActiveWindowInfoLabel();
+                if (!haveTestWindow)
+                    currentBoundsLabel.Text = string.Empty;
+
+                UpdateActiveWindowInfoLabel();
+            }
         }
 
         private void TestWindow_Closed(object? sender, WindowClosedEventArgs e)
         {
-            LogEvent("Closed");
+            Application.Log("Closed");
 
             if (testWindow == null)
                 throw new InvalidOperationException();
@@ -210,7 +263,7 @@ namespace WindowPropertiesSample
 
         private void TestWindow_Closing(object? sender, WindowClosingEventArgs e)
         {
-            LogEvent("Closing");
+            Application.Log("Closing");
             e.Cancel = cancelClosingCheckBox.IsChecked;
         }
 
@@ -315,36 +368,42 @@ namespace WindowPropertiesSample
                 testWindow.Icon = Icons.Icon2;
         }
 
+        private void ClearIconButton_Click(object sender, EventArgs e)
+        {
+            if (testWindow != null)
+                testWindow.Icon = null;
+        }
+
         private void SetSizeButton_Click(object sender, EventArgs e)
         {
             if (testWindow != null)
-                testWindow.Size = new Size(300, 300);
+                testWindow.Size = new SizeD(300, 300);
         }
 
         private void SetClientSizeButton_Click(object sender, EventArgs e)
         {
             if (testWindow != null)
-                testWindow.ClientSize = new Size(300, 300);
+                testWindow.ClientSize = new SizeD(300, 300);
         }
 
         private void IncreaseLocationButton_Click(object sender, EventArgs e)
         {
             if (testWindow != null)
-                testWindow.Location += new Size(10, 10);
+                testWindow.Location += new SizeD(10, 10);
         }
 
         private void SetBoundsButton_Click(object sender, System.EventArgs e)
         {
             if (testWindow != null)
-                testWindow.Bounds = new Rect(0, 0, 400, 400);
+                testWindow.Bounds = new RectD(0, 0, 400, 400);
         }
 
         private void SetMinMaxSizeButton_Click(object sender, System.EventArgs e)
         {
             if (testWindow != null)
             {
-                testWindow.MinimumSize = new Size(100, 100);
-                testWindow.MaximumSize = new Size(300, 300);
+                testWindow.MinimumSize = new SizeD(100, 100);
+                testWindow.MaximumSize = new SizeD(300, 300);
             }
         }
 
@@ -358,6 +417,39 @@ namespace WindowPropertiesSample
         {
             testWindow?.SetSizeToContent(
                 (WindowSizeToContentMode)sizeToContentModeComboBox.SelectedItem!);
+        }
+
+        public class SetBoundsProperties : BaseChildObject<MainWindow>
+        {
+            public SetBoundsProperties(MainWindow owner)
+                : base(owner)
+            {
+            }
+
+            public double X
+            {
+                get; set;
+            }
+
+            public double Y
+            {
+                get; set;
+            }
+
+            public double Width
+            {
+                get; set;
+            }
+
+            public double Height
+            {
+                get; set;
+            }
+
+            public SetBoundsFlags Flags
+            {
+                get; set;
+            }
         }
     }
 }
