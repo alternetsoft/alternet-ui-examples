@@ -2,191 +2,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\CommonData\TargetFrameworks.props" />
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <Platforms>AnyCPU;x64;x86</Platforms>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <LangVersion>latest</LangVersion>
+    <Platforms>AnyCPU;x64</Platforms>
+    <LangVersion>11.0</LangVersion>
     <Nullable>enable</Nullable>
     <UseStyleCop>false</UseStyleCop>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <ApplicationIcon>../CommonData/Sample.ico</ApplicationIcon>
+    <OutputType>WinExe</OutputType>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="build\**" />
-    <EmbeddedResource Remove="build\**" />
-    <None Remove="build\**" />
-  </ItemGroup>
-  <ItemGroup Condition="$(DefineConstants.Contains(';NETFRAMEWORK'))">
-    <Reference Include="Microsoft.CSharp" />
+    <ProjectReference Include="..\ControlsSampleDll\ControlsSampleDll.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="CheckBoxesPage.uixml" />
-    <None Remove="CheckListBoxPage.uixml" />
-    <None Remove="ComboBoxPage.uixml" />
-    <None Remove="ExampleContextMenu.uixml" />
-    <None Remove="GridPage.uixml" />
-    <None Remove="Html\SampleArchive\Html\default.js" />
-    <None Remove="Html\SampleArchive\Html\page1.html" />
-    <None Remove="Html\SampleArchive\Html\page2.html" />
-    <None Remove="Html\SampleArchive\Images\panda1.jpg" />
-    <None Remove="Html\SampleArchive\Images\panda2.jpg" />
-    <None Remove="Html\SampleArchive\root.html" />
-    <None Remove="Html\SampleArchive\Styles\default.css" />
-    <None Remove="Resources\Animation\Alternet.gif" />
-    <None Remove="Resources\Animation\HourGlass.gif" />
-    <None Remove="Resources\Animation\Spinner.gif" />
-    <None Remove="Resources\ButtonImages\ButtonImageDisabled.svg" />
-    <None Remove="Resources\ButtonImages\ButtonImageFocused.png" />
-    <None Remove="Resources\ButtonImages\ButtonImageFocused.svg" />
-    <None Remove="Resources\ButtonImages\ButtonImageHovered.svg" />
-    <None Remove="Resources\ButtonImages\ButtonImageNormal.svg" />
-    <None Remove="Resources\ButtonImages\ButtonImagePressed.svg" />
-    <None Remove="Resources\icon-48x48.png" />
-    <None Remove="Resources\logo-128x128.png" />
-    <None Remove="Resources\SamplePandaPdf.pdf" />
-    <None Remove="Resources\Svg\arrow-left.svg" />
-    <None Remove="Resources\Svg\arrow-right.svg" />
-    <None Remove="Resources\Svg\arrow-rotate-right.svg" />
-    <None Remove="Resources\Svg\caret-right.svg" />
-    <None Remove="Resources\Svg\minus.svg" />
-    <None Remove="Resources\Svg\plus.svg" />
-    <None Remove="Resources\Svg\search.svg" />
-    <None Remove="Resources\Svg\xmark.svg" />
-    <None Remove="runsample.bat" />
-    <None Remove="runsample.sh" />
-    <None Remove="WebBrowserPage.uixml" />
-    <None Remove="ListBoxPage.uixml" />
-    <None Remove="ListViewPage.uixml" />
-    <None Remove="NumericInputPage.uixml" />
-    <None Remove="ProgressBarPage.uixml" />
-    <None Remove="RadioButtonsPage.uixml" />
-    <None Remove="Resources\ButtonImages\ButtonImageDisabled.png" />
-    <None Remove="Resources\ButtonImages\ButtonImageHovered.png" />
-    <None Remove="Resources\ButtonImages\ButtonImageNormal.png" />
-    <None Remove="Resources\ButtonImages\ButtonImagePressed.png" />
-    <None Remove="Resources\ImageListIcons\Large\Calendar32.png" />
-    <None Remove="Resources\ImageListIcons\Large\LineGraph32.png" />
-    <None Remove="Resources\ImageListIcons\Large\Pencil32.png" />
-    <None Remove="Resources\ImageListIcons\Large\Photo32.png" />
-    <None Remove="Resources\ImageListIcons\Small\Calendar16.png" />
-    <None Remove="Resources\ImageListIcons\Small\LineGraph16.png" />
-    <None Remove="Resources\ImageListIcons\Small\Pencil16.png" />
-    <None Remove="Resources\ImageListIcons\Small\Photo16.png" />
-    <None Remove="Resources\Logo16x16.png" />
-    <None Remove="SliderPage.uixml" />
-    <None Remove="TextInputPage.uixml" />
-    <None Remove="TreeViewPage.uixml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\Animation\Alternet.gif" />
-    <EmbeddedResource Include="Resources\Animation\HourGlass.gif" />
-    <EmbeddedResource Include="Resources\Animation\Plant.gif" />
-    <EmbeddedResource Include="Resources\Animation\Spinner.gif" />
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageDisabled.png" />
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageDisabled.svg" />
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageFocused.png" />
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageFocused.svg" />
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageHovered.png" />
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageHovered.svg" />
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageNormal.png" />
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageNormal.svg" />
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImagePressed.png" />
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImagePressed.svg" />
-    <EmbeddedResource Include="Resources\icon-48x48.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Large\Calendar32.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Large\LineGraph32.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Large\Pencil32.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Large\Photo32.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Small\Calendar16.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Small\LineGraph16.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Small\Pencil16.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Small\Photo16.png" />
-    <EmbeddedResource Include="Resources\logo-128x128.png" />
-    <EmbeddedResource Include="Resources\Logo16x16.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Html\SampleArchive\Html\default.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Html\SampleArchive\Html\page1.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Html\SampleArchive\Html\page2.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Html\SampleArchive\Images\panda1.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Html\SampleArchive\Images\panda2.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Html\SampleArchive\root.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Html\SampleArchive\Styles\default.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\SamplePandaPdf.pdf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\.editorconfig" Link=".editorconfig" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Svg\arrow-left.svg" />
-    <Resource Include="Resources\Svg\arrow-right.svg" />
-    <Resource Include="Resources\Svg\arrow-rotate-right.svg" />
-    <Resource Include="Resources\Svg\caret-right.svg" />
-    <Resource Include="Resources\Svg\minus.svg" />
-    <Resource Include="Resources\Svg\plus.svg" />
-    <Resource Include="Resources\Svg\search.svg" />
-    <Resource Include="Resources\Svg\xmark.svg" />
-  </ItemGroup>
-  <ItemGroup>
-    <UIXml Update="Pages\Buttons\ButtonPage.uixml">
-      <SubType>Designer</SubType>
-    </UIXml>
-    <UIXml Update="Pages\Buttons\CheckBoxesPage.uixml">
-      <SubType>Designer</SubType>
-    </UIXml>
-    <UIXml Update="Pages\Text\TextInputPage.uixml">
-      <SubType>Designer</SubType>
-    </UIXml>
-    <UIXml Update="Pages\Buttons\RadioButtonsPage.uixml">
-      <SubType>Designer</SubType>
-    </UIXml>
-    <UIXml Update="Pages\Other\NumericInputPage.uixml">
-      <SubType>Designer</SubType>
-    </UIXml>
-    <UIXml Update="Pages\SliderProgressBar\SliderPage.uixml">
-      <SubType>Designer</SubType>
-    </UIXml>
-    <UIXml Update="Pages\SliderProgressBar\ProgressBarPage.uixml">
-      <SubType>Designer</SubType>
-    </UIXml>
-    <UIXml Update="Pages\ListControls\ComboBoxPage.uixml">
-      <Generator>MSBuild:Compile</Generator>
-    </UIXml>
-    <UIXml Update="Pages\TreeAndListView\ListViewPage.uixml">
-      <Generator>MSBuild:Compile</Generator>
-    </UIXml>
-    <UIXml Update="Pages\Layout\GridPage.uixml">
-      <SubType>Designer</SubType>
-    </UIXml>
-    <UIXml Update="Pages\Other\WebBrowserPage.uixml">
-      <SubType>Designer</SubType>
-    </UIXml>
-    <UIXml Update="Pages\Other\NotifyIconPage.uixml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </UIXml>
-    <UIXml Update="Pages\TreeAndListView\TreeViewPage.uixml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </UIXml>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.503-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.623-beta" />
   </ItemGroup>
 </Project>

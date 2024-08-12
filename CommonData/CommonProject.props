@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="TargetFrameworks.props" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <Platforms>AnyCPU</Platforms>
+    <ApplicationManifest>$(MSBuildThisFileDirectory)\app.manifest</ApplicationManifest>
+    <LangVersion>11.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ApplicationIcon>$(MSBuildThisFileDirectory)\Sample.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup />
+</Project>

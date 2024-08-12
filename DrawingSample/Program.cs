@@ -11,7 +11,7 @@ namespace DrawingSample
         public static void Main()
         {
             var application = new Application();
-            var window = new MainWindow();
+            var window = new DrawingMainWindow();
 
             application.Run(window);
 

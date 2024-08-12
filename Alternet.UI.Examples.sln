@@ -13,8 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelloWorldSample", "HelloWo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomControlsSample", "CustomControlsSample\CustomControlsSample.csproj", "{9191BA9E-0E83-4DFA-B5D6-60B5A6A3BE1D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataBindingSample", "DataBindingSample\DataBindingSample.csproj", "{F2FB57D4-35C3-47E8-A35D-A2CD1AE80A28}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmployeeFormSample", "EmployeeFormSample\EmployeeFormSample.csproj", "{7DE266E2-9147-4507-92D9-A5159B569B57}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InputSample", "InputSample\InputSample.csproj", "{340C4EF7-A1C2-4202-ADBF-BDE852448E65}"
@@ -35,11 +33,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThreadingSample", "Threadin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrintingSample", "PrintingSample\PrintingSample.csproj", "{E31A1D08-D2B9-4D63-BE5B-EBFE55446AAE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuiManagerSample", "AuiManagerSample\AuiManagerSample.csproj", "{53189757-746A-45BB-979F-D463151DC856}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PropertyGridSample", "PropertyGridSample\PropertyGridSample.csproj", "{95AC7440-7C78-477C-829E-59A73449D447}"
 EndProject
-
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlsSampleDll", "ControlsSampleDll\ControlsSampleDll.csproj", "{3AE86D98-336B-4DB1-ADFE-02084044BB5A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SkiaSharpSampleDll", "SkiaSharpSampleDll\SkiaSharpSampleDll.csproj", "{2F2373A4-333E-4955-9B6D-52E7D84A9FE8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PreviewSample", "PreviewSample\PreviewSample.csproj", "{25857F16-1B05-42B8-901D-2F54DC03F538}"
+EndProject
 
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,0 +1,39 @@
+﻿<Window x:Class="CustomControlsSample.CustomControlsWindow"
+        xmlns="http://schemas.alternetsoft.com/ui/2021"
+        xmlns:x="http://schemas.alternetsoft.com/ui/2021/uixml"
+        xmlns:local="clr-namespace:CustomControlsSample;assembly=CustomControlsSample"
+        Title="Alternet UI Custom Controls Sample"
+        MinWidth="900" MinHeight="700" StartLocation="CenterScreen">
+    
+  <StackPanel Orientation="Vertical" VerticalAlignment="Stretch" Padding="10"
+              HorizontalAlignment="Stretch">
+        
+		<GroupBox Title="Color Picker" Margin="0,0,0,10">
+          <HorizontalStackPanel MinChildMargin="5" Name="colorGroupBox" Padding="10">
+          </HorizontalStackPanel>
+        </GroupBox>
+
+			<GroupBox Title="Native Sliders and Progress Bars" Margin="0,0,0,10" Padding="10">
+				<StackPanel Orientation="Horizontal">
+					<Slider Minimum="0" Maximum="100" Value="25"
+                            TickFrequency="25" Name="slider1" ValueChanged="Slider_ValueChanged"
+						VerticalAlignment="Center" Margin="0,0,10,0" SuggestedWidth="200"/>
+					<ProgressBar Name="progressBar1"
+                      Minimum="0" Maximum="100"
+						VerticalAlignment="Center" Margin="0,0,10,0" SuggestedWidth="200"/>
+					<Label VerticalAlignment="Center" Name="intValueLabel"/>
+				</StackPanel>
+			</GroupBox>
+			
+			<GroupBox Title="Custom Sliders and Progress Bars" Padding="5">
+				<StackPanel Orientation="Horizontal" Name="slidersStackPanel">
+				</StackPanel>
+			</GroupBox>
+
+        <GroupBox Title="Tic Tac Toe" VerticalAlignment="Top">
+            <StackPanel Orientation="Horizontal" Margin="5" Name="ticTacToeStackPanel">
+            </StackPanel>
+        </GroupBox>
+		
+    </StackPanel>
+</Window>

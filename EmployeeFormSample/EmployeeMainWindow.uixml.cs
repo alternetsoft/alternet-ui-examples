@@ -8,113 +8,312 @@ using Alternet.Base.Collections;
 
 namespace EmployeeFormSample
 {
-    public partial class MainWindow : Window
+    public partial class EmployeeWindow : Window
     {
-/*
-        private readonly CardPanelHeader panelHeader = new();
-*/
-        public MainWindow()
+        public EmployeeWindow()
         {
-            Icon = new("embres:EmployeeFormSample.Sample.ico");
+            Icon = App.DefaultIcon;
 
             InitializeComponent();
 
-            employeeFoto.Image = Image.FromUrl(
-                "embres:EmployeeFormSample.Resources.EmployeePhoto.jpg");
+            employeeFoto.Image = Image.FromAssemblyUrl(GetType().Assembly, "Resources.EmployeePhoto.jpg");
 
-            PopulateComboBoxes();
+            prefixComboBox.AddEnumValues<Employee.EmployeePrefix>();
+            stateComboBox.AddEnumValues<Employee.States>();
+            departmentComboBox.AddEnumValues<Employee.EmployeeDepartment>();
 
-            DataContext = new Employee
+            var employee = new Employee
             {
                 FirstName = "Alice",
                 LastName = "Jameson",
                 BirthDate = new System.DateTime(1993, 10, 2),
                 Title = "Customer Success Manager",
-                Prefix = EmployeePrefix.Mrs,
+                Prefix = Employee.EmployeePrefix.Mrs,
                 Address = "143 Coolidge St.",
                 City = "Phoenix",
-                State = EmployeeFormSample.State.AZ,
+                State = Employee.States.AZ,
                 ZipCode = "85001",
                 HomePhone = "(341) 433-4377",
                 MobilePhone = "(341) 232-6535",
                 Email = "AliceJ@mycompany.com",
                 Skype = "AliceJ12",
-                Department = Department.Sales,
+                Department = Employee.EmployeeDepartment.Sales,
                 HireDate = new System.DateTime(2018, 3, 5),
-                Status = Status.Salaried
+                Status = Employee.EmployeeStatus.Salaried,
             };
 
+            DataContext = employee;
+
             evaluationsListView.Items.Add(new ListViewItem(new[] {
-                new DateTime(2018,12,4).ToShortDateString(), 
+                new DateTime(2018,12,4).ToShortDateString(),
                 "2018 Employee Review", "James Smith" }));
             evaluationsListView.Items.Add(new ListViewItem(new[] {
-                new DateTime(2019,12,10).ToShortDateString(), 
+                new DateTime(2019,12,10).ToShortDateString(),
                 "2019 Employee Review", "James Smith" }));
             evaluationsListView.Items.Add(new ListViewItem(new[] {
-                new DateTime(2020,12,1).ToShortDateString(), 
+                new DateTime(2020,12,1).ToShortDateString(),
                 "2020 Employee Review", "James Smith" }));
             evaluationsListView.Items.Add(new ListViewItem(new[] {
-                new DateTime(2021,12,20).ToShortDateString(), 
+                new DateTime(2021,12,20).ToShortDateString(),
                 "2021 Employee Review", "James Smith" }));
             evaluationsListView.Items.Add(new ListViewItem(new[] {
-                new DateTime(2022,12,5).ToShortDateString(), 
+                new DateTime(2022,12,5).ToShortDateString(),
                 "2022 Employee Review", "James Smith" }));
             evaluationsListView.Columns[0].WidthMode = ListViewColumnWidthMode.AutoSize;
             evaluationsListView.Columns[1].WidthMode = ListViewColumnWidthMode.AutoSize;
             evaluationsListView.Columns[2].WidthMode = ListViewColumnWidthMode.AutoSize;
 
-            LayoutUpdated += MainWindow_LayoutUpdated;
-
             // On Linux height of the ComboBox is greater than height of the TextBox.
             // We need to increase height of all window's TextBoxes.
-            LayoutFactory.AdjustTextBoxesHeight(this);
-/*
-            panelHeader.Add("Information", infoPanel);
-            panelHeader.Add("Contacts", contactsPanel);
-            panelHeader.Add("Evaluations", evalPanel);
-            tabControlPanel.Children.Insert(0, panelHeader);
-            panelHeader.SelectedTab = panelHeader.Tabs[0];
-*/
+            TextBoxUtils.AdjustTextBoxesHeight(this);
+
             this.MinimumSize = new(900, 700);
 
-            firstNameTextBox.BindText(nameof(Employee.FirstName));
-            lastNameTextBox.BindText(nameof(Employee.LastName));
-            statusTextBox.BindText(nameof(Employee.Status));
-            emailTextBox.BindText(nameof(Employee.Email));
-            skypeTextBox.BindText(nameof(Employee.Skype));            
-            titleTextBox.BindText(nameof(Employee.Title));
-            addressTextBox.BindText(nameof(Employee.Address));
-            cityTextBox.BindText(nameof(Employee.City));
-            zipCodeTextBox.BindText(nameof(Employee.ZipCode));
-            homePhoneTextBox.BindText(nameof(Employee.HomePhone));
-            mobilePhone.BindText(nameof(Employee.MobilePhone));
-            prefixComboBox.BindSelectedItem(nameof(Employee.Prefix));
-            stateComboBox.BindSelectedItem(nameof(Employee.State));
-            departmentComboBox.BindSelectedItem(nameof(Employee.Department));
-            birthDatePicker.BindValue(nameof(Employee.BirthDate));
-            hireDatePicker.BindValue(nameof(Employee.HireDate));          
+            firstNameTextBox.Text = employee.FirstName;
+            firstNameTextBox.TextChanged += (s, e) =>
+            {
+                employee.FirstName = firstNameTextBox.Text;
+            };
+
+            lastNameTextBox.Text = employee.LastName;
+            lastNameTextBox.TextChanged += (s, e) =>
+            {
+                employee.LastName = lastNameTextBox.Text;
+            };
+
+            statusTextBox.Text = employee.Status.ToString();
+            statusTextBox.TextChanged += (s, e) =>
+            {
+                employee.Status
+                = (Employee.EmployeeStatus)Enum.Parse(typeof(Employee.EmployeeStatus), statusTextBox.Text);
+            };
+
+            emailTextBox.Text = employee.Email;
+            emailTextBox.TextChanged += (s, e) =>
+            {
+                employee.Email = emailTextBox.Text;
+            };
+
+            skypeTextBox.Text = employee.Skype;
+            skypeTextBox.TextChanged += (s, e) =>
+            {
+                employee.Skype = skypeTextBox.Text;
+            };
+
+            titleTextBox.Text = employee.Title;
+            titleTextBox.TextChanged += (s, e) =>
+            {
+                employee.Title = titleTextBox.Text;
+            };
+
+            addressTextBox.Text = employee.Address;
+            addressTextBox.TextChanged += (s, e) =>
+            {
+                employee.Address = addressTextBox.Text;
+            };
+
+            cityTextBox.Text = employee.City;
+            cityTextBox.TextChanged += (s, e) =>
+            {
+                employee.City = cityTextBox.Text;
+            };
+
+            zipCodeTextBox.Text = employee.ZipCode;
+            zipCodeTextBox.TextChanged += (s, e) =>
+            {
+                employee.ZipCode = zipCodeTextBox.Text;
+            };
+
+            homePhoneTextBox.Text = employee.HomePhone;
+            homePhoneTextBox.TextChanged += (s, e) =>
+            {
+                employee.HomePhone = homePhoneTextBox.Text;
+            };
+
+            mobilePhone.Text = employee.MobilePhone;
+            mobilePhone.TextChanged += (s, e) =>
+            {
+                employee.MobilePhone = mobilePhone.Text;
+            };
+
+            prefixComboBox.SelectedItem = employee.Prefix;
+            prefixComboBox.SelectedItemChanged += (s, e) =>
+            {
+                employee.Prefix = prefixComboBox.SelectedItemAs<Employee.EmployeePrefix>();
+            };
+
+            stateComboBox.SelectedItem = employee.State;
+            stateComboBox.SelectedItemChanged += (s, e) =>
+            {
+                employee.State = stateComboBox.SelectedItemAs<Employee.States>();
+            };
+
+            departmentComboBox.SelectedItem = employee.Department;
+            departmentComboBox.SelectedItemChanged += (s, e) =>
+            {
+                employee.Department = departmentComboBox.SelectedItemAs<Employee.EmployeeDepartment>();
+            };
+
+            birthDatePicker.Value = employee.BirthDate;
+            birthDatePicker.ValueChanged += (s, e) =>
+            {
+                employee.BirthDate = birthDatePicker.Value;
+            };
+
+            hireDatePicker.Value = employee.HireDate;
+            hireDatePicker.ValueChanged += (s, e) =>
+            {
+                employee.HireDate = hireDatePicker.Value;
+            };
 
             this.SetSizeToContent();
         }
 
-        private void MainWindow_LayoutUpdated(object? sender, EventArgs e)
+       internal class Employee
         {
-        }        
+            private string? firstName;
+            private string? lastName;
+            private DateTime birthDate;
+            private string? title;
+            private EmployeePrefix prefix;
+            private string? address;
+            private string? city;
+            private States state;
+            private string? zipCode;
+            private string? homePhone;
+            private string? mobilePhone;
+            private string? email;
+            private string? skype;
+            private EmployeeDepartment department;
+            private DateTime hireDate;
+            private EmployeeStatus status;
 
-        private void PopulateComboBoxes()
-        {
-            static void FillComboBoxWithEnumValues(ComboBox cb, Type enumType)
+            public string? FirstName
             {
-                cb.BeginInit();
-                cb.BeginUpdate();
-                cb.Items.AddRange(Enum.GetValues(enumType).Cast<object>());
-                cb.EndUpdate();
-                cb.EndInit();
+                get => firstName;
+                set => firstName = value;
             }
 
-            FillComboBoxWithEnumValues(prefixComboBox, typeof(EmployeePrefix));
-            FillComboBoxWithEnumValues(stateComboBox, typeof(State));
-            FillComboBoxWithEnumValues(departmentComboBox, typeof(Department));
+            public string? LastName
+            {
+                get => lastName;
+                set => lastName = value;
+            }
+
+            public DateTime BirthDate
+            {
+                get => birthDate;
+                set => birthDate = value;
+            }
+
+            public string? Title
+            {
+                get => title;
+                set => title = value;
+            }
+
+            public EmployeePrefix Prefix
+            {
+                get => prefix;
+                set => prefix = value;
+            }
+
+            public string? Address
+            {
+                get => address;
+                set => address = value;
+            }
+
+            public string? City
+            {
+                get => city;
+                set => city = value;
+            }
+
+            public States State
+            {
+                get => state;
+                set => state = value;
+            }
+
+            public string? ZipCode
+            {
+                get => zipCode;
+                set => zipCode = value;
+            }
+
+            public string? HomePhone
+            {
+                get => homePhone;
+                set => homePhone = value;
+            }
+
+            public string? MobilePhone
+            {
+                get => mobilePhone;
+                set => mobilePhone = value;
+            }
+
+            public string? Email
+            {
+                get => email;
+                set => email = value;
+            }
+
+            public string? Skype
+            {
+                get => skype;
+                set => skype = value;
+            }
+
+            public EmployeeDepartment Department
+            {
+                get => department;
+                set => department = value;
+            }
+
+            public DateTime HireDate
+            {
+                get => hireDate;
+                set => hireDate = value;
+            }
+
+            public EmployeeStatus Status
+            {
+                get => status;
+                set => status = value;
+            }
+
+            public enum EmployeeStatus
+            {
+                Salaried,
+                Terminated,
+                OnLeave
+            }
+
+            public enum EmployeeDepartment
+            {
+                Sales,
+                HR,
+                Engineering,
+                IT
+            }
+
+            public enum EmployeePrefix
+            {
+                Mr,
+                Ms,
+                Mrs,
+                Miss,
+                Dr,
+                Prof
+            }
+
+            public enum States
+            {
+                AL, AK, AZ, AR, CA, CO, CT, DE, DC, FL, GA, HI, ID, IL, IN, IA, KS, KY, LA, ME, MD, MA, MI, MN,
+                MS, MO, MT, NE, NV, NH, NJ, NM, NY, NC, ND, OH, OK, OR, PA, RI, SC, SD, TN, TX, UT, VT, VA, WA, WV, WI, WY
+            }
         }
     }
 }

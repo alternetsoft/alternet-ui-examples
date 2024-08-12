@@ -1,22 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\CommonData\TargetFrameworks.props" />
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <Platforms>AnyCPU;x64;x86</Platforms>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+  <Import Project="..\CommonData\CommonProject.props" />
   <ItemGroup>
-    <Compile Remove="build\**" />
-    <EmbeddedResource Remove="build\**" />
-    <None Remove="build\**" />
-  </ItemGroup>
-  <ItemGroup Condition="$(DefineConstants.Contains(';NETFRAMEWORK'))">
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.503-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.623-beta" />
   </ItemGroup>
 </Project>

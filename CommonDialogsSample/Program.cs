@@ -1,8 +1,9 @@
-using Alternet.UI;
+﻿using Alternet.UI;
 using System;
 using System.ComponentModel;
+using Alternet.Drawing;
 
-namespace CommonDialogsSample
+namespace ControlsSample
 {
     internal class Program
     {
@@ -10,7 +11,7 @@ namespace CommonDialogsSample
         public static void Main()
         {
             var application = new Application();
-            var window = new MainWindow();
+            var window = new CommonDialogsWindow();
 
             application.Run(window);
 

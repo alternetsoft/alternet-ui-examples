@@ -8,10 +8,10 @@ namespace CustomControlsSample
     internal class Program
     {
         [STAThread]
-        public static void Main(string[] args)
+        public static void Main()
         {
             var application = new Application();
-            var window = new MainWindow();
+            var window = new CustomControlsWindow();
 
             application.Run(window);
 

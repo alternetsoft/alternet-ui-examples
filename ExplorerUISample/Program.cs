@@ -11,7 +11,7 @@ namespace ExplorerUISample
         public static void Main()
         {
             var application = new Application();
-            var window = new MainWindow();
+            var window = new ExplorerMainWindow();
 
             application.Run(window);
 

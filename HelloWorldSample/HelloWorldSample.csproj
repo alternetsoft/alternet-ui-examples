@@ -3,9 +3,9 @@
   <Import Project="..\CommonData\TargetFrameworks.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <Platforms>AnyCPU;x86;x64</Platforms>
+    <Platforms>AnyCPU</Platforms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>11.0</LangVersion>
     <Nullable>enable</Nullable>
     <ApplicationIcon>../CommonData/Sample.ico</ApplicationIcon>
   </PropertyGroup>
@@ -17,7 +17,8 @@
   <ItemGroup Condition="$(DefineConstants.Contains(';NETFRAMEWORK'))">
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.503-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.623-beta" />
   </ItemGroup>
 </Project>

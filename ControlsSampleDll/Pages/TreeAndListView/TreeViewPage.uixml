@@ -1,0 +1,143 @@
+﻿<Control x:Class="ControlsSample.TreeViewPage"
+        xmlns="http://schemas.alternetsoft.com/ui/2021"
+        xmlns:x="http://schemas.alternetsoft.com/ui/2021/uixml"
+        xmlns:local="clr-namespace:ControlsSample;assembly=ControlsSample" Padding="10,0,10,0">
+  <Control >
+    <HorizontalStackPanel>
+      <TreeView SuggestedWidth="240" Name="treeView"
+                ExpandedChanged="TreeView_ExpandedChanged"
+                BeforeLabelEdit="TreeView_BeforeLabelEdit"
+                AfterLabelEdit="TreeView_AfterLabelEdit"
+                BeforeExpand="TreeView_BeforeExpand"
+                BeforeCollapse="TreeView_BeforeCollapse"
+                MouseLeftButtonDown="TreeView_MouseLeftButtonDown"
+                />
+
+      <TabControl Name="pageControl" Margin="10,0,10,0" HorizontalAlignment="Fill">
+
+        <!-- ========================= -->
+        <VerticalStackPanel Name="stackPanel1" Padding="10" Title="Actions">
+
+          <Grid RowCount="5" ColumnCount="2">
+            <Button RowIndex="0" ColumnIndex="0"
+                    Text="Add" Name="addItemButton" Click="AddItemButton_Click" />
+            <Button RowIndex="0" ColumnIndex="1"
+                    Text="Remove" Name="removeItemButton"
+                    Click="RemoveItemButton_Click" />
+
+            <Button RowIndex="1" ColumnIndex="0"
+                    Text="Add 1000" Name="addManyItemsButton" Margin="0,3,0,0"
+                    Click="AddManyItemsButton_Click" />
+            <Button RowIndex="1" ColumnIndex="1"
+                    Text="Clear" Margin="0,3,0,0"
+                  Name="clearButton" Click="ClearItemsButton_Click"/>
+
+            <Button RowIndex="2" ColumnIndex="0"
+                    Text="Expand All" Name="expandAllButton" Margin="0,3,0,0"
+                    Click="ExpandAllButton_Click" />
+            <Button RowIndex="2" ColumnIndex="1"
+                    Text="Collapse All" Name="collapseAllButton" Margin="0,3,0,0"
+                    Click="CollapseAllButton_Click" />
+
+            <Button RowIndex="3" ColumnIndex="0"
+                    Text="Expand" Name="expandAllChildrenButton" Margin="0,3,0,0"
+                    Click="ExpandAllChildrenButton_Click" />
+            <Button RowIndex="3" ColumnIndex="1"
+                    Text="Collapse" Name="collapseAllChildrenButton" Margin="0,3,0,0"
+                    Click="CollapseAllChildrenButton_Click" />
+
+            <Button RowIndex="4" ColumnIndex="0"
+                    Text="Edit Label"
+                    Name="beginSelectedLabelEditingButton" Margin="0,3,0,0"
+                    Click="BeginSelectedLabelEditingButton_Click" Enabled="False" />
+            <Button RowIndex="4" ColumnIndex="1"
+                    Text="Edit..." Margin="0,3,0,0" Name="editorButton"
+                    Click="EditorButton_Click"/>
+          </Grid>
+
+          <Control  Padding="5" Margin="0,10,0,0" Layout="Vertical">
+            <Label Text="Last Item:" Margin="0,0,0,10"/>
+
+            <Control Layout="Horizontal" Margin="5,0,0,0">
+              <Button Text="Make Visible" Name="ensureLastItemVisibleButton"
+                      Margin="0,0,0,0" Click="EnsureLastItemVisibleButton_Click" />
+              <Button Text="To View" Name="scrollLastItemIntoViewButton"
+                      Margin="0,0,0,0" Click="ScrollLastItemIntoViewButton_Click" />
+            </Control>
+
+            <Control Layout="Horizontal" Margin="5,3,0,0">
+              <Button Text="Focus" Name="focusLastItemButton" 
+                        Click="FocusLastItemButton_Click" />
+              <Button Text="Modify" Name="modifyLastItemButton"
+                      Click="ModifyLastItemButton_Click" />
+            </Control>
+          </Control>
+
+        </VerticalStackPanel>
+
+        <!-- ========================= -->
+
+        <VerticalStackPanel Name="stackPanel2" Visible="false" Title="Settings"
+                            Padding="10">
+          <CheckBox Text="Allow Edit Label" Name="allowLabelEditingCheckBox"
+                    Margin="0,5,0,0"
+                    CheckedChanged="AllowLabelEditingCheckBox_CheckedChanged"
+                    IsChecked="False" />
+          <CheckBox Text="Multiple Selection"
+                    Name="allowMultipleSelectionCheckBox" Margin="0,5,0,0"
+                    CheckedChanged="AllowMultipleSelectionCheckBox_CheckedChanged" />
+          <CheckBox Text="Enabled" Name="enabledCheckBox" Margin="0,5,0,0"
+                    CheckedChanged="EnabledCheckBox_CheckedChanged" IsChecked="True" />
+          <CheckBox Text="Show Root Lines" Name="showRootLinesCheckBox"
+                    Margin="0,5,0,0"
+                    CheckedChanged="ShowRootLinesCheckBox_CheckedChanged"
+                    IsChecked="True" />
+          <CheckBox Text="Show Lines" Name="showLinesCheckBox" Margin="0,5,0,0"
+                    CheckedChanged="ShowLinesCheckBox_CheckedChanged"
+                    IsChecked="False" />
+          <CheckBox Text="Show Expand Button" Name="showExpandButtonsCheckBox"
+                    Margin="0,5,0,0" CheckedChanged="ShowExpandButtons_CheckedChanged"
+                    IsChecked="True" />
+          <CheckBox Text="Full Row Select" Name="fullRowSelectCheckBox"
+                    Margin="0,5,0,0"
+                    CheckedChanged="FullRowSelectCheckBox_CheckedChanged"
+                    IsChecked="False" />
+          <Button Text="Has Border" Margin="0,5,0,5" Name="hasBorderButton"
+                  Click="HasBorderButton_Click"/>
+        </VerticalStackPanel>
+
+        <!-- ========================= -->
+
+        <VerticalStackPanel Name="stackPanel3" Visible="false" Title="Events"
+                            Padding="10">
+          <Button Text="Log Selected" Margin="0,3,0,0"
+                  Name="viewSelectedButton" Click="TreeView_SelectionChanged"/>
+          <GroupBox Title="Cancel Events" Margin="0,3,0,3" Padding="3" >
+            <VerticalStackPanel>
+              <CheckBox Text="BeforeExpand" Name="cancelBeforeExpandEventsCheckBox"
+                        IsChecked="False" />
+              <CheckBox Text="BeforeCollapse" Name="cancelBeforeCollapseEventsCheckBox"
+                        Margin="0,5,0,0"
+                        IsChecked="False" />
+              <CheckBox Text="BeforeLabelEdit" Name="cancelBeforeLabelEditEventsCheckBox"
+                        Margin="0,5,0,0"
+                        IsChecked="False" />
+              <CheckBox Text="AfterLabelEdit" Name="cancelAfterLabelEditEventsCheckBox"
+                        Margin="0,5,0,0"
+                        IsChecked="False" />
+            </VerticalStackPanel>
+          </GroupBox>
+        </VerticalStackPanel>
+        <!-- ========================= -->
+
+        <VerticalStackPanel Name="stackPanel4" Visible="false" Padding="10"
+                            Title="Popup">
+          <Button Text="Show TreeView Popup" Margin="10"
+                  Name="showPopupButton" Click="ShowPopupButton_Click"/>
+        </VerticalStackPanel>
+        <!-- ========================= -->
+      </TabControl>
+    </HorizontalStackPanel>
+  </Control>
+
+</Control>

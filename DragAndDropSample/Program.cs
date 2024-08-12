@@ -1,6 +1,7 @@
-using Alternet.UI;
+﻿using Alternet.UI;
 using System;
 using System.ComponentModel;
+using Alternet.Drawing;
 
 namespace DragAndDropSample
 {
@@ -10,7 +11,7 @@ namespace DragAndDropSample
         public static void Main()
         {
             var application = new Application();
-            var window = new MainWindow();
+            var window = new DragAndDropWindow();
 
             application.Run(window);
 

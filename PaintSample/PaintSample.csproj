@@ -1,60 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\CommonData\TargetFrameworks.props" />
+  <Import Project="..\CommonData\CommonProject.props" />
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <Platforms>AnyCPU;x64;x86</Platforms>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <ApplicationIcon>../CommonData/Sample.ico</ApplicationIcon>
+    <CommonResourcesPath>..\ControlsSampleDll\Resources</CommonResourcesPath>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="build\**" />
-    <EmbeddedResource Remove="build\**" />
-    <None Remove="build\**" />
-  </ItemGroup>
-  <ItemGroup Condition="$(DefineConstants.Contains(';NETFRAMEWORK'))">
-    <Reference Include="Microsoft.CSharp" />
+    <EmbeddedResource Include="$(CommonResourcesPath)\ToolIcons\Airbrush.svg" Link="Resources\ToolIcons\Airbrush.svg" />
+    <EmbeddedResource Include="$(CommonResourcesPath)\ToolIcons\Eraser.svg" Link="Resources\ToolIcons\Eraser.svg" />
+    <EmbeddedResource Include="$(CommonResourcesPath)\ToolIcons\FloodFill.svg" Link="Resources\ToolIcons\FloodFill.svg" />
+    <EmbeddedResource Include="$(CommonResourcesPath)\ToolIcons\Pen.svg" Link="Resources\ToolIcons\Pen.svg" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="MainWindow.uixml" />
-    <None Remove="ColorSelector\ColorSelector.uixml" />
-    <None Remove="Resources\CommandIcons\Redo.png" />
-    <None Remove="Resources\CommandIcons\Undo.png" />
-    <None Remove="Resources\ToolIcons\Airbrush.png" />
-    <None Remove="Resources\ToolIcons\Eraser.png" />
-    <None Remove="Resources\ToolIcons\FloodFill.png" />
-    <None Remove="Resources\ToolIcons\Pen.png" />
-    <None Remove="SampleImages\love-text-free-png-image.jpeg" />
-    <None Remove="SampleImages\love-text-free-png-image.png" />
-    <None Remove="SampleImages\love-text-free-png-image_64x64.ico" />
-    <None Remove="SampleImages\penguin-love-couple.svg" />
-    <None Remove="Toolbar\Toolbar.uixml" />
-    <None Remove="Tools\AirbrushToolOptionsControl.uixml" />
-    <None Remove="Tools\PenLikeToolOptionsControl.uixml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="SampleImages\love-text-free-png-image.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SampleImages\love-text-free-png-image_64x64.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SampleImages\penguin-love-couple.svg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\CommandIcons\Redo.png" />
-    <EmbeddedResource Include="Resources\CommandIcons\Undo.png" />
-    <EmbeddedResource Include="Resources\ToolIcons\FloodFill.png" />
-    <EmbeddedResource Include="Resources\ToolIcons\Eraser.png" />
-    <EmbeddedResource Include="Resources\ToolIcons\Airbrush.png" />
-    <EmbeddedResource Include="Resources\ToolIcons\Pen.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.503-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.623-beta" />
   </ItemGroup>
 </Project>

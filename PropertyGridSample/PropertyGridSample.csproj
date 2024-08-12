@@ -1,61 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\CommonData\TargetFrameworks.props" />
+  <Import Project="..\CommonData\CommonProject.props" />
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <Platforms>AnyCPU;x64;x86</Platforms>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <ApplicationIcon>../CommonData/Sample.ico</ApplicationIcon>
+    <CommonResourcesPath>..\ControlsSampleDll\Resources</CommonResourcesPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="build\**" />
-    <EmbeddedResource Remove="build\**" />
-    <None Remove="build\**" />
-  </ItemGroup>
-  <ItemGroup Condition="$(DefineConstants.Contains(';NETFRAMEWORK'))">
-    <Reference Include="Microsoft.CSharp" />
+    <Compile Include="..\PrintingSample\PrintingMainWindow.uixml.cs" Link="Links\PrintingSample\PrintingMainWindow.uixml.cs" />
+    <UIXml Include="..\PrintingSample\PrintingMainWindow.uixml" Link="Links\PrintingSample\PrintingMainWindow.uixml" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Resources\ButtonImages\ButtonImageDisabled.png" />
-    <None Remove="Resources\ButtonImages\ButtonImageFocused.png" />
-    <None Remove="Resources\ButtonImages\ButtonImageHovered.png" />
-    <None Remove="Resources\ButtonImages\ButtonImageNormal.png" />
-    <None Remove="Resources\ButtonImages\ButtonImagePressed.png" />
-    <None Remove="Resources\ImageListIcons\Large\Calendar32.png" />
-    <None Remove="Resources\ImageListIcons\Large\LineGraph32.png" />
-    <None Remove="Resources\ImageListIcons\Large\Pencil32.png" />
-    <None Remove="Resources\ImageListIcons\Large\Photo32.png" />
-    <None Remove="Resources\ImageListIcons\Small\Calendar16.png" />
-    <None Remove="Resources\ImageListIcons\Small\LineGraph16.png" />
-    <None Remove="Resources\ImageListIcons\Small\Pencil16.png" />
-    <None Remove="Resources\ImageListIcons\Small\Photo16.png" />
-    <None Remove="Resources\logo-128x128.png" />
-    <None Remove="Resources\welcome.html" />
+    <EmbeddedResource Include="$(CommonResourcesPath)\logo128x128.png" Link="Resources\logo128x128.png" />
+    <EmbeddedResource Include="$(CommonResourcesPath)\ButtonImages\**\*.*">
+      <Link>Resources\ButtonImages\%(RecursiveDir)/%(FileName)%(Extension)</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(CommonResourcesPath)\ImageListIcons\**\*.*">
+      <Link>Resources\ImageListIcons\%(RecursiveDir)/%(FileName)%(Extension)</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(CommonResourcesPath)\ToolBarPng\**\*.*">
+      <Link>Resources\ToolBarPng\%(RecursiveDir)/%(FileName)%(Extension)</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\welcome.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageDisabled.png" />
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageFocused.png" />
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageHovered.png" />
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImageNormal.png" />
-    <EmbeddedResource Include="Resources\ButtonImages\ButtonImagePressed.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Large\Calendar32.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Large\LineGraph32.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Large\Pencil32.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Large\Photo32.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Small\Calendar16.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Small\LineGraph16.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Small\Pencil16.png" />
-    <EmbeddedResource Include="Resources\ImageListIcons\Small\Photo16.png" />
-    <EmbeddedResource Include="Resources\logo-128x128.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.503-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.623-beta" />
   </ItemGroup>
 </Project>

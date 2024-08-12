@@ -1,0 +1,43 @@
+<Window xmlns="http://schemas.alternetsoft.com/ui/2021"
+        xmlns:x="http://schemas.alternetsoft.com/ui/2021/uixml"
+        x:Class="LayoutSample.StackLayoutPropertiesWindow"
+		xmlns:local="clr-namespace:LayoutSample" StartLocation="CenterScreen"
+        Title="Alternet UI Stack Layout Properties" Width="800" Height="500" >
+  <Control Padding="10">
+    <HorizontalStackPanel>
+
+      <TabControl Grid.Column="0" Margin="0,0,20,0" Name="tabControlPanel">
+
+        <StackPanel Orientation="Vertical" Padding="5" Title="Container"
+                    Name="containerStackPanel" Visible="true">
+          <Button Text="Increase Margin" Name="increaseContainerMarginButton"
+                  Click="IncreaseContainerMarginButton_Click" Margin="0,0,0,5" />
+          <Button Text="Increase Padding" Name="increaseContainerPaddingButton"
+                  Click="IncreaseContainerPaddingButton_Click" Margin="0,0,0,5" />
+
+          <CheckBox Text="Horizontal Layout" Name="horizontalContainerLayoutCheckBox"
+                    CheckedChanged="HorizontalContainerLayoutCheckBox_CheckedChanged"
+                    Margin="0,0,0,5" />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Title="Button"
+                    Padding="5" Name="buttonPanel" Visible="false">
+          <Button Text="Increase Margin" Name="increaseButtonMarginButton"
+                  Click="IncreaseButtonMarginButton_Click" Margin="0,0,0,5" />
+          <Button Text="Increase Padding" Name="increaseButtonPaddingButton"
+                  Click="IncreaseButtonPaddingButton_Click" Margin="0,0,0,5" />
+        </StackPanel>
+
+      </TabControl>
+
+      <GroupBox Grid.Column="1" Title="Container" Name="subjectGroupBox"
+                Margin="15" HorizontalAlignment="Fill" Padding="15">
+        <StackPanel Orientation="Vertical" Name="subjectPanel">
+          <Label Text="Before"  Margin="5"/>
+          <Button Text="Button" Name="subjectButton" Margin="5"/>
+          <Label Text="After" Margin="5"/>
+        </StackPanel>
+      </GroupBox>
+    </HorizontalStackPanel>
+  </Control>
+</Window>

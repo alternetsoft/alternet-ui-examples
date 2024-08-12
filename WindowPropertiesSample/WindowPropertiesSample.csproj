@@ -1,33 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\CommonData\TargetFrameworks.props" />
+  <Import Project="..\CommonData\CommonProject.props" />
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <Platforms>AnyCPU;x64;x86</Platforms>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <ApplicationIcon>../CommonData/Sample.ico</ApplicationIcon>
+    <CommonResourcesPath>..\ControlsSampleDll\Resources</CommonResourcesPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="build\**" />
-    <EmbeddedResource Remove="build\**" />
-    <None Remove="build\**" />
-  </ItemGroup>
-  <ItemGroup Condition="$(DefineConstants.Contains(';NETFRAMEWORK'))">
-    <Reference Include="Microsoft.CSharp" />
+    <EmbeddedResource Include="$(CommonResourcesPath)\TestIcon1.ico" Link="Resources\TestIcon1.ico" />
+    <EmbeddedResource Include="$(CommonResourcesPath)\TestIcon2.ico" Link="Resources\TestIcon2.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="OwnedWindow.uixml" />
-    <None Remove="Resources\TestIcon1.ico" />
-    <None Remove="Resources\TestIcon2.ico" />
-    <None Remove="TestWindow.uixml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\TestIcon1.ico" />
-    <EmbeddedResource Include="Resources\TestIcon2.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.503-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.623-beta" />
   </ItemGroup>
 </Project>
