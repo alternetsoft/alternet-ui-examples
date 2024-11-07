@@ -3,3 +3,5 @@ obj/
 .vs/
 packages/
 *.csproj.user
+.DS_Store
+ControlsSample/.DS_Store
