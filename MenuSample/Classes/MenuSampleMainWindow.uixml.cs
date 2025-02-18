@@ -7,6 +7,9 @@ namespace MenuSample
 {
     public partial class MenuMainWindow : Window
     {
+        private static readonly Command sampleCommand = new();
+        private static bool canExecuteSampleCommand = false;
+
         private readonly int dynamicToolbarItemsSeparatorIndex;
         private readonly bool IsDebugBackground = false;
         private readonly ToolBar toolbar = new();
@@ -21,6 +24,28 @@ namespace MenuSample
 
         static MenuMainWindow()
         {
+            sampleCommand.CanExecuteFunc = (param) =>
+            {
+                return canExecuteSampleCommand;
+            };
+
+            sampleCommand.ExecuteAction = (param) =>
+            {
+                var target = Command.CurrentTarget?.GetType().ToString() ?? "null";
+                var s = $"Run sample command on target <b>'{target}'</b> with param <b>'{param}'</b>";
+                ListControlItem item = new(s);
+                item.TextHasBold = true;
+                App.AddLogItem(item);
+            };
+
+            NamedCommands.Default.Register("SampleCommand", sampleCommand);
+            NamedCommands.Default.Register(
+                "ToggleSampleCommandEnabled",
+                (param) =>
+                {
+                    canExecuteSampleCommand = !canExecuteSampleCommand;
+                    sampleCommand.RaiseCanExecuteChanged();
+                });
         }
 
         public void ExportToPngCommand_Click(object? sender, EventArgs e)
@@ -47,16 +72,20 @@ namespace MenuSample
 
             toolbar.TextVisible = true;
             toolbar.ItemSize = 32;
-            toolbar.Margin = (0, 0, 0, 4);
+            toolbar.Margin = (0, 0, 0, ToolBar.DefaultDistanceToContent);
+            toolbar.Padding = 1;
 
             toolbar.Parent = this;
 
             InitializeComponent();
 
-            noDividerCheckBox.Enabled = false;
+            noDividerCheckBox.Enabled = true;
+            noDividerCheckBox.IsChecked = false;
+            toolbar.SetVisibleBorders(false, false, false, true);
+
             verticalCheckBox.Enabled = false;
             isRightCheckBox.Enabled = false;
-            isBottomCheckBox.Enabled = false;
+            isBottomCheckBox.Enabled = true;
             imageToTextDisplayModeComboBox.Enabled = false;
 
             InitToolbar();
@@ -82,7 +111,7 @@ namespace MenuSample
             contextMenuBorder.BorderColor = Color.Red;
             contextMenuBorder.BorderWidth = new Thickness(2, 2, 2, 2);
 
-            contextMenuLabel.Font = Control.DefaultFont.AsBold;
+            contextMenuLabel.Font = AbstractControl.DefaultFont.AsBold;
             contextMenuBorder.PerformLayout();
 
             mainPanel.TabAlignment = TabAlignment.Left;
@@ -100,6 +129,31 @@ namespace MenuSample
             saveMenuItem.Image = KnownSvgImages.ImgFileSave.AsNormal(16, IsDarkBackground);
 
             eventsListBox.BindApplicationLog();
+
+            openMenuItem.Opened += MenuItem_Opened;
+            openMenuItem.Closed += MenuItem_Closed;
+            openMenuItem.Highlighted += MenuItem_Highlighted;
+
+            fileMenu.Opened += MenuItem_Opened;
+            fileMenu.Closed += MenuItem_Closed;
+            fileMenu.Highlighted += MenuItem_Highlighted;
+
+            aboutMenuItem.SvgImage = KnownColorSvgImages.ImgLogo;
+        }
+
+        private void MenuItem_Highlighted(object sender, EventArgs e)
+        {
+            LogEvent($"Menu Item '{(sender as MenuItem)?.Name}': Highlighted");
+        }
+
+        private void MenuItem_Closed(object sender, EventArgs e)
+        {
+            LogEvent($"Menu Item '{(sender as MenuItem)?.Name}': Closed");
+        }
+
+        private void MenuItem_Opened(object sender, EventArgs e)
+        {
+            LogEvent($"Menu Item '{(sender as MenuItem)?.Name}': Opened");
         }
 
         private StatusBar? GetStatusBar() => StatusBar as StatusBar;
@@ -138,7 +192,7 @@ namespace MenuSample
             GetStatusBar()?.Panels.Clear();
         }
 
-        internal void SetDebugBackground(Control control)
+        internal void SetDebugBackground(AbstractControl control)
         {
             if (!IsDebugBackground)
                 return;
@@ -172,6 +226,7 @@ namespace MenuSample
                 null,
                 "Calendar Toolbar Item",
                 ToolbarItem_Click);
+            toolbar.SetToolShortcut(calendarToolbarItem, Key.C, Alternet.UI.ModifierKeys.Control);
 
             photoToolbarItem = toolbar.AddSpeedBtn(
                 "Photo",
@@ -353,14 +408,14 @@ namespace MenuSample
 
         private void ToolbarItem_Click(object? sender, EventArgs e)
         {
-            if (sender is not Control button)
+            if (sender is not AbstractControl button)
                 return;
             LogEvent("Toolbar item clicked: " + button.ToolTip);
         }
 
         private void ToggleToolbarItem_Click(object? sender, EventArgs e)
         {
-            if (sender is not Control button)
+            if (sender is not AbstractControl button)
                 return;
             toolbar.ToggleToolSticky(button.UniqueId);
             var sticky = toolbar.GetToolSticky(button.UniqueId);
@@ -437,16 +492,19 @@ namespace MenuSample
             ImageTextVertical();*/
         }
 
-        private void IsBottomCheckBox_Changed(object? sender, EventArgs e)
-        {
-            /*if (toolbar != null)
-                toolbar.IsBottom = isBottomCheckBox.IsChecked;*/
-        }
-
         private void NoDividerCheckBox_Changed(object? sender, EventArgs e)
         {
-            /*if (toolbar != null)
-                toolbar.NoDivider = noDividerCheckBox.IsChecked;*/
+            if (toolbar is null)
+                return;
+
+            if (noDividerCheckBox.IsChecked)
+            {
+                toolbar.HasBorder = false;
+            }
+            else
+            {
+                toolbar.SetVisibleBorders(false, false, false, true);
+            }
         }
 
         private void VerticalCheckBox_Changed(object? sender, EventArgs e)
@@ -486,6 +544,21 @@ namespace MenuSample
 
             if (s != null)
                 s.SizingGripVisible = !s.SizingGripVisible;
+        }
+
+        private void IsBottomCheckBox_Changed(object? sender, EventArgs e)
+        {
+            if (toolbar == null)
+                return;
+            if (isBottomCheckBox.IsChecked)
+            {
+
+                toolbar.MakeBottomAligned();
+            }
+            else
+            {
+                toolbar.MakeTopAligned();
+            }
         }
     }
 }

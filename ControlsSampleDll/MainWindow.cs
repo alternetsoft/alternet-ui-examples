@@ -7,180 +7,73 @@ using Alternet.UI;
 
 namespace ControlsSample
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : CustomDemoWindow
     {
-        public static bool LogFocusedControl = false;
-
-        private SplittedTreeAndCards? pageContainer;
-        private readonly LogListBox eventsControl;
-        private readonly LayoutPanel splitterPanel;
-        private readonly Control panel;
-        private readonly Splitter splitter = new();
-
         static MainWindow()
         {
-            UixmlLoader.LoadFromResName = FormLoadFromResName;
-            UixmlLoader.LoadFromStream = FormLoadFromStream;
-            UixmlLoader.ReportLoadException = ReportFormLoadException;
-
-            UseDebugBackgroundColor = false;
-
-            ResourceLoader.CustomStreamFromUrl += ResourceLoader_CustomStreamFromUrl;
-            ResourceLoader.CustomStreamFromUrl += ResourceLoader_CustomStreamFromUrl2;
-
-            Control.FocusedControlChanged += (s, e) =>
+            DebugUtils.RegisterExceptionsLoggerIfDebug((e) =>
             {
-                if(LogFocusedControl)
-                    App.LogReplace($"FocusedControl: {FocusedControl?.GetType()}", "FocusedControl:");
-            };
-
-            LogUtils.RegisterLogAction("Toggle LogFocusedControl", () =>
-            {
-                LogFocusedControl = !LogFocusedControl;
             });
+
+            UixmlLoader.Initialize();
+
+            DefaultUseParentFont = true;
+
+            AddGlobalWindowNotification(new GlobalFormActivity());
         }
 
-        public MainWindow()
+        protected override void OnClosing(WindowClosingEventArgs e)
         {
-            SupressEsc = true;
+            base.OnClosing(e);
 
-            eventsControl = new()
+            FormUtils.CloseOtherWindows(exceptWindow:this);
+        }
+
+        protected override void AddPages()
+        {
+            try
             {
-                Dock = DockStyle.Bottom,
-                HasBorder = false,
-                Margin = (0, 10, 0, 0),
-            };
+                AddPage("Welcome", CreateWelcomePage);
+                AddPage("Text", CreateTextInputPage);
+                AddPage("ListBoxes", CreateListControlsPage);
+                AddPage("Buttons", CreateButtonsPage);
+                AddPage("TreeView", CreateTreeViewPage);
+                AddPage("ListView", CreateListViewPage);
+                AddPage("DateTime", CreateDateTimePage);
+                AddPage("WebBrowser", CreateWebBrowserPage);
+                AddPage("Number", CreateNumericInputPage);
+                AddPage("Slider, Progress", CreateSliderAndProgressPage);
+                AddPage("Layout", CreateLayoutPage);
+                AddPage("Notify, ToolTip", CreateNotifyIconPage);
+                AddPage("TabControl", CreateTabControlPage);
+                AddPage("Multimedia", CreateMultimediaPage);
+                AddPage("Samples", CreateOtherPage);
 
-            splitterPanel = new()
-            {
-            };
-
-            panel = new()
-            {
-                Padding = 5,
-            };
-
-            eventsControl.BindApplicationLog();
-            ConsoleUtils.BindConsoleOutput();
-            ConsoleUtils.BindConsoleError();
-            DoInsideLayout(Initialize);
-        }
-
-        public static bool FormLoadFromResName(string resName, object obj, UixmlLoader.Flags flags)
-        {
-            return false;
-        }
-
-        public static bool FormLoadFromStream(
-            Stream stream,
-            object obj,
-            string? resName,
-            UixmlLoader.Flags flags)
-        {
-            return false;
-        }
-
-        public static bool ReportFormLoadException(Exception e, string? resName, UixmlLoader.Flags flags)
-        {
-            return false;
-        }
-
-        internal void SetDebugColors()
-        {
-            DebugBackgroundColor(Color.Red, nameof(MainWindow));
-            pageContainer?.SetDebugColors();
-        }
-
-        public void Initialize()
-        {
-            pageContainer = new(SplittedTreeAndCards.TreeKind.ListBox);
-            panel.Parent = this;
-            Title = "AlterNET UI Demo";
-            Size = (900, 700);
-            StartLocation = WindowStartLocation.CenterScreen;
-
-            Icon = new("embres:ControlsSampleDll.Sample.ico");
-
-            void AddPage(string title, Func<Control> action)
-            {
-                pageContainer.Add(title, action);
+                if (DebugUtils.IsDebugDefined)
+                {
+                    AddPage("Dialogs", CreateDialogsPage);
+                }
             }
-
-            AddPage("Welcome", CreateWelcomePage);
-            AddPage("Text", CreateTextInputPage);
-            AddPage("ListBoxes", CreateListControlsPage);
-            AddPage("Buttons", CreateButtonsPage);
-            AddPage("TreeView", CreateTreeViewPage);
-            AddPage("ListView", CreateListViewPage);
-            AddPage("DateTime", CreateDateTimePage);
-            AddPage("WebBrowser", CreateWebBrowserPage);
-            AddPage("Number", CreateNumericInputPage);
-            AddPage("Slider and Progress", CreateSliderAndProgressPage);
-            AddPage("Layout", CreateLayoutPage);
-            AddPage("Notify and ToolTip", CreateNotifyIconPage);
-            AddPage("TabControl", CreateTabControlPage);
-            AddPage("Multimedia", CreateMultimediaPage);
-            AddPage("Samples", CreateOtherPage);
-
-            LogUtils.DebugLogVersion();
-
-            splitterPanel.Parent = panel;
-            pageContainer.Dock = DockStyle.Fill;
-            splitter.Dock = DockStyle.Bottom;
-            pageContainer.Parent = splitterPanel;
-            splitter.Parent = splitterPanel;
-            eventsControl.Height = 150;
-            eventsControl.Parent = splitterPanel;
-
-            pageContainer.SelectedIndex = 0;
-            pageContainer.ListBox!.HScrollBarVisible = true;
-            pageContainer.LeftControl?.SetFocusIfPossible();
-
-            var logSizeChanged = false;
-
-            if (logSizeChanged)
+            catch (Exception e)
             {
-                SizeChanged += MainWindow_SizeChanged;
-                StateChanged += MainWindow_StateChanged;
+                LogUtils.LogExceptionToFile(e);
             }
         }
 
-        private void MainWindow_StateChanged(object? sender, EventArgs e)
+        AbstractControl CreateListControlsPage()
         {
-            App.Log($"State changed: {Size}, {this.State}");
-        }
-
-        private void MainWindow_SizeChanged(object? sender, EventArgs e)
-        {
-            App.Log($"Size changed: {Size}, {this.State}");
-        }
-
-        Control CreateCustomPage(NameValue<Func<Control>>?[] pages)
-        {
-            TabControl result = new()
-            {
-                Margin = 10,
-            };
-
-            result.ContentPadding = 5;
-
-            result.AddRange(pages);
-            return result;
-        }
-
-        Control CreateListControlsPage()
-        {
-            NameValue<Func<Control>>? popupNameValue;
+            NameValue<Func<AbstractControl>>? popupNameValue;
 
             popupNameValue = new("Popup", () => new ListControlsPopups());
 
-            NameValue<Func<Control>>?[] pages =
+            NameValue<Func<AbstractControl>>?[] pages =
             {
                 new("List", () => new ListBoxPage()),
                 new("Checks", () => new CheckListBoxPage()),
                 new("Combo", () => new ComboBoxPage()),
                 new("Virtual", () => new VListBoxSamplePage()),
                 new("Colors", () => new ColorListBoxSamplePage()),
+                new("Other", () => new ListControlsOtherPage()),               
 
                 popupNameValue,
             };
@@ -188,9 +81,9 @@ namespace ControlsSample
             return CreateCustomPage(pages);
         }
 
-        Control CreateButtonsPage()
+        AbstractControl CreateButtonsPage()
         {
-            NameValue<Func<Control>>[] pages =
+            NameValue<Func<AbstractControl>>[] pages =
             {
                 new("Button", () => new ButtonPage()),
                 new("Check", () => new CheckBoxesPage()),
@@ -200,9 +93,9 @@ namespace ControlsSample
             return CreateCustomPage(pages);
         }
 
-        Control CreateSliderAndProgressPage()
+        AbstractControl CreateSliderAndProgressPage()
         {
-            NameValue<Func<Control>>[] pages =
+            NameValue<Func<AbstractControl>>[] pages =
             {
                 new("Slider", () => new SliderPage()),
                 new("Progress", () => new ProgressBarPage()),
@@ -211,20 +104,32 @@ namespace ControlsSample
             return CreateCustomPage(pages);
         }
 
-        Control CreateOtherPage()
+        AbstractControl CreateDialogsPage()
         {
-            NameValue<Func<Control>>[] pages =
+            return Window.CreateAs<CommonDialogsWindow>(WindowKind.Control);
+        }
+
+        AbstractControl CreateOtherPage()
+        {
+            NameValue<Func<AbstractControl>>[] pagesDebug =
             {
                 new("Internal", CreateInternalSamplesPage),
                 /*new("External", CreateAllSamplesPage),*/
             };
 
+            NameValue<Func<AbstractControl>>[] pagesRelease =
+            {
+                new("Internal", CreateInternalSamplesPage),
+            };
+
+            var pages = DebugUtils.IsDebugDefined ? pagesDebug : pagesRelease;
+
             return CreateCustomPage(pages);
         }
 
-        Control CreateTextInputPage()
+        AbstractControl CreateTextInputPage()
         {
-            NameValue<Func<Control>>[] pages =
+            NameValue<Func<AbstractControl>>[] pages =
             {
                 new("Text", () => new TextInputPage()),
 
@@ -249,12 +154,16 @@ namespace ControlsSample
                 }),
             };
 
-            return CreateCustomPage(pages);
+            var result = CreateCustomPage(pages);
+
+            result.ContentPadding = 0;
+
+            return result;
         }
 
-        Control CreateLayoutPage()
+        AbstractControl CreateLayoutPage()
         {
-            NameValue<Func<Control>>[] pages =
+            NameValue<Func<AbstractControl>>[] pages =
             {
                 new("Splitter", () => new LayoutPanelPage()),
                 new("Grid", () => new GridPage()),
@@ -264,9 +173,9 @@ namespace ControlsSample
             return CreateCustomPage(pages);
         }
 
-        Control CreateDateTimePage()
+        AbstractControl CreateDateTimePage()
         {
-            NameValue<Func<Control>>[] pages =
+            NameValue<Func<AbstractControl>>[] pages =
             {
                 new("DateTime", () => new DateTimePage()),
                 new("Calendar", () => new CalendarPage()),
@@ -276,16 +185,16 @@ namespace ControlsSample
             return CreateCustomPage(pages);
         }
 
-        Control CreateMultimediaPage()
+        AbstractControl CreateMultimediaPage()
         {
-            NameValue<Func<Control>>? animationNameValue;
+            NameValue<Func<AbstractControl>>? animationNameValue;
 
             if (!App.IsLinuxOS)
                 animationNameValue = new("Animation", () => new AnimationPage());
             else
                 animationNameValue = null;
 
-            NameValue<Func<Control>>?[] pages =
+            NameValue<Func<AbstractControl>>?[] pages =
             {
                 new("System Sounds", () => new SystemSoundsPage()),
                 new("Sound Player", () => new SoundPlayerPage()),
@@ -295,15 +204,33 @@ namespace ControlsSample
             return CreateCustomPage(pages);
         }
 
-        Control CreateTreeViewPage() => new TreeViewPage();
-        Control CreateListViewPage() => new ListViewPage();
-        Control CreateTabControlPage() => new TabControlPage();
-        Control CreateNumericInputPage() => new NumericInputPage();
-        Control CreateNotifyIconPage() => new NotifyIconPage();
-        Control CreateWebBrowserPage() => new WebBrowserPage();
-        Control CreateAllSamplesPage() => new AllSamplesPage();
-        Control CreateInternalSamplesPage() => new InternalSamplesPage();
-        Control CreateWelcomePage() => new WelcomePage();
+        AbstractControl CreateTreeViewPage() => new TreeViewPage();
+        AbstractControl CreateListViewPage() => new ListViewPage();
+        AbstractControl CreateTabControlPage() => new TabControlPage();
+        AbstractControl CreateNumericInputPage() => new NumericInputPage();
+        
+        AbstractControl CreateNotifyIconPage()
+        {
+            NameValue<Func<AbstractControl>>? nameValue;
+
+            if (NotifyIcon.IsAvailable)
+                nameValue = new("Notify Icon", () => new NotifyIconPage());
+            else
+                nameValue = null;
+
+            NameValue<Func<AbstractControl>>?[] pages =
+            {
+                new("Rich ToolTip", () => new ToolTipPage()),
+                nameValue,
+            };
+
+            return CreateCustomPage(pages);
+        }
+
+        AbstractControl CreateWebBrowserPage() => new WebBrowserPage();
+        /*AbstractControl CreateAllSamplesPage() => new AllSamplesPage();*/
+        AbstractControl CreateInternalSamplesPage() => new InternalSamplesPage();
+        AbstractControl CreateWelcomePage() => new WelcomePage();
 
         private void LinkLabel_LinkClicked(
             object? sender,
@@ -314,31 +241,12 @@ namespace ControlsSample
             LogEvent(linkLabel.Url);
         }
 
-        [Browsable(false)]
-        public string? LastEventMessage => eventsControl.LastLogMessage;
-
-        public void LogEventSmart(string? message, string? prefix)
+        private class GlobalFormActivity : BaseControlActivity
         {
-            eventsControl.LogReplace(message, prefix);
-        }
-
-        public void LogEvent(string? message)
-        {
-            eventsControl.Log(message);
-        }
-
-        private static void ResourceLoader_CustomStreamFromUrl(object? sender, StreamFromUrlEventArgs e)
-        {
-            if (e.Value is null)
-                return;
-
-            e.Handled = true;
-            e.Result = ResourceLoader.DefaultStreamFromUrl(e.Value);
-        }
-
-        private static void ResourceLoader_CustomStreamFromUrl2(object? sender, StreamFromUrlEventArgs e)
-        {
-            App.Log("CustomStreamFromUrl 2");
+            public override void AfterCreate(AbstractControl sender, EventArgs e)
+            {
+                ControlActivities.KeyboardZoomInOut.Initialize(sender);
+            }
         }
     }
 }

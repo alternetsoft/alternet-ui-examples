@@ -15,7 +15,6 @@ namespace LayoutSample
         {
             InitializeComponent();
 
-            imageControl.Zoom = 2;
             imageControl.Image = Image.FromAssemblyUrl(GetType().Assembly,"Resources.logo128x128.png");
             imageScrollViewer.Children.Add(imageControl);
 
@@ -30,41 +29,40 @@ namespace LayoutSample
 
         private void InitializeStackPanel()
         {
-            stackPanel.BeginInit();
-            for (int i = 0; i < 50; i++)
-                AddControlToStackPanel();
-            stackPanel.EndInit();
+            stackPanel.DoInsideInit(() =>
+            {
+                for (int i = 0; i < 50; i++)
+                    AddControlToStackPanel();
+            });
         }
 
         private void InitializeGrid()
         {
-            int rowCount = 10;
-            int columnCount = 10;
-
-            grid.BeginInit();
-            for (int i = 0; i < columnCount; i++)
-                grid.ColumnDefinitions.Add(new ColumnDefinition());
-
-            for (int i = 0; i < rowCount; i++)
-                grid.RowDefinitions.Add(new RowDefinition());
-
-            for (int columnIndex = 0; columnIndex < grid.ColumnDefinitions.Count; columnIndex++)
+            grid.DoInsideInit(() =>
             {
-                for (int rowIndex = 0; rowIndex < grid.RowDefinitions.Count; rowIndex++)
+                int rowCount = 10;
+                int columnCount = 10;
+
+                grid.RowColumnCount = new(rowCount, columnCount);
+
+                for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
                 {
-                    AddControlToGrid(columnIndex, rowIndex);
+                    for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+                    {
+                        AddControlToGrid(columnIndex, rowIndex);
+                    }
                 }
-            }
-            grid.EndInit();
+            });
         }
 
         private void AddControlToGrid(int columnIndex, int rowIndex)
         {
-            var control = new Button { Text = $"{rowIndex}.{columnIndex}" };
-            grid.Children.Add(control);
-
-            Grid.SetColumn(control, columnIndex);
-            Grid.SetRow(control, rowIndex);
+            new Button
+            {
+                Text = $"{rowIndex}.{columnIndex}",
+                RowColumn = new(rowIndex, columnIndex),
+                Parent = grid,
+            };
         }
 
         private void AddControlToStackPanel()
@@ -82,7 +80,8 @@ namespace LayoutSample
             InitializeEnumComboBox(gridHorizontalAlignmentComboBox, HorizontalAlignment.Stretch);
         }
 
-        private void InitializeEnumComboBox<TEnum>(ComboBox comboBox, TEnum defaultValue) where TEnum : Enum
+        private void InitializeEnumComboBox<TEnum>(ComboBox comboBox, TEnum defaultValue)
+            where TEnum : Enum
         {
             foreach (var item in Enum.GetValues(typeof(TEnum)))
                 comboBox.Items.Add(item ?? throw new Exception());
@@ -91,17 +90,24 @@ namespace LayoutSample
 
         private void OrientationComboBox_SelectedItemChanged(object? sender, System.EventArgs e)
         {
+            scrollViewerStack.LayoutOffset = PointD.Empty;
             stackPanel.Orientation = (StackPanelOrientation)orientationComboBox.SelectedItem!;
         }
 
-        private void StackPanelVerticalAlignmentComboBox_SelectedItemChanged(object? sender, EventArgs e)
+        private void StackPanelVerticalAlignmentComboBox_SelectedItemChanged(
+            object? sender,
+            EventArgs e)
         {
-            stackPanel.VerticalAlignment = (VerticalAlignment)stackPanelVerticalAlignmentComboBox.SelectedItem!;
+            stackPanel.VerticalAlignment
+                = (VerticalAlignment)stackPanelVerticalAlignmentComboBox.SelectedItem!;
         }
 
-        private void StackPanelHorizontalAlignmentComboBox_SelectedItemChanged(object? sender, EventArgs e)
+        private void StackPanelHorizontalAlignmentComboBox_SelectedItemChanged(
+            object? sender,
+            EventArgs e)
         {
-            stackPanel.HorizontalAlignment = (HorizontalAlignment)stackPanelHorizontalAlignmentComboBox.SelectedItem!;
+            stackPanel.HorizontalAlignment
+                = (HorizontalAlignment)stackPanelHorizontalAlignmentComboBox.SelectedItem!;
         }
 
         private void AddControlToStackPanelButton_Click(object? sender, EventArgs e)
@@ -160,13 +166,16 @@ namespace LayoutSample
         private void GridVerticalAlignmentComboBox_SelectedItemChanged(object sender, EventArgs e)
         {
             if (gridHorizontalAlignmentComboBox.SelectedItem != null)
-                grid.HorizontalAlignment = (HorizontalAlignment)gridHorizontalAlignmentComboBox.SelectedItem!;
+            {
+                grid.HorizontalAlignment
+                    = (HorizontalAlignment)gridHorizontalAlignmentComboBox.SelectedItem!;
+            }                
         }
 
         private void UpdateImageZoom()
         {
             if(imageControl != null && zoomSlider!=null)
-                imageControl.Zoom = zoomSlider.Value;
+                imageControl.Zoom = 1 + 0.1 * zoomSlider.Value;
         }
 
         private void ZoomSlider_ValueChanged(object sender, EventArgs e)

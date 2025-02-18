@@ -8,11 +8,14 @@ using Alternet.Base.Collections;
 using Alternet.Drawing;
 using System.Diagnostics;
 using System.ComponentModel;
+using System.IO;
 
 namespace PropertyGridSample
 {
     public partial class MainWindow
     {
+        private static bool alreadyRegistered;
+
         public Collection<string> ItemsString { get; set; } = NewCollection<string>();
         public Collection<object> ItemsObject { get; set; } = NewCollection<object>();
         public Brush BrushValue { get; set; } = Brush.Default;
@@ -22,25 +25,87 @@ namespace PropertyGridSample
         {
         }
 
-        void InitSimpleTestActions()
+        void AddControlAction<T>(string title, Action<T> action)
+            where T : AbstractControl
         {
-#if DEBUG
-            PropertyGrid.AddSimpleAction<PanelOkCancelButtons>("Reorder buttons", ReorderButtonsTest);
+            PropertyGrid.AddSimpleAction<T>(title, () =>
+            {
+                var selectedControl = GetSelectedControl<T>();
+                if (selectedControl is null)
+                    return;
+                action(selectedControl);
+            });
+        }
 
-            PropertyGrid.AddSimpleAction<ToolBar>("Test Visible", TestGenericToolBarVisible);
-            PropertyGrid.AddSimpleAction<ToolBar>("Test Enabled", TestGenericToolBarEnabled);
-            PropertyGrid.AddSimpleAction<ToolBar>("Test Delete", TestGenericToolBarDelete);
-            PropertyGrid.AddSimpleAction<ToolBar>("Test Sticky", TestGenericToolBarSticky);
-            PropertyGrid.AddSimpleAction<ToolBar>("Test Foreground Color", TestGenericToolBarForegroundColor);
-            PropertyGrid.AddSimpleAction<ToolBar>("Test Background Color", TestGenericToolBarBackgroundColor);
-            PropertyGrid.AddSimpleAction<ToolBar>("Test Font", TestGenericToolBarFont);
-            PropertyGrid.AddSimpleAction<ToolBar>("Test Background", TestGenericToolBarBackground);
-            PropertyGrid.AddSimpleAction<ToolBar>("Reset Background", TestGenericToolBarResetBackground);
-            PropertyGrid.AddSimpleAction<ToolBar>("Clear", TestGenericToolBarClear);
-            PropertyGrid.AddSimpleAction<ToolBar>("Add OK button", TestGenericToolBarAddOk);
-            PropertyGrid.AddSimpleAction<ToolBar>("Add Cancel button", TestGenericToolBarAddCancel);
-            PropertyGrid.AddSimpleAction<ToolBar>("ReInit", TestGenericToolBarReInit);
-#endif
+        [Conditional("DEBUG")]
+        void InitTestsAll()
+        {
+            if (alreadyRegistered)
+                return;
+            alreadyRegistered = true;
+
+            InitTestsToolBar();
+            InitTestsTextBoxAndButton();
+            InitTestsTextBox();
+            InitTestsPictureBox();
+            InitTestsListBox();
+            InitTestsTreeView();
+            InitTestsListView();
+            InitTestsButton();
+            InitTestsSpeedButton();
+            InitTestsTabControl();
+
+            void InitTestsTabControl()
+            {
+                AddControlAction<TabControl>("Enum loaded pages", (c) =>
+                {
+                    LogUtils.LogRange(c.LoadedPages.Select(x => x.GetType()));
+                });
+            }
+
+            void InitTestsButton()
+            {
+                AddControlAction<Button>("Set Command", (c) =>
+                {
+                    c.Command = NamedCommands.CommandAppLog;
+                    c.CommandParameter = "Button.Command executed";
+                });
+            }
+
+            void InitTestsSpeedButton()
+            {
+                AddControlAction<SpeedButton>("Set Command", (c) =>
+                {
+                    c.Command = NamedCommands.CommandAppLog;
+                    c.CommandParameter = "SpeedButton.Command executed";
+                });
+            }
+
+            void InitTestsListBox()
+            {
+                AddControlAction<VirtualListBox>("Add 5000 items", (c) =>
+                {
+                    ObjectInit.AddManyItems(c);
+                });
+
+                AddControlAction<VirtualListBox>("Set dark theme", (c) =>
+                {
+                    c.SetColorThemeToDark();
+                });
+
+                AddControlAction<VirtualListBox>("Reset theme", (c) =>
+                {
+                    c.SetColorThemeToDefault();
+                });
+
+                AddControlAction<ColorListBox>("Set system colors", (c) =>
+                {
+                    c.RemoveAll();
+                    c.AddColors([KnownColorCategory.System], false);
+                });
+            }
+
+            PropertyGrid.AddSimpleAction<PanelOkCancelButtons>("Reorder buttons", ReorderButtonsTest);
         }
 
         void TestMemoFindReplace(bool replace)
@@ -49,154 +114,7 @@ namespace PropertyGridSample
             if (control is null)
                 return;
             var pair = FindReplaceControl.CreateInsideDialog(replace);
-            pair.Dialog.ShowModal();
-        }
-
-        internal void TestMemoFind()
-        {
-            TestMemoFindReplace(false);
-        }
-
-        internal void TestMemoReplace()
-        {
-            TestMemoFindReplace(true);
-        }
-
-        void TestRichFindReplace(bool replace)
-        {
-            var control = GetSelectedControl<RichTextBox>();
-            if (control is null)
-                return;
-
-        }
-
-        internal void TestRichFind()
-        {
-            TestRichFindReplace(false);
-        }
-
-        internal void TestRichReplace()
-        {
-            TestRichFindReplace(true);
-        }
-
-        void TestGenericToolBarFont()
-        {
-            var control = GetSelectedControl<ToolBar>();
-            if (control is null)
-                return;
-            control.Font = Control.DefaultFont.Scaled(2);
-        }
-
-        void TestGenericToolBarForegroundColor()
-        {
-            var control = GetSelectedControl<ToolBar>();
-            if (control is null)
-                return;
-            control.ForegroundColor = Color.Red;
-        }
-
-        void TestGenericToolBarBackgroundColor()
-        {
-            var control = GetSelectedControl<ToolBar>();
-            if (control is null)
-                return;
-            control.Background = null;
-            control.BackgroundColor = Color.DarkOliveGreen;
-        }
-
-        void TestGenericToolBarBackground()
-        {
-            var control = GetSelectedControl<ToolBar>();
-            if (control is null)
-                return;
-            control.Background = Color.RebeccaPurple.AsBrush;
-            control.BackgroundColor = null;
-        }
-
-        void TestGenericToolBarClear()
-        {
-            var control = GetSelectedControl<ToolBar>();
-            if (control is null)
-                return;
-            control.DeleteAll();
-        }
-
-        void TestGenericToolBarAddOk()
-        {
-            var control = GetSelectedControl<ToolBar>();
-            if (control is null)
-                return;
-            control.AddSpeedBtn(KnownButton.OK);
-        }
-
-        void TestGenericToolBarAddCancel()
-        {
-            var control = GetSelectedControl<ToolBar>();
-            if (control is null)
-                return;
-            control.AddSpeedBtn(KnownButton.Cancel);
-        }
-
-        void TestGenericToolBarReInit()
-        {
-            var control = GetSelectedControl<ToolBar>();
-            if (control is null)
-                return;
-            control.DeleteAll(false);
-            ObjectInit.InitGenericToolBar(control);
-        }
-
-
-        void TestGenericToolBarResetBackground()
-        {
-            var control = GetSelectedControl<ToolBar>();
-            if (control is null)
-                return;
-            control.Background = null;
-            control.BackgroundColor = null;
-        }
-
-        void TestGenericToolBarVisible()
-        {
-            var control = GetSelectedControl<ToolBar>();
-            if (control is null)
-                return;
-            var childId = control.GetToolId(1);
-            var value = control.GetToolVisible(childId);
-            value = !value;
-            control.SetToolVisible(childId, value);
-        }
-
-        void TestGenericToolBarEnabled()
-        {
-            var control = GetSelectedControl<ToolBar>();
-            if (control is null)
-                return;
-            var childId = control.GetToolId(1);
-            var enabled = control.GetToolEnabled(childId);
-            enabled = !enabled;
-            control.SetToolEnabled(childId, enabled);
-        }
-
-        void TestGenericToolBarSticky()
-        {
-            var control = GetSelectedControl<ToolBar>();
-            if (control is null)
-                return;
-            var childId = control.GetToolId(1);
-            var value = control.GetToolSticky(childId);
-            value = !value;
-            control.SetToolSticky(childId, value);
-        }
-
-        void TestGenericToolBarDelete()
-        {
-            var control = GetSelectedControl<ToolBar>();
-            if (control is null)
-                return;
-            var childId = control.GetToolId(1);
-            control.DeleteTool(childId);
+            pair.Dialog.Show();
         }
 
         internal void LogPropGridColors()
@@ -234,23 +152,40 @@ namespace PropertyGridSample
 
         private void ControlPanel_MouseDown(object? sender, MouseEventArgs e)
         {
-            if (sender == parentParent && e.RightButton == MouseButtonState.Pressed)
-                UpdatePropertyGrid(controlPanelBorder);
+            if (sender == ControlParent && e.RightButton == MouseButtonState.Pressed)
+                UpdatePropertyGrid(ControlParent);
         }
 
         private void LogEvent(string name, bool logAlways = false)
         {
-            var propValue = PropGrid.EventPropValue;
-            if (propValue is Color color)
-                propValue = color.ToDebugString();
-            propValue ??= "NULL";
-            string propName = PropGrid.EventPropName;
-            string s = $"Event: {name}. {propName} = {propValue}";
+            IPropertyGridItem? item = PropGrid.EventProperty;
 
-            if (logAlways)
-                App.Log(s);
+            if(item is null
+                || item.Instance is null || item.PropInfo is null)
+            {
+                var propValue = PropGrid.EventPropValue;
+                if (propValue is Color color)
+                    propValue = color.ToDebugString();
+                propValue ??= "NULL";
+                string propName = PropGrid.EventPropName;
+                string s = $"Event: [{name}] {propName} = {propValue}";
+
+                if (logAlways)
+                    App.Log(s);
+                else
+                    App.LogReplace(s, s);
+            }
             else
-                App.LogReplace(s, s);
+            {
+                var value = item.PropInfo.GetValue(item.Instance);
+                var type = item.Instance.GetType().Name;
+                string s = $"Event: [{name}] {type}.{item.PropInfo.Name} = {value}";
+
+                if (logAlways)
+                    App.Log(s);
+                else
+                    App.LogReplace(s, s);
+            }
         }
 
         private void PGPropertySelected(object? sender, EventArgs e)
@@ -261,6 +196,7 @@ namespace PropertyGridSample
 
         private void PGPropertyChanged(object? sender, EventArgs e)
         {
+            ControlParent.Invalidate();
             if (PropertyGridSettings.Default!.LogPropertyChanged)
                 LogEvent("PropertyChanged");
         }

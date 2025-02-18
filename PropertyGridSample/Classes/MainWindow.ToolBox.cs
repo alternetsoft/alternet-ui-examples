@@ -14,7 +14,7 @@ namespace PropertyGridSample
     {
         public static readonly List<Type> LimitedTypesStatic = new();
 
-        private List<Type> LimitedTypes = new();
+        private readonly List<Type> LimitedTypes = new();
 
         private T? GetSelectedControl<T>()
         {
@@ -36,10 +36,17 @@ namespace PropertyGridSample
 
         private void InitToolBox()
         {
-            InitSimpleTestActions();
+            InitTestsAll();
 
             void Fn()
             {
+                List<Type> noTicks = new();
+
+                if (App.IsMacOS)
+                {
+                    noTicks.Add(typeof(CheckBox));
+                }
+
                 bool logAddedControls = false;
 
                 ControlListBoxItem item = new(typeof(WelcomePage))
@@ -55,7 +62,6 @@ namespace PropertyGridSample
                 LimitedTypes.Add(typeof(SplittedPanel));
                 LimitedTypes.Add(typeof(Calendar));
                 LimitedTypes.Add(typeof(CheckBox));
-                LimitedTypes.Add(typeof(ColorPicker));
                 LimitedTypes.Add(typeof(ComboBox));
                 LimitedTypes.Add(typeof(DateTimePicker));
                 LimitedTypes.Add(typeof(GroupBox));
@@ -92,6 +98,15 @@ namespace PropertyGridSample
                 LimitedTypes.Add(typeof(ColorListBox));
                 LimitedTypes.Add(typeof(VirtualListBox));
                 LimitedTypes.Add(typeof(UserControl));
+                LimitedTypes.Add(typeof(RichToolTip));
+                LimitedTypes.Add(typeof(TextBoxAndButton));
+                LimitedTypes.Add(typeof(FontComboBox));
+                LimitedTypes.Add(typeof(Calculator));
+
+                if (DebugUtils.IsDebugDefined)
+                {
+                    LimitedTypes.Add(typeof(GenericTextControl));
+                }
 
                 LimitedTypes.AddRange(LimitedTypesStatic);
 
@@ -101,7 +116,7 @@ namespace PropertyGridSample
                 {
                     item = new(type)
                     {
-                        HasTicks = true,
+                        HasTicks = noTicks.IndexOf(type) < 0,
                         HasMargins = true,
                     };
 
@@ -176,7 +191,7 @@ namespace PropertyGridSample
             ToolBox.Add(item);
         }
 
-        private void ApplicationIdle(object? sender, EventArgs e)
+        protected override void OnIdle(EventArgs e)
         {
             if (updatePropertyGrid)
             {
@@ -187,6 +202,8 @@ namespace PropertyGridSample
                 }
                 catch
                 {
+                    if (DebugUtils.IsDebugDefined)
+                        throw;
                 }
             }
         }

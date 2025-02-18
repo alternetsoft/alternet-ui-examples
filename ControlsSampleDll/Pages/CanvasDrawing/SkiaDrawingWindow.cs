@@ -84,9 +84,9 @@ namespace ControlsSample
 
             fontListBox.SelectionChanged += FontListBox_SelectionChanged;
 
-            rightPanel.Add("Actions", actionsListBox);
-            rightPanel.Add("Fonts", fontListBox);
-            rightPanel.Add("Properties", propGrid);
+            rightPanel.Add(GenericStrings.TabTitleActions, actionsListBox);
+            rightPanel.Add(GenericStrings.TabTitleFonts, fontListBox);
+            rightPanel.Add(GenericStrings.TabTitleProperties, propGrid);
 
             pictureBox.Parent = mainPanel.FillPanel;
             propGrid.SetProps(prm, true);
@@ -95,19 +95,24 @@ namespace ControlsSample
                 | PropertyGridApplyFlags.ReloadAfterSetValue;
             propGrid.Features = PropertyGridFeature.QuestionCharInNullable;
 
-            Title = "SkiaSharp drawing demo";
+            Title = "SkiaSharp Drawing Demo";
 
             control.Parent = mainPanel.LeftPanel;
 
             Size = (900, 700);
             IsMaximized = true;
 
-            actionsListBox.AddAction("GenericImage to SKBitmap", GenericToSkia);
+            actionsListBox.AddAction("GenericImage -> SKBitmap", GenericToSkia);
             actionsListBox.AddAction("Paint on SKCanvas", PaintOnCanvas);
             actionsListBox.AddAction("Draw text on SKSurface (alpha Bitmap)", DrawTextOnSkiaA);
             actionsListBox.AddAction("Draw text on SKSurface (opaque Bitmap)", DrawTextOnSkia);
-            actionsListBox.AddAction("Lock SKSurface (alpha GenericImage)", LockSurfaceOnGenericImageA);
-            actionsListBox.AddAction("Lock SKSurface (opaque GenericImage)", LockSurfaceOnGenericImage);
+            
+            actionsListBox.AddAction(
+                "Lock SKSurface (alpha GenericImage)",
+                LockSurfaceOnGenericImageA);
+            actionsListBox.AddAction(
+                "Lock SKSurface (opaque GenericImage)",
+                LockSurfaceOnGenericImage);
 
             propGrid.SuggestedInitDefaults();
 
@@ -123,7 +128,7 @@ namespace ControlsSample
 
         private void FontListBox_SelectionChanged(object? sender, EventArgs e)
         {
-            var s = fontListBox.SelectedItemAs<string?>() ?? Control.DefaultFont.Name;
+            var s = fontListBox.SelectedItem?.ToString() ?? AbstractControl.DefaultFont.Name;
 
             SkiaSampleControl.SampleFont = SkiaSampleControl.SampleFont.WithName(s);
             control.Font = SkiaSampleControl.SampleFont;
@@ -132,8 +137,13 @@ namespace ControlsSample
 
         private void GenericToSkia()
         {
+            // Creates generic image from the specified url
             GenericImage image = new(backgroundUrl1);
+
+            // Converts created generic image to SKBitmap
             var bitmap = (SKBitmap)image;
+
+            // Converts SKBitmap to Image and assigns it to PictureBox control
             pictureBox.Image = (Image)bitmap;
         }
 

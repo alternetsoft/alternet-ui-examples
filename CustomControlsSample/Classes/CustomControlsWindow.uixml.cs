@@ -30,27 +30,18 @@ namespace CustomControlsSample
 
         private readonly TicTacToeControl ticTacToe = new()
         {
-            Margin = 10,
         };
         
         private readonly FancySlider knobControl = new()
         {
             Minimum = 0,
             Maximum = 100,
-            Margin = new Thickness(0, 0, 5, 0),
         };
         
         private readonly FancyProgressBar gaugeControl = new()
         {
             Minimum = 0,
             Maximum = 100,
-            VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(5, 0, 0, 0),
-        };
-
-        private readonly ColorPicker nativeColorPicker = new()
-        {
-            Value = Color.Red,
             VerticalAlignment = VerticalAlignment.Center,
         };
 
@@ -64,23 +55,28 @@ namespace CustomControlsSample
 
             void Fn()
             {
-                colorGroupBox.AddLabel("Native:");
-
-                nativeColorPicker.SuggestedHeight = 32;
-                nativeColorPicker.Parent = colorGroupBox;
-
-                colorGroupBox.AddLabel("SpeedButton:");
                 colorPicker.Parent = colorGroupBox;
 
                 colorComboLabel.Parent = colorGroupBox;
                 colorCombo.Parent = colorGroupBox;
+                
                 ticTacToe.Parent = ticTacToeStackPanel;
+                
                 knobControl.Parent = slidersStackPanel;
                 gaugeControl.Parent = slidersStackPanel;
             }
             this.SetSizeToContent();
             Slider_ValueChanged(null, EventArgs.Empty);
             knobControl.ValueChanged += Slider_ValueChanged;
+
+            // Logs LongTap event.
+            knobControl.CanLongTap = true;
+            knobControl.LongTap += TicTacToe_LongTap;
+        }
+
+        private void TicTacToe_LongTap(object sender, LongTapEventArgs e)
+        {
+            App.Log("Fancy slider: LongTap");
         }
 
         private void Slider_ValueChanged(object? sender, EventArgs e)

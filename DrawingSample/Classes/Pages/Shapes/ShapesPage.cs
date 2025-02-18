@@ -91,7 +91,7 @@ namespace DrawingSample
             DrawShapesGrid(dc, bounds, actions);
         }
 
-        protected override Control CreateSettingsControl()
+        protected override AbstractControl CreateSettingsControl()
         {
             var control = new ShapesPageSettings();
             control.Initialize(this);
@@ -133,17 +133,23 @@ namespace DrawingSample
                 var cellNameRect = cellRect.InflatedBy(-2, -2);
                 cellNameRect.Height -= 4;
 
-                var nameTextSize = ((IWxGraphics)dc).MeasureText(
+                var cw = cellNameRect.Width;
+
+                var cellName = DrawingUtils.WrapTextToMultipleLines(
                     cell.Name,
-                    Control.DefaultFont,
-                    cellNameRect.Width,
-                    textFormat);
+                    ref cw,
+                    AbstractControl.DefaultFont,
+                    dc);
+
+                var nameTextSize = dc.MeasureText(cellName, AbstractControl.DefaultFont);
                 bool nameVisible = nameTextSize.Width <= cellNameRect.Width;
 
                 var cellContentFrameRect = cellNameRect.InflatedBy(-5, -5);
                 if (nameVisible)
-                    cellContentFrameRect.Height -=
-                        dc.MeasureText(cell.Name, Control.DefaultFont).Height;
+                {
+                    cellContentFrameRect.Top += nameTextSize.Height;
+                    cellContentFrameRect.Height -= nameTextSize.Height;
+                }
 
                 if (cellContentFrameRect.Width <= 0 || cellContentFrameRect.Height <= 0)
                     continue;
@@ -162,12 +168,13 @@ namespace DrawingSample
 
                 if (nameVisible)
                 {
-                    ((IWxGraphics)dc).DrawText(
-                        cell.Name,
-                        Control.DefaultFont,
-                        Brushes.Black,
-                        cellNameRect,
-                        textFormat);
+                    dc.DrawLabel(
+                        cellName,
+                        AbstractControl.DefaultFont,
+                        Color.Black,
+                        Color.Empty,
+                        null,
+                        cellNameRect);
                 }
 
                 if ((i + 1) % ColumnCount == 0)

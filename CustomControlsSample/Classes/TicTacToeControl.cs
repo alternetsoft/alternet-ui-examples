@@ -136,15 +136,8 @@ namespace Alternet.UI
         {
             if (gameOver)
             {
-                if (MessageBox.Show(
-                    "The game is over. Do you want to start a new game?",
-                    "Game Over",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxDefaultButton.Yes) == DialogResult.Yes)
-                {
-                    InitializeGame();
-                }
-
+                App.Alert("The game is over. Starting a new game!");
+                InitializeGame();
                 return;
             }
 

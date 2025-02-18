@@ -6,15 +6,38 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)\Sample.ico" />
   </ItemGroup>
 
+<PropertyGroup>
+  <OSARCH>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)</OSARCH>
+  <IsLinuxX64 Condition="$([MSBuild]::IsOsPlatform('Linux')) And $(OSARCH) == X64">true</IsLinuxX64>
+  <IsOsxArm64 Condition="$([MSBuild]::IsOsPlatform('OSX')) And $(OSARCH) == Arm64">true</IsOsxArm64>
+  <IsOsxX64 Condition="$([MSBuild]::IsOsPlatform('OSX')) And $(OSARCH) == X64">true</IsOsxX64>
+  <IsWindowsX64 Condition="$([MSBuild]::IsOsPlatform('Windows')) And $(OSARCH) == X64">true</IsWindowsX64>
+</PropertyGroup>
+
   <PropertyGroup>
     	<FrameworkOverridesName>FrameworksOverride.props</FrameworkOverridesName>
-  	<BoolNet9>false</BoolNet9>
+  	<BoolNet9>true</BoolNet9>
   	<BoolNet8>true</BoolNet8>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(IsOsxX64)=='true'">
+  	<BoolNet9>false</BoolNet9>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
   	<BoolNet7>false</BoolNet7>
-  	<BoolNet6>false</BoolNet6>
+  	<BoolNet6>true</BoolNet6>
   	<BoolNet48>false</BoolNet48>
   	<BoolNet46>true</BoolNet46>
   </PropertyGroup>
+
+  <PropertyGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
+  	<BoolNet7>false</BoolNet7>
+  	<BoolNet6>false</BoolNet6>
+  	<BoolNet48>false</BoolNet48>
+  	<BoolNet46>false</BoolNet46>
+  </PropertyGroup>
+
 
   <Import Project="$(FrameworkOverridesName)" Condition="Exists($(FrameworkOverridesName))"/>
 

@@ -8,27 +8,78 @@ namespace ControlsSample
         private readonly bool ignoreEvents = false;
         private const bool supressUpDown = false;
         private int newItemIndex = 0;
+        private IComboBoxItemPainter painter = new ComboBox.DefaultItemPainter();
 
         public ComboBoxPage()
         {
             ignoreEvents = true;
             InitializeComponent();
 
-            comboBox.Items.Add("One");
-            comboBox.Items.Add("Two");
-            comboBox.Items.Add("Three");
+            LoadDefaultItems();
             comboBox.SelectedIndex = 1;
             ignoreEvents = false;
 
             addItemButton.KeyDown += AddItemButton_KeyDown;
             KeyDown += ComboBoxPage_KeyDown;
+
+            comboBox.DropDown += (_, _) =>
+            {
+                App.LogIf("ComboBox: DropDown event fired", false);
+            };
+            comboBox.DropDownClosed += (_, _) =>
+            {
+                App.LogIf("ComboBox: DropDownClosed event fired", false);
+            };
+            comboBox.KeyDown += ComboBox_KeyDown;
+            comboBox.TextChanged += (_, _) =>
+            {
+            };
         }
 
-        private void ComboBoxPage_KeyDown(object sender, KeyEventArgs e)
+        private void ComboBox_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.Control)
+            {
+                if(e.Key == Key.Enter)
+                {
+                    comboBox.DroppedDown = true;
+                    e.Suppressed();
+                }
+            }
+        }
+
+        private void LoadDefaultItems(bool ownerDraw = false)
+        {
+            comboBox.RemoveAll();
+            if (ownerDraw)
+            {
+                PropertyGridSample.ObjectInit.
+                    AddDefaultOwnerDrawItems(comboBox, (s) =>
+                    {
+                        comboBox.Add(s);
+                    }, false);
+
+                var item = comboBox.Items.Last() as ListControlItem;
+                if(item is not null)
+                {
+                    item.DisplayText = "(" + item.Text + ")";
+                }
+            }
+            else
+            {
+                comboBox.Items.Add("One");
+                comboBox.Items.Add("Two");
+                comboBox.Items.Add("Three");
+            }
+
+            comboBox.SelectedIndex = 1;
+        }
+
+        private void ComboBoxPage_KeyDown(object? sender, KeyEventArgs e)
         {
         }
 
-        private void AddItemButton_KeyDown(object sender, KeyEventArgs e)
+        private void AddItemButton_KeyDown(object? sender, KeyEventArgs e)
         {
             if ((e.Key == Key.Up || e.Key == Key.Down) && supressUpDown)
                 e.Handled = true;
@@ -80,7 +131,9 @@ namespace ControlsSample
             
             var text = comboBox.Text == string.Empty ? "\"\"" : comboBox.Text;
             var prefix = "ComboBox: TextChanged. Text:";
-            App.LogReplace($"{prefix} {text}", prefix);
+            var fromDropDown = comboBox.DroppedDown ? " (from popup)" : string.Empty;
+
+            App.LogReplace($"{prefix} {text}{fromDropDown}", prefix);
         }
 
         private void ComboBox_SelectedItemChanged(object? sender, EventArgs e)
@@ -88,12 +141,13 @@ namespace ControlsSample
             if (ignoreEvents)
                 return;
             var s = (comboBox.SelectedIndex == null ? "<null>" : comboBox.SelectedIndex.ToString());
-            var prefix = "ComboBox: SelectedItemChanged.SelectedIndex:";
-            App.LogReplace($"{prefix} {s}", prefix);
+            var prefix = "ComboBox: SelectedItemChanged - SelectedIndex:";
+            App.LogReplace($"{prefix} {s} Item: <{comboBox.SelectedItem}>", prefix);
         }
 
         private void OwnerDrawCheckBox_CheckedChanged(object? sender, EventArgs e)
         {
+            LoadDefaultItems(ownerDrawCheckBox.IsChecked);
             if (ownerDrawCheckBox.IsChecked)
             {
                 comboBox.ItemPainter = this;
@@ -177,6 +231,12 @@ namespace ControlsSample
 
         void IComboBoxItemPainter.Paint(ComboBox sender, ComboBoxItemPaintEventArgs e)
         {
+            if (!e.IsPaintingControl)
+            {
+                painter.Paint(sender, e);
+                return;
+            }
+
             e.DefaultPaint();
             if(e.IsPaintingControl)
                 e.Graphics.FillRectangle(Color.Red.AsBrush, (e.ClipRectangle.Location, (5, 5)));
@@ -194,12 +254,12 @@ namespace ControlsSample
 
         double IComboBoxItemPainter.GetHeight(ComboBox sender, int index, double defaultHeight)
         {
-            return -1;
+            return painter.GetHeight(sender, index, defaultHeight);
         }
 
         double IComboBoxItemPainter.GetWidth(ComboBox sender, int index, double defaultWidth)
         {
-            return -1;
+            return painter.GetWidth(sender, index, defaultWidth);
         }
     }
 }

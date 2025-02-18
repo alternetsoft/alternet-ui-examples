@@ -10,7 +10,11 @@ namespace ControlsSample
         public ProgressBarPage()
         {
             InitializeComponent();
-			VerticalProgressBarsGroupBox.Visible = !App.IsMacOS;
+
+            if (App.IsMacOS)
+            {
+                verticalProgressBarsGrid.Parent = null;
+            }
         }
 
         private void IncreaseAllButton_Click(object? sender, EventArgs e)
@@ -24,7 +28,7 @@ namespace ControlsSample
 
         private IEnumerable<ProgressBar> GetAllProgressBars()
         {
-            return new Control[]
+            return new AbstractControl[]
             {
                 verticalProgressBarsGrid,
                 horizontalProgressBarsPanel

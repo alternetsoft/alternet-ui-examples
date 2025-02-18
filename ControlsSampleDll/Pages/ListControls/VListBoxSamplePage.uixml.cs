@@ -8,14 +8,28 @@ namespace ControlsSample
 {
     internal partial class VListBoxSamplePage: Control
     {
+        private readonly VirtualListBoxItems items1 = new();
+        private readonly VirtualListBoxItems items2 = new();
+        private bool useItems1 = true;
+
         private readonly VirtualListBox listBox = new()
         {
-            SuggestedWidth = 200,
+            SuggestedWidth = 350,
             Margin = (0,0,0,5),
         };
 
         public VListBoxSamplePage()
         {
+            PropertyGridSample.ObjectInit.AddDefaultOwnerDrawItems(listBox, (s) =>
+            {
+                items1.Add(s);
+            });
+
+            for (int i = 0; i < 1000; i++)
+            {
+                items2.Add(new ListControlItem($"Items2.Item {i}"));
+            }
+
             InitializeComponent();
             Title = "Virtual";
 
@@ -24,7 +38,7 @@ namespace ControlsSample
             findText.TextChanged += FindText_TextChanged;
             PropertyGridSample.ObjectInit.InitVListBox(listBox);
 
-            tab1.Children.Prepend(listBox);
+            Children.Prepend(listBox);
             listBox.SelectionChanged += ListBox_SelectionChanged;
             listBox.MouseLeftButtonDown += ListBox_MouseLeftButtonDown;
             listBox.Search.UseContains = true;
@@ -32,11 +46,58 @@ namespace ControlsSample
             roundSelectionCheckBox.CheckedChanged += RoundSelectionCheckBox_CheckedChanged;
             showCheckBoxesCheckBox.CheckedChanged += ShowCheckBoxesCheckBox_CheckedChanged;
             threeStateCheckBox.BindBoolProp(listBox, nameof(VirtualListBox.CheckBoxThreeState));
-            allowAllStatesCheckBox.BindBoolProp(listBox, nameof(VirtualListBox.CheckBoxAllowAllStatesForUser));
+            allowAllStatesCheckBox.BindBoolProp(
+                listBox,
+                nameof(VirtualListBox.CheckBoxAllowAllStatesForUser));
             allowClickCheckCheckBox.BindBoolProp(listBox, nameof(VirtualListBox.CheckOnClick));
 
             SetSizeToContent();
             listBox.CheckedChanged += ListBox_CheckedChanged;
+
+            otherThemeCheckBox.CheckedChanged += (s, e) =>
+            {
+                if (otherThemeCheckBox.IsChecked)
+                    LightDarkColor.IsDarkOverride = !IsDarkBackground;
+                else
+                    LightDarkColor.IsDarkOverride = null;
+                listBox.Invalidate();
+            };
+
+            var contextMenu = new ContextMenuStrip();
+            vertPanel2.ContextMenuStrip = contextMenu;
+
+            contextMenu.Add("Toggle items fast", () =>
+            {
+                if (useItems1)
+                {
+                    listBox.SetItemsFast(items2, VirtualListBox.SetItemsKind.ChangeField);
+                }
+                else
+                {
+                    listBox.SetItemsFast(items1, VirtualListBox.SetItemsKind.ChangeField);
+                }
+
+                useItems1 = !useItems1;
+            });
+
+            contextMenu.Add("Toggle Draw Debug Corners", () =>
+            {
+                ListControlItem.DrawDebugCornersOnElements = !ListControlItem.DrawDebugCornersOnElements;
+                listBox.Invalidate();
+            });
+
+            contextMenu.Add("Next item alignment", () =>
+            {
+                var item = listBox.GetItem(listBox.SelectedIndex ?? 0);
+                if (item is null)
+                    return;
+                item.Text ??= "Item 0 Text";
+                item.DisplayText = null;
+                item.MinHeight = 70;
+                item.Alignment = item.Alignment.NextValue();
+                App.LogNameValueReplace("VListBox.Items[0].ALignment", item.Alignment);
+                listBox.Invalidate();
+            });
         }
 
         private void ListBox_CheckedChanged(object? sender, EventArgs e)
@@ -76,14 +137,7 @@ namespace ControlsSample
 
         private void FindText_TextChanged(object? sender, EventArgs e)
         {
-            var text = findText.Text;
-            if(text is null)
-            {
-                listBox.SelectedIndex = null;
-                return;
-            }
-            var result = listBox.FindStringEx(text, null, FindExact, FindIgnoreCase);
-            listBox.SelectedIndex = result;
+            listBox.FindAndSelect(findText.Text, null, FindExact, FindIgnoreCase);
         }
 
         public bool FindExact { get; set; } = false;
@@ -105,9 +159,9 @@ namespace ControlsSample
             MouseEventArgs e)
         {
             var result = listBox.HitTest(Mouse.GetPosition(listBox));
-            var item = (result == null ? "<none>" : listBox.GetItem(result.Value));
+            var item = (result == null ? "<none>" : listBox.GetItem(result.Value)?.ToString());
 
-            item ??= result;
+            item ??= result?.ToString();
 
             App.Log($"HitTest result: Item: '{item}'");
         }

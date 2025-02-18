@@ -14,32 +14,36 @@ namespace DrawingSample
 
         private static readonly Brush fontInfoBrush = Brushes.Black;
         private static readonly Pen textWidthLimitPen = new(Color.Gray, 1, DashStyle.Dash);
+
         private Paragraph[]? paragraphs;
         private FontStyle fontStyle;
-        private string customFontFamilyName = Control.DefaultFont.FontFamily.Name;
+        private bool shortText;
+        private string customFontFamilyName = AbstractControl.DefaultFont.FontFamily.Name;
 
         private int textWidthLimit = 450;
-        private int textHeightValue = 40;
+        private int textHeightValue = 50;
 
         private bool textWidthLimitEnabled = true;
         private bool textHeightSet = false;
 
-        private TextHorizontalAlignment horizontalAlignment = TextHorizontalAlignment.Left;
-
-        private TextVerticalAlignment verticalAlignment = TextVerticalAlignment.Top;
-
-        private TextTrimming trimming = TextTrimming.Pixel;
-
-        private TextWrapping wrapping = TextWrapping.Character;
-
         private static readonly Font fontInfoFont;
         private static double fontSize;
 
+        internal TextFormat textFormat = new()
+        {
+            Padding = 0,
+        };
+
         static TextPage()
         {
-            var defaultSize = Control.DefaultFont.SizeInPoints;
+            var defaultSize = AbstractControl.DefaultFont.SizeInPoints;
             fontInfoFont = new(FontFamily.GenericMonospace, defaultSize);
             fontSize = defaultSize;
+        }
+
+        public TextPage()
+        {
+            /*wrappedControl.Parent = wrappedDocument;*/
         }
 
         public override string Name => "Text";
@@ -94,7 +98,7 @@ namespace DrawingSample
             set
             {
                 textWidthLimit = value;
-                Invalidate();
+                UpdateWrappedControl();
             }
         }
 
@@ -104,7 +108,7 @@ namespace DrawingSample
             set
             {
                 textHeightValue = value;
-                Invalidate();
+                UpdateWrappedControl();
             }
         }
 
@@ -121,7 +125,7 @@ namespace DrawingSample
             set
             {
                 textWidthLimitEnabled = value;
-                Invalidate();
+                UpdateWrappedControl();
             }
         }
 
@@ -131,47 +135,56 @@ namespace DrawingSample
             set
             {
                 textHeightSet = value;
-                Invalidate();
+                UpdateWrappedControl();
             }
+        }
+
+        private void UpdateWrappedControl(bool invalidate = true)
+        {
+            Invalidate();
         }
 
         public TextHorizontalAlignment HorizontalAlignment
         {
-            get => horizontalAlignment;
+            get
+            {
+                return textFormat.HorizontalAlignment;
+            }
+
             set
             {
-                horizontalAlignment = value;
-                Invalidate();
+                textFormat.HorizontalAlignment = value;
+                UpdateWrappedControl();
             }
         }
 
         public TextVerticalAlignment VerticalAlignment
         {
-            get => verticalAlignment;
+            get => textFormat.VerticalAlignment;
             set
             {
-                verticalAlignment = value;
-                Invalidate();
+                textFormat.VerticalAlignment = value;
+                UpdateWrappedControl();
             }
         }
 
         public TextTrimming Trimming
         {
-            get => trimming;
+            get => textFormat.Trimming;
             set
             {
-                trimming = value;
-                Invalidate();
+                textFormat.Trimming = value;
+                UpdateWrappedControl();
             }
         }
 
         public TextWrapping Wrapping
         {
-            get => wrapping;
+            get => textFormat.Wrapping;
             set
             {
-                wrapping = value;
-                Invalidate();
+                textFormat.Wrapping = value;
+                UpdateWrappedControl();
             }
         }
 
@@ -185,6 +198,31 @@ namespace DrawingSample
             }
         }
 
+        public bool ShortText
+        {
+            get
+            {
+                return shortText;
+            }
+
+            set
+            {
+                shortText = value;
+                InvalidateParagraphs();
+            }
+        }
+
+        public string GetText()
+        {
+            if (ShortText)
+                return "Your cat is hungry";
+            return LoremIpsum;
+        }
+
+        protected override void OnCanvasChanged(AbstractControl? oldValue, AbstractControl? value)
+        {
+        }
+
         public override void Draw(Graphics dc, RectD bounds)
         {
             paragraphs ??= CreateParagraphs().ToArray();
@@ -192,71 +230,88 @@ namespace DrawingSample
             var color = Color.MidnightBlue;
             float lighten = 10;
 
-            var textFormat = GetTextFormat();
+            Coord x = 20;
+            Coord y = 20;
 
-            double x = 20;
-            double y = 20;
+            /*
+            bool first = true;
+
+            wrappedDocument.ScaleFactorOverride = dc.ScaleFactor;
+            wrappedDocument.Size = bounds.Size;
+
+            wrappedControl.Text = GetText();
+            wrappedControl.VerticalAlignment = Alternet.UI.VerticalAlignment.Top;
+            wrappedControl.HorizontalAlignment = Alternet.UI.HorizontalAlignment.Left;
+            wrappedControl.IsClipped = false;
+            wrappedControl.PerformLayout();
+            */
+
             foreach (var paragraph in paragraphs)
             {
                 dc.DrawText(paragraph.FontInfo, fontInfoFont, fontInfoBrush, new PointD(x, y));
                 y += dc.MeasureText(paragraph.FontInfo, fontInfoFont).Height + 3;
 
-                double textHeight;
+                UpdateWrappedControl(false);
 
-                if (TextHeightSet)
+                /*
+                wrappedControl.Font = paragraph.Font;
+                wrappedControl.ForegroundColor = color;
+                wrappedControl.PerformLayout();
+                */
+
+                /*RectD rect = ((x, y), wrappedControl.Size);
+                dc.FillRectangleBorder(Color.Green.AsBrush, wrappedControl.Bounds.WithLocation(x,y), 1);
+
+                if (first)
                 {
-                    textHeight = TextHeightValue;
+                    first = false;
+                }
+                
+                TemplateUtils.RaisePaintClipped(wrappedControl, dc, (x, y));
+                */
+
+                RectD blockRect;
+
+                RectD rect = (
+                    x,
+                    y,
+                    bounds.Width,
+                    bounds.Height);
+
+                if (textHeightSet)
+                {
+                    textFormat.SuggestedHeight = textHeightValue;
                 }
                 else
                 {
-                    if (TextWidthLimitEnabled)
-                    {
-                        textHeight = ((IWxGraphics)dc).MeasureText(
-                            LoremIpsum,
-                            paragraph.Font,
-                            TextWidthLimit,
-                            GetTextFormat()).Height;
-                    }
-                    else
-                        textHeight = dc.MeasureText(LoremIpsum, paragraph.Font).Height;
+                    textFormat.SuggestedHeight = null;
+                    rect.Height = 0;
                 }
 
-                if (TextWidthLimitEnabled)
+                if (textWidthLimitEnabled)
                 {
-                    ((IWxGraphics)dc).DrawText(
-                        LoremIpsum,
-                        paragraph.Font,
-                        color.AsBrush,
-                        new RectD(x, y, TextWidthLimit, textHeight),
-                        textFormat);
-                }
-                else
-                if (TextHeightSet)
-                {
-                    var width = TextWidthLimitEnabled ? TextWidthLimit : bounds.Width;
-                    ((IWxGraphics)dc).DrawText(
-                        LoremIpsum,
-                        paragraph.Font,
-                        color.AsBrush,
-                        new RectD(x, y, width, textHeight),
-                        textFormat);
+                    textFormat.SuggestedWidth = textWidthLimit;
                 }
                 else
                 {
-                    dc.DrawText(
-                        LoremIpsum,
-                        paragraph.Font,
-                        color.AsBrush,
-                        new PointD(x, y));
+                    textFormat.SuggestedWidth = null;
+                    rect.Width = 0;
                 }
 
-                y += textHeight + 20;
+                blockRect = dc.DrawText(GetText(), paragraph.Font, color.AsBrush, rect, textFormat);
+
+                dc.DrawBorderWithBrush(Color.Green.AsBrush, blockRect, 1);
+ 
+                y += blockRect.Height + 20;
 
                 color = Lighten(color, lighten);
             }
 
             if (TextWidthLimitEnabled)
-                dc.DrawLine(textWidthLimitPen, new PointD(TextWidthLimit + x, bounds.Top), new PointD(TextWidthLimit + x, bounds.Bottom));
+                dc.DrawLine(
+                    textWidthLimitPen,
+                    new PointD(TextWidthLimit + x, bounds.Top),
+                    new PointD(TextWidthLimit + x, bounds.Bottom));
         }
 
         //The amount of lightness (specified in percent) that should be added to the color.
@@ -274,7 +329,7 @@ namespace DrawingSample
             return Color.FromArgb(color.A, result);
         }
 
-        protected override Control CreateSettingsControl()
+        protected override AbstractControl CreateSettingsControl()
         {
             var control = new TextPageSettings();
             control.Initialize(this);
@@ -305,7 +360,7 @@ namespace DrawingSample
             return (FontStyle & style) != 0;
         }
 
-        private void InvalidateParagraphs()
+        public void InvalidateParagraphs()
         {
             if (paragraphs != null)
             {
@@ -325,12 +380,12 @@ namespace DrawingSample
         private IEnumerable<Paragraph> CreateParagraphs()
         {
             Paragraph CreateGenericFontParagraph(GenericFontFamily genericFamily) =>
-                new(
+                new(this,
                     new Font(new FontFamily(genericFamily), FontSize, FontStyle),
                     "Generic " + genericFamily.ToString());
 
             Paragraph CreateCustomFontParagraph(FontFamily family) =>
-                new(
+                new(this,
                     new Font(family, FontSize, FontStyle),
                     "Custom");
 
@@ -342,12 +397,15 @@ namespace DrawingSample
 
         private class Paragraph : IDisposable
         {
-            public Paragraph(Font font, string genericFamilyName)
+            public Paragraph(TextPage owner, Font font, string genericFamilyName)
             {
+                Owner = owner;
                 Font = font;
                 GenericFamilyName = genericFamilyName;
                 FontInfo = $"{GenericFamilyName}: {Font.Name}, {Font.SizeInPoints}pt";
             }
+
+            public TextPage Owner { get; }
 
             public Font Font { get; }
 

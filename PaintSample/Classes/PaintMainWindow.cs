@@ -391,26 +391,30 @@ namespace PaintSample
             {
                 Filter = FileMaskUtils.GetFileDialogFilterForImageOpen(false),
                 InitialDirectory = s,
+                FileMustExist = true,
             };
 
-            if (dialog.ShowModal(this) != ModalResult.Accepted || dialog.FileName == null)
-                return;
-
-            Document = new PaintSampleDocument(this, dialog.FileName);
+            dialog.ShowAsync(() =>
+            {
+                if (dialog.FileName == null)
+                    return;
+                Document = new PaintSampleDocument(this, dialog.FileName);
+            });
         }
 
-        string? PromptForSaveFileName()
+        void PromptForSaveFileName(Action<string?> onResult)
         {
-            using var dialog = new SaveFileDialog
+            var dialog = SaveFileDialog.Default;
+            
+            dialog.Filter = FileMaskUtils.GetFileDialogFilterForImageSave();
+            dialog.InitialDirectory = PathUtils.GetAppSubFolder("SampleImages");
+
+            dialog.ShowAsync(this, (result) =>
             {
-                Filter = FileMaskUtils.GetFileDialogFilterForImageSave(),
-                InitialDirectory = PathUtils.GetAppSubFolder("SampleImages"),
-            };
-
-            if (dialog.ShowModal(this) != ModalResult.Accepted || dialog.FileName == null)
-                return null;
-
-            return dialog.FileName;
+                if (!result || dialog.FileName == null)
+                    onResult(null);
+                onResult(dialog.FileName);
+            });
         }
 
         private void SaveMenuItem_Click(object? sender, EventArgs e)
@@ -418,23 +422,33 @@ namespace PaintSample
             Save();
         }
 
+        private void SaveAs()
+        {
+            PromptForSaveFileName((fileName) =>
+            {
+                if (fileName == null)
+                    return;
+                Document.Save(fileName);
+            });
+        }
+
         private void Save()
         {
             var fileName = Document.FileName;
-            fileName ??= PromptForSaveFileName();
-            if (fileName == null)
-                return;
 
-            Document.Save(fileName);
+            if(fileName is null)
+            {
+                SaveAs();
+            }
+            else
+            {
+                Document.Save(fileName);
+            }
         }
 
         private void SaveAsMenuItem_Click(object? sender, EventArgs e)
         {
-            var fileName = PromptForSaveFileName();
-            if (fileName == null)
-                return;
-
-            Document.Save(fileName);
+            SaveAs();
         }
 
         private void PromptToSaveDocument(out bool cancel)
@@ -461,7 +475,11 @@ namespace PaintSample
             }
 
             if (result == DialogResult.Yes)
+            {
+                // This in general is incorrect as dialogs are async
+                // need to be fixed
                 Save();
+            }
         }
 
         protected override void OnClosing(WindowClosingEventArgs e)
@@ -473,55 +491,67 @@ namespace PaintSample
 
         public void DoChangeLightness()
         {
-            var lightness = DialogFactory.AskLightness() ?? 100;
-            App.Log($"Image.ChangeLightness: {lightness}");
-            Document.Bitmap = Document.Bitmap.ChangeLightness(lightness);
+            DialogFactory.AskLightnessAsync((lightness) =>
+            {
+                App.Log($"Image.ChangeLightness: {lightness}");
+                Document.Bitmap = Document.Bitmap.ChangeLightness(lightness);
+            });
         }
 
         public void DoConvertToDisabled()
         {
-            var value = DialogFactory.AskBrightness() ?? 255;
-            App.Log($"Image.ConvertToDisabled: {value}");
-            Document.Bitmap = Document.Bitmap.ConvertToDisabled(value);
+            DialogFactory.AskBrightnessAsync((value) =>
+            {
+                App.Log($"Image.ConvertToDisabled: {value}");
+                Document.Bitmap = Document.Bitmap.ConvertToDisabled(value);
+            });
         }
 
         public unsafe void DoFillGreenUseSkiaColors()
         {
-            var alpha = DialogFactory.AskTransparency(100) ?? 100;
-            App.Log($"Fill green color (alpha = {alpha}) using new image with native data");
+            DialogFactory.AskTransparencyAsync((alpha) =>
+            {
+                App.Log($"Fill green color (alpha = {alpha}) using new image with native data");
 
-            var height = 600;
-            var width = 600;
+                var height = 600;
+                var width = 600;
 
-            var pixels = GenericImage.CreatePixels(width, height, Color.Green.WithAlpha(alpha));
-            Document.Bitmap = Bitmap.Create(width, height, pixels);
+                var pixels = GenericImage.CreatePixels(width, height, Color.Green.WithAlpha(alpha));
+                Document.Bitmap = Bitmap.Create(width, height, pixels);
+            }, 100);
         }
 
         public void DoFillRedUseSetData()
         {
-            var alpha = DialogFactory.AskTransparency(100) ?? 100;
-            App.Log($"Fill red color (alpha = {alpha}) using new image with native data");
-            Document.Bitmap = Bitmap.Create(600, 600, Color.Red.WithAlpha(alpha));
+            DialogFactory.AskTransparencyAsync((alpha) =>
+            {
+                App.Log($"Fill red color (alpha = {alpha}) using new image with native data");
+                Document.Bitmap = Bitmap.Create(600, 600, Color.Red.WithAlpha(alpha));
+            }, 100);
         }
 
         public unsafe void DoMakeFileGray()
         {
             OpenFileDialog dialog = new()
             {
-                Filter = "Images | *.bmp; *.png; *.jpg; *.jpeg"
+                Filter = "Images | *.bmp; *.png; *.jpg; *.jpeg",
+                FileMustExist = true,
             };
 
-            if (dialog.ShowModal(this) != ModalResult.Accepted || dialog.FileName == null)
-                return;
+            dialog.ShowAsync(() =>
+            {
+                if (dialog.FileName is null)
+                    return;
 
-            string ext = Path.GetExtension(dialog.FileName);
-            var bm = new Bitmap();
-            bm.Load(dialog.FileName, BitmapType.Any);
-            var image = (GenericImage)bm;
-            image.ChangeToGrayScale();
-            var greyBm = (Bitmap)image;
-            greyBm.Save(dialog.FileName.Replace(ext, "_Gray" + ext));
-            Document.Bitmap = greyBm;
+                string ext = Path.GetExtension(dialog.FileName);
+                var bm = new Bitmap();
+                bm.Load(dialog.FileName, BitmapType.Any);
+                var image = (GenericImage)bm;
+                image.ChangeToGrayScale();
+                var greyBm = (Bitmap)image;
+                greyBm.Save(dialog.FileName.Replace(ext, "_Gray" + ext));
+                Document.Bitmap = greyBm;
+            });
         }
 
         public void DoRotate()
@@ -610,7 +640,7 @@ namespace PaintSample
 
             var s = "Hello text";
 
-            var font = Control.DefaultFont.Scaled(5);
+            var font = AbstractControl.DefaultFont.Scaled(5);
             var measure = dc.MeasureText(s, font);
 
             var size = dc.GetTextExtent(s, font);
@@ -620,9 +650,9 @@ namespace PaintSample
             RectD r1 = (location.X, location.Y, measure.Width, measure.Height);
             RectD r2 = (location.X, location.Y, size.Width, size.Height);
 
-            DrawingUtils.FillRectangleBorder(dc, Color.DarkRed.AsBrush, r1, 1);
+            DrawingUtils.DrawBorderWithBrush(dc, Color.DarkRed.AsBrush, r1, 1);
 
-            DrawingUtils.FillRectangleBorder(dc, Color.Red.AsBrush, r2, 1);
+            DrawingUtils.DrawBorderWithBrush(dc, Color.Red.AsBrush, r2, 1);
 
             dc.DrawWave((location.X, location.Y, size.Width, size.Height), Color.Green);
 

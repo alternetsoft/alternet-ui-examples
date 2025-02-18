@@ -11,6 +11,6 @@
     <EmbeddedResource Include="$(CommonResourcesPath)\ExplorerUISample\ReportImage_16x.png" Link="Resources\ExplorerUISample\ReportImage_16x.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.623-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.710-beta" />
   </ItemGroup>
 </Project>

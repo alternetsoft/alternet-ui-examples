@@ -10,8 +10,23 @@ namespace PrintingSample
         private static readonly Font font = new(FontFamily.GenericSerif, 20);
         private static readonly Pen thickGrayPen = Color.Gray.GetAsPen(4);
 
+        private ToolBar toolBar = new()
+        {
+        };
+
         public PrintingMainWindow()
         {
+            toolBar.Parent = this;
+            toolBar.SetBorderAndMargin(AnchorStyles.Bottom, AnchorStyles.Bottom);
+
+            toolBar.AddTextBtn("Print Immediately", null, PrintImmediatelyMenuItem_Click);
+            toolBar.AddSeparator();
+            toolBar.AddTextBtn("Print...", null, PrintMenuItem_Click);
+            toolBar.AddSeparator();
+            toolBar.AddTextBtn("Page Setup...", null, PageSetupMenuItem_Click);
+            toolBar.AddSeparator();
+            toolBar.AddTextBtn("Print Preview...", null, PrintPreviewMenuItem_Click);
+
             Icon = App.DefaultIcon;
             InitializeComponent();
 
@@ -52,11 +67,13 @@ namespace PrintingSample
 
             var drawTextBounds = bounds.InflatedBy(-50, -50);
 
+            var dtbWidth = drawTextBounds.Width;
+
             var wrappedText = DrawingUtils.WrapTextToMultipleLines(
                 TextToDraw,
-                drawTextBounds.Width,
+                ref dtbWidth,
                 font,
-                dc.ScaleFactor);
+                dc);
 
             dc.DrawText(
                 wrappedText,
@@ -131,8 +148,10 @@ namespace PrintingSample
 
             document.PrintPage += Document_PrintPage;
 
-            if (dialog.ShowModal() == ModalResult.Accepted)
+            dialog.ShowAsync(() =>
+            {
                 document.Print();
+            });
         }
 
         private void PageSetupMenuItem_Click(object sender, System.EventArgs e)
@@ -146,14 +165,14 @@ namespace PrintingSample
             //setupDlg.AllowPaper = false;
             //setupDlg.AllowPrinter = false;
 
-            if (pageSetupDialog.ShowModal() == ModalResult.Accepted)
+            pageSetupDialog.ShowAsync(() =>
             {
                 //document.DefaultPageSettings = pageSetupDialog.PageSettings;
                 //document.PrinterSettings = pageSetupDialog.PrinterSettings;
 
                 document.PrintPage += Document_PrintPage;
                 document.Print();
-            }
+            });
         }
 
         private void PrintPreviewMenuItem_Click(object sender, System.EventArgs e)
@@ -164,7 +183,7 @@ namespace PrintingSample
             document.PrintPage += Document_PrintPage;
             
             dialog.Document = document;
-            dialog.ShowModal();
+            dialog.ShowAsync();
         }
 
         private void Document_PrintPage(object? sender, PrintPageEventArgs e)

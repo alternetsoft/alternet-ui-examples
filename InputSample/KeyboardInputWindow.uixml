@@ -9,16 +9,18 @@
           KeyPress="StackPanel_TextInput"      Padding="5" Name="mainStackPanel">
 
     <HorizontalStackPanel>
-      <Button Name="helloButton" Text="Hello" Margin="10" Click="HelloButton_Click"
+      <Button Name="helloButton" Text="Hello" IsTextLocalized="true"
+              Margin="10" Click="HelloButton_Click"
               KeyPress="HelloButton_TextInput"
                 KeyDown="HelloButton_KeyDown" KeyUp="HelloButton_KeyUp" SuggestedWidth="150"
                 />
       <Button Text="Button 1" Margin="10" SuggestedWidth="150"/>
-      <TextBox Text="Sample Text Box" Margin="10" SuggestedWidth="150"/>
+      <TextBox Text="Sample Text Box" IsTextLocalized="true" Margin="10" SuggestedWidth="150"/>
     </HorizontalStackPanel>
 
     <StackPanel Orientation="Horizontal" Margin="5">
-      <Label Text="Press Ctrl+Shift+D to change the color of this message." Name="messageLabel" />
+      <Label Text="Press Ctrl+Shift+D to change the color of this message."
+             Name="messageLabel" IsTextLocalized="true"/>
     </StackPanel>
 
     <CheckBox Text="Form Key Preview" Name="checkBoxKeyPreview" Margin="5"/>
@@ -27,8 +29,9 @@
     <CheckBox Text="Key Handled in StackPanel" Name="checkBoxHandledInStackPanel" Margin="5"/>
     <CheckBox Text="Log Repeated Keys" Name="checkBoxLogRepeated" Margin="5"/>
 
-    <TextBox
-      Name="buttonInfo" Margin="5" ReadOnly="true" SuggestedWidth="400"/>
+    <TextBoxAndButton
+      Name="buttonInfo" Margin="5" Enabled="false" SuggestedWidth="400"
+      InnerOuterBorder="Outer" ButtonsVisible="false"/>
 
     <LogListBox
       Name="lb" Margin="5"  SuggestedWidth="400"  SuggestedHeight="300" />

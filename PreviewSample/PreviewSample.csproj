@@ -2,6 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\CommonData\CommonProject.props" />
   <PropertyGroup>
+    <NuGetAuditMode>direct</NuGetAuditMode>
     <CommonResourcesPath>..\ControlsSampleDll\Resources</CommonResourcesPath>
   </PropertyGroup>
   <ItemGroup>
@@ -40,6 +41,6 @@
     <EmbeddedResource Include="$(CommonResourcesPath)\logo128x128.png" Link="Resources\logo128x128.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.623-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.710-beta" />
   </ItemGroup>
 </Project>

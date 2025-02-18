@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <UseStyleCop>false</UseStyleCop>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <IncludeSymbols>true</IncludeSymbols>
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Resources\**" />
+    <None Remove="*.bat" />
+    <None Remove="*.sh" />
+    <EmbeddedResource Include="Resources\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\.editorconfig" Link=".editorconfig" Condition="Exists('..\..\.editorconfig')" />
+  </ItemGroup>
+  <ItemGroup />
+  <!-- ================================================ -->
+  <PropertyGroup>
+    <SignToolPath>$(MSBuildThisFileDirectory)\..\..\Alternet.UI.Interfaces\SignDll.proj</SignToolPath>
+  </PropertyGroup>
+  <Import Project="$(SignToolPath)" Condition="Exists('$(SignToolPath)')" />
+  <ItemGroup>
+    <PackageReference Include="Alternet.UI" Version="0.9.710-beta" />
+  </ItemGroup>
+</Project>

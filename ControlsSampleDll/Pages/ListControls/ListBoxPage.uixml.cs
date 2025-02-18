@@ -8,7 +8,7 @@ namespace ControlsSample
 {
     internal partial class ListBoxPage : Control
     {
-        private int newItemIndex = 0;
+        private static int newItemIndex = 0;
 
         public ListBoxPage()
         {
@@ -23,14 +23,7 @@ namespace ControlsSample
 
         private void FindText_TextChanged(object? sender, EventArgs e)
         {
-            var text = findText.Text;
-            if(text is null)
-            {
-                listBox.SelectedIndex = null;
-                return;
-            }
-            var result = listBox.FindStringEx(text, null, FindExact, FindIgnoreCase);
-            listBox.SelectedIndex = result;
+            listBox.FindAndSelect(findText.Text, null, FindExact, FindIgnoreCase);
         }
 
         public bool FindExact { get; set; } = false;
@@ -39,24 +32,15 @@ namespace ControlsSample
 
         private void AddDefaultItems(ListBox control)
         {
-            control.Add("One");
-            control.Add("Two");
-            control.Add("Three");
-            control.Add("Four");
-            control.Add("Five");
-            control.Add("Six");
-            control.Add("Seven");
-            control.Add("Eight");
-            control.Add("Nine");
-            control.Add("Ten");
+            GenericStrings.AddTenRows(ActionUtils.ToAction<string>(control.Add));
         }
 
         private void EditorButton_Click(object? sender, System.EventArgs e)
         {
-            DialogFactory.EditItemsWithListEditor(listBox);
+            listBox.EditItemsWithListEditor();
         }
 
-        private int GenItemIndex()
+        public static int GenItemIndex()
         {
             newItemIndex++;
             return newItemIndex;
@@ -77,18 +61,38 @@ namespace ControlsSample
             App.Log($"HitTest result: Item: '{item}'");
         }
 
-        private void AddManyItemsButton_Click(object? sender, EventArgs e)
+        public static string GenItemText()
+        {
+            return $"{GenericStrings.Item} id({GenItemIndex()})";
+        }
+
+        public static void AddManyItems(ListBox listBox)
         {
             listBox.BeginUpdate();
             try
             {
-                for (int i = 0; i < 5000; i++)
-                    listBox.Items.Add("Item " + GenItemIndex());
+                string[] data = new string[5000];
+
+                var length = data.Length;
+
+                for (int i = 0; i < length; i++)
+                    data[i] = GenItemText();
+
+                listBox.Items.AddRange(data);
+
+                App.Log("Added 5000 items");
             }
             finally
             {
                 listBox.EndUpdate();
             }
+
+            listBox.SelectLastItemAndScroll();
+        }
+
+        private void AddManyItemsButton_Click(object? sender, EventArgs e)
+        {
+            AddManyItems(listBox);
         }
 
         private static string IndicesToStr(IReadOnlyList<int> indices)
@@ -108,53 +112,46 @@ namespace ControlsSample
             object? sender, 
             EventArgs e)
         {
-            listBox.Parent?.BeginUpdate();
-
             var b = allowMultipleSelectionCheckBox.IsChecked;
-
-            listBox.SelectionMode = b ? ListBoxSelectionMode.Multiple : ListBoxSelectionMode.Single;
-
+            listBox.IsSelectionModeMultiple = b;
             selectItemAtIndices2And4Button.Enabled = b;
-
-            listBox.Parent?.EndUpdate();
         }
 
         private void RemoveItemButton_Click(object? sender, EventArgs e)
         {
-            listBox.RemoveSelectedItems();
+            listBox.RemoveSelectedAndUpdateSelection();
         }
 
         private void AddItemButton_Click(object? sender, EventArgs e)
         {
-            listBox.Items.Add("Item " + GenItemIndex());
+            listBox.Items.Add(GenItemText());
+            listBox.SelectLastItemAndScroll();
         }
 
         private void EnsureLastItemVisibleButton_Click(
             object? sender, 
             EventArgs e)
         {
-            var count = listBox.Items.Count;
-            if (count > 0)
-                listBox.EnsureVisible(count - 1);
+            listBox.EnsureVisible(listBox.Count - 1);
         }
 
         private void SelectItemAtIndex2Button_Click(
             object? sender, 
             EventArgs e)
         {
-            listBox.SelectItems(2);
+            listBox.SelectItemsAndScroll(2);
         }
 
         private void DeselectAllButton_Click(object? sender, EventArgs e)
         {
-            listBox.SelectedItem = null;
+            listBox.ClearSelected();
         }
 
         private void SelectItemAtIndices2And4Button_Click(
             object? sender, 
             EventArgs e)
         {
-            listBox.SelectItems(2, 4);
+            listBox.SelectItemsAndScroll(2, 4);
         }
     }
 }

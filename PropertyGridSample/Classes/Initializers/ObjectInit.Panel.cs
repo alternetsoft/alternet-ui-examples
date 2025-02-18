@@ -13,24 +13,35 @@ namespace PropertyGridSample
         {
             if (control is not TabControl tabControl)
                 return;
+            InitGenericTabControl(tabControl);
+        }
 
+        public static void InitGenericTabControl(TabControl tabControl, bool withButtons = true)
+        {
             tabControl.SuggestedSize = (300, 300);
 
-            var panel1 = CreatePanelWithButtons("Panel 1");
-            var panel2 = CreatePanelWithButtons("Panel 2");
-            var panel3 = CreatePanelWithButtons("Panel 3");
-            var panel4 = CreatePanelWithButtons("Panel 4");
+            var panel1 = Internal("Panel 1");
 
             tabControl.Add("Panel 1", panel1);
-            tabControl.Add("Panel 2", panel2);
-            tabControl.Add("Panel 3", panel3);
-            tabControl.Add("Panel 4", panel4);
+            tabControl.Add("Panel 2", () => { return Internal("Panel 2"); });
+            tabControl.Add("Panel 3", () => { return Internal("Panel 3"); });
+            tabControl.Add("Panel 4", () => { return Internal("Panel 4"); });
+
+            AbstractControl Internal(string title)
+            {
+                if(withButtons)
+                    return CreatePanelWithButtons(title);
+                var result = new Panel();
+                result.Title = title;
+                return result;
+            }
         }
 
         public static void InitPanel(object control)
         {
             if (control is not Panel panel)
                 return;
+            panel.HasBorder = true;
             panel.SuggestedSize = 150;
             panel.KeyPress += Panel_KeyPress;
             panel.Scroll += Panel_Scroll;

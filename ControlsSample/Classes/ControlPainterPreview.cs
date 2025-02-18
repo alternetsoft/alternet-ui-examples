@@ -19,8 +19,8 @@ namespace PropertyGridSample
         private WxControlPainterHandler.DrawFlags flags;
 
         public ControlPainterPreview()
-            : base()
         {
+            Padding = 10;
         }
 
         public WxControlPainterHandler.ControlPartKind Kind
@@ -55,19 +55,16 @@ namespace PropertyGridSample
             }
         }
 
-        protected override void OnSizeChanged(EventArgs e)
-        {
-            base.OnSizeChanged(e);
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
+        public override void DefaultPaint(PaintEventArgs e)
         {
             var dc = e.Graphics;
-            var bounds = DrawClientRectangle;
+            var bounds = e.ClipRectangle;
 
             var brush = this.Background;
             if (brush != null)
                 dc.FillRectangle(brush, bounds);
+
+            bounds = bounds.DeflatedWithPadding(Padding);
 
             Painter.DrawItem(
                 Kind,
@@ -75,6 +72,11 @@ namespace PropertyGridSample
                 dc,
                 bounds,
                 Flags);
+        }
+
+        protected override void OnSizeChanged(EventArgs e)
+        {
+            base.OnSizeChanged(e);
         }
     }
 }

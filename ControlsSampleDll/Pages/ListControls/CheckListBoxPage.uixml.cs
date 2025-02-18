@@ -5,24 +5,14 @@ using Alternet.UI;
 
 namespace ControlsSample
 {
+    [IsCsLocalized(true)]
     internal partial class CheckListBoxPage : Control
     {
-        private int newItemIndex = 0;
-
         public CheckListBoxPage()
         {
             InitializeComponent();
 
-            checkListBox.Items.Add("One");
-            checkListBox.Items.Add("Two");
-            checkListBox.Items.Add("Three");
-            checkListBox.Items.Add("Four");
-            checkListBox.Items.Add("Five");
-            checkListBox.Items.Add("Six");
-            checkListBox.Items.Add("Seven");
-            checkListBox.Items.Add("Eight");
-            checkListBox.Items.Add("Nine");
-            checkListBox.Items.Add("Ten");
+            GenericStrings.AddTenRows(checkListBox.Items.Add);
 
             checkListBox.SelectionChanged += CheckListBox_SelectionChanged;
             allowMultipleSelectionCheckBox.IsChecked =
@@ -31,7 +21,7 @@ namespace ControlsSample
 
         private void EditorButton_Click(object? sender, System.EventArgs e)
         {
-            DialogFactory.EditItemsWithListEditor(checkListBox);
+            checkListBox.EditItemsWithListEditor();
         }
 
         private void CheckListBox_MouseLeftButtonDown(
@@ -40,8 +30,8 @@ namespace ControlsSample
         {
             var result = checkListBox.HitTest(Mouse.GetPosition(checkListBox));
             var item = (result == null ? 
-                "<none>" : checkListBox.Items[result.Value]);
-            App.Log($"HitTest result: Item: '{item}'");
+                GenericStrings.NoneInsideLessGreater : checkListBox.Items[result.Value]);
+            App.Log($"{GenericStrings.HitTestResult}: {GenericStrings.Item}: '{item}'");
         }
 
         private void HasBorderButton_Click(object? sender, EventArgs e)
@@ -49,30 +39,15 @@ namespace ControlsSample
             checkListBox.HasBorder = !checkListBox.HasBorder;
         }
 
-        private int GenItemIndex()
-        {
-            newItemIndex++;
-            return newItemIndex;
-        }
-
         private void AddManyItemsButton_Click(object? sender, EventArgs e)
         {
-            checkListBox.BeginUpdate();
-            try
-            {
-                for (int i = 0; i < 5000; i++)
-                    checkListBox.Items.Add("Item " + GenItemIndex());
-            }
-            finally
-            {
-                checkListBox.EndUpdate();
-            }
+            ListBoxPage.AddManyItems(checkListBox);
         }
 
         private static string IndicesToStr(IReadOnlyList<int> indices)
         {
             string result = indices.Count > 100 ? 
-                "too many indices to display" : string.Join(",", indices);
+                GenericStrings.TooManyIndexesToDisplay : string.Join(",", indices);
             return result;
         }
 
@@ -95,11 +70,7 @@ namespace ControlsSample
             object? sender, 
             EventArgs e)
         {
-            checkListBox.Parent?.BeginUpdate();
-            checkListBox.SelectionMode = 
-                allowMultipleSelectionCheckBox.IsChecked ? 
-                ListBoxSelectionMode.Multiple : ListBoxSelectionMode.Single;
-            checkListBox.Parent?.EndUpdate();
+            checkListBox.IsSelectionModeMultiple = allowMultipleSelectionCheckBox.IsChecked;
         }
 
         private void RemoveCheckedButton_Click(object? sender, EventArgs e)
@@ -109,7 +80,7 @@ namespace ControlsSample
 
         private void RemoveItemsAndLog(IReadOnlyList<int> items)
         {
-            App.Log($"Remove items: ({IndicesToStr(items)})");
+            App.Log($"{GenericStrings.RemoveItems}: ({IndicesToStr(items)})");
             checkListBox.RemoveItems(items);
         }
 
@@ -120,16 +91,15 @@ namespace ControlsSample
 
         private void AddItemButton_Click(object? sender, EventArgs e)
         {
-            checkListBox.Items.Add("Item " + GenItemIndex());
+            checkListBox.Items.Add(ListBoxPage.GenItemText());
+            checkListBox.SelectLastItemAndScroll();
         }
 
         private void EnsureLastItemVisibleButton_Click(
             object? sender, 
             EventArgs e)
         {
-            var count = checkListBox.Items.Count;
-            if (count > 0)
-                checkListBox.EnsureVisible(count - 1);
+            checkListBox.EnsureVisible(checkListBox.Count - 1);
         }
 
         private void CheckItemAtIndex2Button_Click(

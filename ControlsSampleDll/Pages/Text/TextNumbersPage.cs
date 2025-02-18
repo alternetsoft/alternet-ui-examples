@@ -14,19 +14,29 @@ namespace ControlsSample
         private const string MinValueTextDouble = "-1.7976931348623157E+308";
         private const string MaxValueTextDouble = "1.7976931348623157E+308";
 
+        [IsTextLocalized(true)]
         private readonly ValueEditorInt16 shortEdit = new("Int16", -25);
+
+        [IsTextLocalized(true)]
         private readonly ValueEditorByte byteEdit = new("Byte", 230);
+
+        [IsTextLocalized(true)]
         private readonly ValueEditorDouble doubleEdit = new("Double", -15.3);
+
+        [IsTextLocalized(true)]
         private readonly ValueEditorUDouble udoubleEdit = new("UDouble", 1002);
+
+        [IsTextLocalized(true)]
         private readonly HexEditorUInt32 uint32HexEdit = new("UInt32 Hex", 0x25E6);
-        private readonly CheckBox bellOnErrorCheckBox = new("Bell On Error");
+
+        [IsTextLocalized(true)]
         private readonly Label label = new("Try to enter invalid numbers");
 
         private readonly ValueEditorByte twoDigitsEdit = new("Two digits", 15);
 
         public TextNumbersPage()
         {
-            Margin = 10;
+            Padding = 10;
 
             static void BindTextChanged(ValueEditorCustom control)
             {
@@ -38,13 +48,20 @@ namespace ControlsSample
 
             Group(shortEdit, byteEdit, doubleEdit, udoubleEdit, uint32HexEdit, twoDigitsEdit)
                 .Margin(0, 5, 5, 5).Parent(this).InnerSuggestedWidth(200)
+                .ParentForeColor(true).ParentBackColor(true)
                 .Action<ValueEditorCustom>(BindTextChanged).LabelSuggestedWidthToMax();
 
-            bellOnErrorCheckBox.BindBoolProp(
-                ValueValidatorFactory.Default,
-                nameof(ValueValidatorFactory.BellOnError));
-
             label.Parent = this;
+            RichToolTip toolTip = new();
+            toolTip.Margin = (0,10,0,10);
+            toolTip.VerticalAlignment = VerticalAlignment.Fill;
+            toolTip.Parent = this;
+            toolTip.ParentBackColor = true;
+            toolTip.ParentForeColor = true;
+            ToolTipProvider = toolTip;
+
+            BackgroundColor = Color.Gainsboro;
+            ForegroundColor = Color.Black;
         }
 
         private void SetDoubleMinMMButton_Click(object? sender, EventArgs e)

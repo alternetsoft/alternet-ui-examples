@@ -57,7 +57,7 @@ namespace ControlsSample
             }
         }
 
-        private void TabControl_TabSizeChanged(object? sender, BaseEventArgs<Control> e)
+        private void TabControl_TabSizeChanged(object? sender, BaseEventArgs<AbstractControl> e)
         {
             App.DebugLogIf($"TabSizeChanged: {e.Value.Text}, {PixelFromDip(e.Value.Size)}, {e.Value.GetDPI()}", false);
         }
@@ -152,6 +152,11 @@ namespace ControlsSample
         {
             if(tabAlignmentComboBox.SelectedItem is TabAlignment tabAlignment)
                 tabControl.TabAlignment = tabAlignment;
+
+            var preferredSize = tabAlignmentComboBox.GetPreferredSize();
+            tabAlignmentComboBox.InvalidateBestSize();
+            var preferredSize2 = tabAlignmentComboBox.GetPreferredSize();
+            App.DebugLogIf($"tabAlignmentComboBox.PreferredSize = {preferredSize} {preferredSize2}", true);
         }
     }
 }

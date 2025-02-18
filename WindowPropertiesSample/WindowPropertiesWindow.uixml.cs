@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 
 using Alternet.Drawing;
@@ -8,11 +9,15 @@ namespace WindowPropertiesSample
 {
     public partial class WindowPropertiesWindow : Window
     {
+        internal static RectD Position1 = (250, 250, 450, 450);
+        internal static RectD Position2 = (50, 50, 500, 500);
+
         private readonly IconSet Icon1;
         private readonly IconSet Icon2;
         private readonly SetBoundsProperties setBoundsProperties;
 
         private Window? testWindow;
+        ConcurrentStack<PropInstanceAndValue.SavedPropertiesItem>? SavedEnabledProperties;
 
         public WindowPropertiesWindow()
         {
@@ -45,6 +50,19 @@ namespace WindowPropertiesSample
 
             Icon1 = new(GetIconUrl("TestIcon1.ico"));
             Icon2 = new(GetIconUrl("TestIcon2.ico"));
+
+            panelSettings.ParentBackColor = false;
+            panelSettings.BackColor = SystemColors.Window;
+
+            panelSettings.AddLinkLabel("Disable all children except this window", () =>
+            {
+                SavedEnabledProperties = PropInstanceAndValue.DisableAllFormsChildrenExcept(this);
+            });
+
+            panelSettings.AddLinkLabel("Restore children enabled", () =>
+            {
+                PropInstanceAndValue.PopPropertiesMultiple(SavedEnabledProperties);
+            });
         }
 
         internal string GetIconUrl(string name)
@@ -127,11 +145,12 @@ namespace WindowPropertiesSample
             if (testWindow is not DialogWindow dialogWindow)
                 throw new InvalidOperationException();
 
-            dialogWindow.ShowModal(this);
-
-            App.Log("ModalResult: " + dialogWindow.ModalResult);
-            dialogWindow.Dispose();
-            OnWindowClosed();
+            dialogWindow.ShowDialogAsync(this, (result) =>
+            {
+                App.Log("Modal Result: " + (result ? "Accepted" : "Canceled"));
+                dialogWindow.Dispose();
+                OnWindowClosed();
+            });
         }
 
         private void CreateWindowAndSetProperties(Type type, Window? parent = null)
@@ -232,10 +251,7 @@ namespace WindowPropertiesSample
         private void ReportBoundsChanged(string prefix)
         {
             var b = testWindow?.Bounds;
-            var eb = testWindow?.Handler.EventBounds;
-
-            var s = $"{prefix} B: {b}, EB: {eb}";
-
+            var s = $"{prefix} Bounds: {b}";
             App.LogReplace(s, prefix);
         }
 
@@ -255,6 +271,10 @@ namespace WindowPropertiesSample
         {
             App.Log("Test Window: StateChanged");
             UpdateWindowState();
+            if(sender is Window window)
+            {
+                window.OwnedWindowsVisible = !window.IsMinimized;
+            }
         }
 
         private void UpdateWindowState()
@@ -270,7 +290,8 @@ namespace WindowPropertiesSample
                 activeWindowTitleLabel.Text = title;
 
                 if (testWindow != null)
-                    isWindowActiveLabel.Text = "Test window active: " + (testWindow.IsActive ? "Yes" : "No");
+                    isWindowActiveLabel.Text
+                    = "Test window active: " + (testWindow.IsActive ? "Yes" : "No");
                 else
                     isWindowActiveLabel.Text = string.Empty;
             });
@@ -344,7 +365,7 @@ namespace WindowPropertiesSample
         private void OnWindowClosed()
         {
             if (testWindow == null)
-                throw new InvalidOperationException();
+                return;
 
             testWindow.Activated -= TestWindow_Activated;
             testWindow.Deactivated -= TestWindow_Deactivated;
@@ -357,6 +378,9 @@ namespace WindowPropertiesSample
 
             testWindow = null;
 
+            if (DisposingOrDisposed)
+                return;
+
             hideWindowCheckBox.IsChecked = false;
 
             UpdateControls();
@@ -365,7 +389,8 @@ namespace WindowPropertiesSample
         private void TestWindow_Closing(object? sender, WindowClosingEventArgs e)
         {
             App.Log("Test Window: Closing");
-            e.Cancel = cancelClosingCheckBox.IsChecked;
+            if(!cancelClosingCheckBox.DisposingOrDisposed)
+                e.Cancel = cancelClosingCheckBox.IsChecked;
         }
 
         private void ShowInTaskBarCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -442,18 +467,37 @@ namespace WindowPropertiesSample
             if (testWindow == null)
                 return;
 
+            var s1 = "Owned Window #" + testWindow.OwnedWindows.Length;
+
             var ownedWindow = new Window
             {
                 Owner = testWindow,
                 MinimumSize = (300, 300),
                 IsToolWindow = true,
-                Title = "OwnedWindow",
+                Title = s1,
             };
 
-            var label = ownedWindow.AddLabel("Owned Window #" + testWindow.OwnedWindows.Length);
+            Label label = new(s1);
             label.Margin = 10;
+            label.Parent = ownedWindow;
+
+            ownedWindow.Disposed += (s, e) =>
+            {
+                App.Log($"Disposed: {s1}");
+            };
+
+            ownedWindow.Closed += (s, e) =>
+            {
+                App.Log($"Closed: {s1}");
+            };
+
+            ownedWindow.Closing += (s, e) =>
+            {
+                App.Log($"Closing: {s1}");
+            };
+
             ownedWindow.Show();
-        }
+         }
 
         private void StateComboBox_SelectedItemChanged(object sender, EventArgs e)
         {
@@ -515,7 +559,11 @@ namespace WindowPropertiesSample
         private void HideWindowCheckBox_CheckedChanged(object sender, System.EventArgs e)
         {
             if (testWindow != null)
-                testWindow.Visible = !hideWindowCheckBox.IsChecked;
+            {
+                var b = !hideWindowCheckBox.IsChecked;
+                testWindow.OwnedWindowsVisible = b;
+                testWindow.Visible = b;
+            }
         }
 
         private void SetSizeToContentButton_Click(object sender, System.EventArgs e)
@@ -524,7 +572,7 @@ namespace WindowPropertiesSample
                 (WindowSizeToContentMode)sizeToContentModeComboBox.SelectedItem!);
         }
 
-        public class SetBoundsProperties : BaseChildObject<Window>
+        public class SetBoundsProperties : BaseOwnedObject<Window>
         {
             public SetBoundsProperties(Window owner)
                 : base(owner)

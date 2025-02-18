@@ -11,14 +11,15 @@
 		>
     <VerticalStackPanel InputTransparent="true">
 
-      <GroupBox Margin="10" Padding="5" Title="GroupBox" Name="mainGroupBox"
+      <Border Margin="10" Padding="5" Name="mainGroupBox"
                     MouseMove="GroupBox_MouseMove"
                     MouseDown="GroupBox_MouseDown"
                     MouseUp="GroupBox_MouseUp"
                 >
         <StackPanel Orientation="Vertical"
                     Padding="5" InputTransparent="true">
-          <Button Name="helloButton" Text="Say Hello" Margin="10" Click="HelloButton_Click"
+          <Button Name="helloButton" Text="Say Hello" IsTextLocalized="true"
+                  Margin="10" Click="HelloButton_Click"
                   MouseMove="HelloButton_MouseMove"
                   MouseDown="HelloButton_MouseDown"
                   MouseUp="HelloButton_MouseUp"
@@ -33,19 +34,23 @@
             <Label Margin="10" Name="mouseCaptureLabel" VerticalAlignment="Center"
                    />
           </Border>
-          <TextBox Text="Sample Text Box" Margin="5"/>
+          <TextBox Text="Sample Text Box" IsTextLocalized="true" Margin="5"/>
 
           <HorizontalStackPanel InputTransparent="true">
-            <Label Text="Mouse Buttons:" Margin="5"/>
-            <TextBox Name="buttonInfo" Margin="5" ReadOnly="true" SuggestedWidth="350"/>
+            <Label Text="Mouse Buttons:" Margin="5" IsTextLocalized="true"/>
+            
+            <TextBoxAndButton
+              Name="buttonInfo" Margin="5" Enabled="false" SuggestedWidth="350"
+              InnerOuterBorder="Outer" ButtonsVisible="false"/>
+
           </HorizontalStackPanel>
 
-          <CheckBox Text="Log Mouse Move" Name="logMoveCheckBox"/>
+          <CheckBox Text="Log Mouse Move" Name="logMoveCheckBox" IsTextLocalized="true"/>
 
           <LogListBox Name="lb" Margin="5"  SuggestedHeight="200"/>
 
         </StackPanel>
-      </GroupBox>
+      </Border>
       
     </VerticalStackPanel>
 </Window>

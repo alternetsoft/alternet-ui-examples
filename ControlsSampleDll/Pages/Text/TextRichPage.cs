@@ -2,21 +2,43 @@
 using System.Collections.Generic;
 using System.IO;
 using Alternet.Drawing;
+
 using Alternet.UI;
+using Alternet.UI.Extensions;
 
 namespace ControlsSample
 {
     internal class TextRichPage : Control
     {
-        const string HtmlFilesFilter = "HTML Files (*.html; *.htm)|*.html;*.htm";
-        const string TextFilesFilter = "TXT Files (*.txt)|*.txt";
-        const string XmlFilesFilter = "XML Files (*.xml)|*.xml";
+        [IsTextLocalized(true)]
+        public static string itWasInJanuary =
+            "It was in January, the most down-trodden month of an Edinburgh winter." +
+            " An attractive woman came into the cafe, which is nothing remarkable.";
 
-        const string SaveFileDialogFilter = $"{TextFilesFilter}|{HtmlFilesFilter}|{XmlFilesFilter}";
+        [IsTextLocalized(true)]
+        public static string sUnorderedListItem = "Unordered List Item";
 
-        const string AllFilesFilter = "All Files (*.*)|*.*";
-        const string SupportedFilesFilter = "Supported Files (*.txt; *.xml)|*.txt;*.xml;";
-        const string OpenFileDialogFilter =
+        [IsTextLocalized(true)]
+        public static string sOrderedListItem = "Ordered List Item";
+
+        [IsTextLocalized(true)]
+        public static string HtmlFilesFilter = "HTML Files (*.html; *.htm)|*.html;*.htm";
+
+        [IsTextLocalized(true)]
+        public static string TextFilesFilter = "TXT Files (*.txt)|*.txt";
+
+        [IsTextLocalized(true)]
+        public static string XmlFilesFilter = "XML Files (*.xml)|*.xml";
+
+        public static string SaveFileDialogFilter = $"{TextFilesFilter}|{HtmlFilesFilter}";
+
+        [IsTextLocalized(true)]
+        public static string AllFilesFilter = "All Files (*.*)|*.*";
+
+        [IsTextLocalized(true)]
+        public static string SupportedFilesFilter = "Supported Files (*.txt)|*.txt";
+
+        public static string OpenFileDialogFilter =
             $"{SupportedFilesFilter}|{AllFilesFilter}";
 
         private readonly PanelRichTextBox richPanel = new();
@@ -24,12 +46,10 @@ namespace ControlsSample
         public TextRichPage()
         {
             richPanel.Parent = this;
-            // richEdit.CurrentPositionChanged += TextBox_CurrentPositionChanged;
             richPanel.TextBox.KeyDown += RichEdit_KeyDown;
             richPanel.TextBox.AutoUrlOpen = true;
             richPanel.TextBox.TextUrl += TextMemoPage.MultiLineTextBox_TextUrl;
             richPanel.TextBox.EnterPressed += RichTextBox_EnterPressed;
-            // richEdit.TextUrl += MultiLineTextBox_TextUrl;
             richPanel.FileNewClick += RichPanel_FileNewClick;
             richPanel.FileOpenClick += RichPanel_FileOpenClick;
             richPanel.FileSaveClick += RichPanel_FileSaveClick;
@@ -42,7 +62,7 @@ namespace ControlsSample
         {
             var richEdit = richPanel.TextBox;
 
-            var baseFontSize = (int)Control.DefaultFont.SizeInPoints;
+            var baseFontSize = (int)AbstractControl.DefaultFont.SizeInPoints;
 
             var taTextColorRed = richEdit.CreateTextAttr();
             taTextColorRed.SetTextColor(Color.Red);
@@ -136,16 +156,11 @@ namespace ControlsSample
                 "\n",
             };
 
-            // richEdit.AutoUrl = true;
-
             richEdit.DoInsideUpdate(() =>
             {
                 richEdit.AppendTextAndStyles(list);
                 richEdit.Refresh();
             });
-
-            const string sUnorderedListItem = "Unordered List Item";
-            const string sOrderedListItem = "Ordered List Item";
 
             richEdit.SetDefaultStyle(taUnorderedList);
             for (int i = 1; i < 4; i++)
@@ -176,11 +191,7 @@ namespace ControlsSample
 
         public void InitRichEdit2()
         {
-            var baseFontSize = (int)Control.DefaultFont.SizeInPoints;
-
-            const string itWasInJanuary =
-                "It was in January, the most down-trodden month of an Edinburgh winter." +
-                " An attractive woman came into the cafe, which is nothing remarkable.";
+            var baseFontSize = (int)AbstractControl.DefaultFont.SizeInPoints;
 
             var r = richPanel.TextBox;
 
@@ -302,42 +313,6 @@ namespace ControlsSample
             r.EndLineSpacing();
             r.EndAlignment();
 
-            /*int[] tabs = { 400, 600, 800, 1000 };
-            var attr = TextBox.CreateTextAttr();
-            attr.SetFlags(TextBoxTextAttrFlags.Tabs);
-            attr.SetTabs(tabs);
-            r.SetDefaultStyle(attr);
-            r.WriteText("This line contains tabs:\tFirst tab\tSecond tab\tThird tab");
-            r.NewLine();*/
-
-            /*
-            const string zebraLeftText =
-                "This is a simple test for a floating left image test." +
-                " The image should be placed at the left side of the current buffer " +
-                "and all the text should flow around it at the right side. ";
-            const string zebraLeftTripleText = zebraLeftText + zebraLeftText + zebraLeftText;
-
-            const string zebraRightText =
-            "This is a simple test for a floating right image test. " +
-            "The image should be placed at the right side of the current buffer and" +
-            " all the text should flow around it at the left side. ";
-            const string zebraRightTripleText = zebraRightText + zebraRightText + zebraRightText;
-
-            r.BeginAlignment(TextBoxTextAttrAlignment.Left);
-            var imageAttr = TextBox.CreateTextAttr();
-            imageAttr.GetTextBoxAttr().SetFloatMode(wxTEXT_BOX_ATTR_FLOAT_LEFT);
-            r.WriteText(zebraLeftTripleText);
-
-            r.WriteImage(logoImage, BitmapType.Png, imageAttr);
-
-            imageAttr.GetTextBoxAttr().GetTop().SetValue(200);
-            imageAttr.GetTextBoxAttr().GetTop().SetUnits(wxTEXT_ATTR_UNITS_PIXELS);
-            imageAttr.GetTextBoxAttr().SetFloatMode(wxTEXT_BOX_ATTR_FLOAT_RIGHT);
-            r.WriteImage(logoImage, BitmapType.Png, imageAttr);
-            r.WriteText(zebraRightTripleText);
-            r.EndAlignment();
-            */
-
             r.WriteText("Other notable features of RichTextBox include:");
             r.NewLine();
 
@@ -454,8 +429,8 @@ namespace ControlsSample
             var ext = Path.GetExtension(filename).ToLower();
             if (ext == ".txt")
                 return RichTextFileType.Text;
-            if (ext == ".xml")
-                return RichTextFileType.Xml;
+            /*if (ext == ".xml")
+                return RichTextFileType.Xml;*/
             if (ext == ".html" || ext == ".htm")
                 return RichTextFileType.Html;
             return RichTextFileType.Any;
@@ -492,23 +467,22 @@ namespace ControlsSample
                 }
             }
 
-            using SaveFileDialog dialog = new()
-            {
-                Filter = SaveFileDialogFilter,
-                OverwritePrompt = true,
-                FileName = richPanel.TextBox.FileName,
-            };
+            var saveDialog = SaveFileDialog.Default;
 
-            if (dialog.ShowModal(this.ParentWindow) != ModalResult.Accepted)
-                return;
+            saveDialog.Filter = SaveFileDialogFilter;
+            saveDialog.OverwritePrompt = true;
+            saveDialog.FileName = richPanel.TextBox.FileName;
 
-            if (SaveFile(dialog.FileName!))
+            saveDialog.ShowAsync(this.ParentWindow, () =>
             {
-                richPanel.TextBox.FileName = dialog.FileName!;
-                App.Log($"Saved to file: {dialog.FileName}");
-            }
-            else
-                App.Log($"Error saving to file: {dialog.FileName}");
+                if (SaveFile(saveDialog.FileName!))
+                {
+                    richPanel.TextBox.FileName = saveDialog.FileName!;
+                    App.Log($"Saved to file: {saveDialog.FileName}");
+                }
+                else
+                    App.Log($"Error saving to file: {saveDialog.FileName}");
+            });
         }
 
         private void RichPanel_FileOpenClick(object? sender, EventArgs e)
@@ -530,28 +504,26 @@ namespace ControlsSample
                 }
             }
 
-            using OpenFileDialog dialog = new()
-            {
-                Filter = OpenFileDialogFilter,
-                FileMustExist = true,
-            };
+            var dialog = OpenFileDialog.Default;
+            dialog.Filter = OpenFileDialogFilter;
+            dialog.FileMustExist = true;
 
-            if (dialog.ShowModal(this.ParentWindow) != ModalResult.Accepted)
-                return;
-
-            if (LoadFile(dialog.FileName!))
+            dialog.ShowAsync(this.ParentWindow, () =>
             {
-                richPanel.TextBox.FileName = dialog.FileName!;
-                App.Log($"Loaded from file: {dialog.FileName}");
-            }
-            else
-                App.Log($"Error loading from file: {dialog.FileName}");
+                if (LoadFile(dialog.FileName!))
+                {
+                    richPanel.TextBox.FileName = dialog.FileName!;
+                    App.Log($"Loaded from file: {dialog.FileName}");
+                }
+                else
+                    App.Log($"Error loading from file: {dialog.FileName}");
+            });
         }
 
         private void RichPanel_FileNewClick(object? sender, EventArgs e)
         {
             var result = MessageBox.Show(
-                "Clear all text?",
+                "Clear all text".AddQuestion(),
                 "Prompt",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.None);

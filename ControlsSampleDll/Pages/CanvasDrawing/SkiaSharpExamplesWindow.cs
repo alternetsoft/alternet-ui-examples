@@ -49,7 +49,7 @@ namespace ControlsSample
 
             rightPanel.Parent = mainPanel.RightPanel;
 
-            rightPanel.Add("Pages", actionsListBox);
+            rightPanel.Add(GenericStrings.TabTitlePages, actionsListBox);
 
             pictureBox.Parent = mainPanel.CenterPanel;
 
@@ -86,12 +86,12 @@ namespace ControlsSample
                 sample.Init();
                 sample.RefreshRequested += OnRefreshRequested;
 
-                actionsListBox.Add(sample.Title,
+                actionsListBox.Add(new ListControlItem(sample.Title,
                 () =>
                 {
                     currentSample = sample;
                     Draw(sample.DrawSample);
-                });
+                }));
             }
 
             Idle += SkiaSharpExamplesWindow_Idle;

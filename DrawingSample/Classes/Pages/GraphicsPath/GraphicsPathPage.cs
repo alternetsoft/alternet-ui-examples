@@ -1,4 +1,5 @@
 ﻿using Alternet.Drawing;
+using Alternet.Drawing.Printing;
 using Alternet.UI;
 using System;
 using System.Linq;
@@ -45,7 +46,7 @@ namespace DrawingSample
             DrawDemoForeground(dc, bounds);
         }
 
-        protected override void OnCanvasChanged(Control? oldValue, Control? value)
+        protected override void OnCanvasChanged(AbstractControl? oldValue, AbstractControl? value)
         {
             if (oldValue != null)
             {
@@ -62,7 +63,7 @@ namespace DrawingSample
             }
         }
 
-        protected override Control CreateSettingsControl()
+        protected override AbstractControl CreateSettingsControl()
         {
             var control = new GraphicsPathPageSettings();
             control.Initialize(this);
@@ -98,17 +99,22 @@ namespace DrawingSample
             }
         }
 
+        private readonly TextFormat LabelTextFormat = TextFormat.Default()
+                .Alignment(TextHorizontalAlignment.Center)
+                .MaximalWidth(PaperSizes.A6InDips.Width);
+
         private void DrawDemoForeground(Graphics dc, RectD bounds)
         {
-            var s1 = "Click and drag here to draw.";
-            var s2 = "You can select the path segment type";
-            var s3 = "to draw in the combo box in the panel to the right.";
+            var s = "Click and drag to draw. " +
+                "Select the path segment type to draw in the combo box in the panel to the right.";
 
-            dc.DrawText(
-                new string[] { s1, s2, s3 },
-                Control.DefaultFont,
-                Brushes.Black,
-                bounds.Location);
+            var hMargin = bounds.Width / 4;
+            var txtRect = bounds.WithMargin((hMargin, 10, hMargin, 10));
+
+            dc.DrawText(s, Control.DefaultFont, Brushes.Black, txtRect, LabelTextFormat);
+
+            /*var drawable = DrawableElement.CreateStringsStack([s1, s2, s3], 0, CoordAlignment.Near);
+            drawable.Draw(dc, bounds.WithMargin(10));*/
 
             using var path = new GraphicsPath(dc) { FillMode = PathFillMode };
 

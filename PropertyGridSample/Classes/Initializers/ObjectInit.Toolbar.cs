@@ -16,6 +16,8 @@ namespace PropertyGridSample
             if (control is not FindReplaceControl findReplace)
                 return;
 
+            findReplace.HorizontalAlignment = HorizontalAlignment.Left;
+            findReplace.HasBorder = true;
             findReplace.ReplaceVisible = true;
             findReplace.Manager = findReplace.CreateLogger();
         }
@@ -56,7 +58,11 @@ namespace PropertyGridSample
         {
             if (control is not ToolBar toolbar)
                 return;
+            InitGenericToolBar(toolbar);
+        }
 
+        public static void InitGenericToolBar(ToolBar toolbar, bool onlyButtons = false)
+        {
             toolbar.Margin = (0, 0, 0, 4);
 
             var buttonIdNew = toolbar.AddSpeedBtn(
@@ -81,8 +87,8 @@ namespace PropertyGridSample
             var separatorId = toolbar.AddSeparator();
 
             var saveClone = KnownSvgImages.ImgFileSave.Clone();
-            saveClone.SetColorOverride(KnownSvgColor.Normal, true, Color.Red);
-            saveClone.SetColorOverride(KnownSvgColor.Normal, false, Color.IndianRed);
+            saveClone.SetColorOverride(KnownSvgColor.Normal, isDark: true, Color.Yellow);
+            saveClone.SetColorOverride(KnownSvgColor.Normal, false, Color.Red);
 
             var buttonIdSave = toolbar.AddSpeedBtn(
                 CommonStrings.Default.ButtonSave,
@@ -94,12 +100,16 @@ namespace PropertyGridSample
             var idText = toolbar.AddText("text");
             toolbar.AddToolAction(idText, ButtonClick);
 
-            var textBox = new TextBox();
-            textBox.VerticalAlignment = VerticalAlignment.Center;
-            textBox.Text = "text1";
-            textBox.SuggestedWidth = 100;
+            if (!onlyButtons)
+            {
+                var textBox = new TextBox();
+                textBox.VerticalAlignment = VerticalAlignment.Center;
+                textBox.Text = "text1";
+                textBox.MinWidth = 100;
+                textBox.HorizontalAlignment = HorizontalAlignment.Fill;
 
-            var idEdit = toolbar.AddControl(textBox);
+                var idEdit = toolbar.AddControl(textBox);
+            }
 
             var itemPicture = toolbar.AddPicture(
                 KnownSvgImages.ImgMessageBoxWarning,
@@ -113,7 +123,7 @@ namespace PropertyGridSample
 
             static void ButtonClick(object? sender, EventArgs e)
             {
-                if (sender is not Control button)
+                if (sender is not AbstractControl button)
                     return;
                 App.Log($"Button click: {button.ToolTip}");
             }

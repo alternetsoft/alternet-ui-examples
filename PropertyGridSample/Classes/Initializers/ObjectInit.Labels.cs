@@ -13,12 +13,13 @@ namespace PropertyGridSample
         {
             if (control is not GenericLabel label)
                 return;
+            label.ParentBackColor = true;
             label.Text = "GenericLabel";
             label.HorizontalAlignment = HorizontalAlignment.Left;
             label.ForegroundColor = Color.Sienna;
             label.MnemonicCharIndex = 3;
             label.ImageVisible = true;
-            label.TextAlignment = GenericAlignment.Center;
+            label.TextAlignment = HVAlignment.Center;
             label.Image = DefaultImage;
             label.DisabledImage = DefaultImage.ToGrayScale();
             label.SuggestedSize = (300, 300);
@@ -33,12 +34,20 @@ namespace PropertyGridSample
             label.Borders.SetAll(border);
             label.Borders.SetObject(doubleBorder, VisualControlState.Hovered);
 
-            var colors = new FontAndColor(Color.Black, null, Control.DefaultFont.AsBold);
+            var colors = new FontAndColor(Color.Black, null, AbstractControl.DefaultFont.AsBold);
 
             label.StateObjects ??= new();
             label.StateObjects.Colors ??= new();
             label.StateObjects.Colors.SetObject(colors, VisualControlState.Hovered);
             SetBackgrounds(label);
+        }
+
+        public static void InitGenericTextControl(object control)
+        {
+            if (control is not GenericTextControl label)
+                return;
+            label.Text = "This is text";
+            label.HorizontalAlignment = HorizontalAlignment.Left;
         }
 
         public static void InitLabel(object control)
@@ -57,6 +66,7 @@ namespace PropertyGridSample
             var s = "https://www.google.com";
             label.Text = "LinkLabel";
             label.Url = s;
+            label.IsUnderline = true;
         }
     }
 }

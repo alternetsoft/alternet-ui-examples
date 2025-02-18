@@ -16,7 +16,7 @@ namespace PropertyGridSample
     public partial class ObjectInit
     {
         private const int defaultListHeight = 250;
-        private const string LoremIpsum =
+        public const string LoremIpsum =
             "Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit. " +
             "Suspendisse tincidunt orci vitae arcu congue commodo. " +
             "Proin fermentum rhoncus dictum.\n";
@@ -43,16 +43,30 @@ namespace PropertyGridSample
 
         private static int newItemIndex = 0;
 
-        static void SetBackgrounds(Control control)
+        public static void SetBackgrounds(AbstractControl control)
         {
-            control.Backgrounds = new()
+            if(control.IsDarkBackground)
             {
-                Normal = Color.PaleTurquoise.AsBrush,
-                Hovered = Color.IndianRed.AsBrush,
-                Disabled = Color.DarkGray.AsBrush,
-                Pressed = Color.Cornsilk.AsBrush,
-                Focused = Color.DarkOrange.AsBrush,
-            };
+                control.Backgrounds = new()
+                {
+                    Normal = Color.PaleTurquoise.Darker().AsBrush,
+                    Hovered = Color.IndianRed.Darker().AsBrush,
+                    Disabled = Color.DarkGray.Darker().AsBrush,
+                    Pressed = Color.Cornsilk.Darker().AsBrush,
+                    Focused = Color.DarkOrange.Darker().AsBrush,
+                };                
+            }
+            else
+            {
+                control.Backgrounds = new()
+                {
+                    Normal = Color.PaleTurquoise.AsBrush,
+                    Hovered = Color.IndianRed.AsBrush,
+                    Disabled = Color.DarkGray.AsBrush,
+                    Pressed = Color.Cornsilk.AsBrush,
+                    Focused = Color.DarkOrange.AsBrush,
+                };
+            }            
         }
 
         public static void InitPageSetupDialog(object control)
@@ -124,8 +138,31 @@ namespace PropertyGridSample
             }
         }
 
+        public static void InitRichToolTip(RichToolTip control)
+        {
+            control.HorizontalAlignment = HorizontalAlignment.Stretch;
+            control.MaxWidth = 450;
+
+            control.ShowToolTip(
+                "This is title",
+                LoremIpsum,
+                MessageBoxIcon.Information,
+                0);
+        }
+
+        public static void AddAction<T>(Action<T> action)
+        {
+            Actions.Add(typeof(T), (o) =>
+            {
+                if (o is T tObject)
+                    action(tObject);
+            });
+        }
+
         static ObjectInit()
         {
+            AddAction<RichToolTip>(InitRichToolTip);
+
             Actions.Add(typeof(PageSetupDialog), InitPageSetupDialog);
             Actions.Add(typeof(PrintPreviewDialog), InitPrintPreviewDialog);
             Actions.Add(typeof(PrintDialog), InitPrintDialog);
@@ -144,11 +181,13 @@ namespace PropertyGridSample
             Actions.Add(typeof(CardPanel), InitCardPanel);
             Actions.Add(typeof(TextBox), InitTextBox);
             Actions.Add(typeof(TextBoxAndLabel), InitTextBoxAndLabel);
+            Actions.Add(typeof(TextBoxAndButton), InitTextBoxAndButton);
             Actions.Add(typeof(RichTextBox), InitRichTextBox);
             Actions.Add(typeof(ComboBoxAndLabel), InitComboBoxAndLabel);
             Actions.Add(typeof(MultilineTextBox), InitMultilineTextBox);
             Actions.Add(typeof(GenericLabel), InitGenericLabel);
             Actions.Add(typeof(Label), InitLabel);
+            Actions.Add(typeof(GenericTextControl), InitGenericTextControl);
             Actions.Add(typeof(LinkLabel), InitLinkLabel);
             Actions.Add(typeof(Button), InitButton);
             Actions.Add(typeof(SpeedTextButton), InitSpeedTextButton);
@@ -159,11 +198,13 @@ namespace PropertyGridSample
             Actions.Add(typeof(ListBox), InitListBox);
             Actions.Add(typeof(ComboBox), InitComboBox);
             Actions.Add(typeof(ColorComboBox), InitColorComboBox);
+            Actions.Add(typeof(FontComboBox), InitFontComboBox);
             Actions.Add(typeof(CheckListBox), InitCheckListBox);
 
             Actions.Add(typeof(UserControl), (c) =>
             {
                 var control = (c as UserControl)!;
+                control.HasBorder = true;
                 control.SuggestedSize = 200;
             });
 
@@ -200,6 +241,8 @@ namespace PropertyGridSample
             Actions.Add(typeof(Border), (c) =>
             {
                 var border = (c as Border)!;
+                border.ParentBackColor = false;
+                border.ParentForeColor = false;
                 border.SuggestedSize = defaultListSize;
                 SetBackgrounds(border);
 
@@ -257,13 +300,22 @@ namespace PropertyGridSample
                 GroupBox groupBox = (c as GroupBox)!;
                 groupBox.Title = "GroupBox";
                 groupBox.SuggestedSize = 150;
+                groupBox.MinChildMargin = 10;
+
+                groupBox.Layout = LayoutStyle.Vertical;
+
+                Label label = new("Label 1");
+                label.Parent = groupBox;
+
+                CheckBox checkBox = new("CheckBox 1");
+                checkBox.Parent = groupBox;
             });
 
             Actions.Add(typeof(Panel), InitPanel);
 
-            Actions.Add(typeof(Control), (c) =>
+            Actions.Add(typeof(AbstractControl), (c) =>
             {
-                Control control = (c as Control)!;
+                AbstractControl control = (c as AbstractControl)!;
                 control.SuggestedSize = defaultListHeight;
             });
 
@@ -274,21 +326,16 @@ namespace PropertyGridSample
                 control.SuggestedWidth = 200;
             });
 
-            Actions.Add(typeof(ColorPicker), (c) =>
-            {
-                ColorPicker control = (c as ColorPicker)!;
-                control.Value = Color.Red;
-            });            
-
             Actions.Add(typeof(PanelOkCancelButtons), (c) =>
             {
                 PanelOkCancelButtons control = (c as PanelOkCancelButtons)!;
+                control.HasBorder = true;
             });
         }
 
         private static ControlStateImages? buttonImages;
 
-        public static ControlStateImages GetButtonImages(Control control) =>
+        public static ControlStateImages GetButtonImages(AbstractControl control) =>
             buttonImages ??= LoadButtonImages();
 
         private static ControlStateImages LoadButtonImages()
@@ -318,6 +365,8 @@ namespace PropertyGridSample
             {
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Padding = 5,
+                ParentBackColor = true,
+                ParentForeColor = true,
             };
 
             for (int i = 1; i < 4; i++)
@@ -368,9 +417,11 @@ namespace PropertyGridSample
 
         public static void InitStackPanel(object control)
         {
-            var parent = control as Control;
-            parent!.SuggestedHeight = 250;
-            //parent.BackgroundColor = Color.Cornsilk;
+            if (control is not Control panel)
+                return;
+
+            panel.SuggestedHeight = 250;
+            panel.HasBorder = true;
 
 #pragma warning disable
             Button OkButton = new()
@@ -380,7 +431,7 @@ namespace PropertyGridSample
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 IsDefault = true,
-                Parent = parent,
+                Parent = panel,
             };
 
             Button CancelButton = new()
@@ -390,7 +441,7 @@ namespace PropertyGridSample
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 IsCancel = true,
-                Parent = parent,
+                Parent = panel,
             };
 
             Button ApplyButton = new()
@@ -399,7 +450,7 @@ namespace PropertyGridSample
                 Text = "3",
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Right,
-                Parent = parent,
+                Parent = panel,
             };
 #pragma warning restore
 
@@ -442,6 +493,7 @@ namespace PropertyGridSample
 
             void AddDefaultItems()
             {
+                listView.View = ListViewView.Details;
                 InitializeColumns();
                 AddItems(50);
                 foreach (var column in listView!.Columns)

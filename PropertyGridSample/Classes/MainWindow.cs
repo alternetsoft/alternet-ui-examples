@@ -14,24 +14,9 @@ namespace PropertyGridSample
 {
     public partial class MainWindow : Window
     {
+        public static bool DoSampleLocalization = true;
+
         internal readonly SplittedControlsPanel panel = new();
-
-        private readonly Control controlPanel = new()
-        {
-        };
-
-        private readonly Panel parentParent = new()
-        {
-            Padding = (5, 15, 5, 15),
-        };
-
-        private readonly Border controlPanelBorder = new()
-        {
-            BorderColor = Color.Red,
-            HorizontalAlignment = HorizontalAlignment.Left,
-            VerticalAlignment = VerticalAlignment.Top,
-            Padding = 0,
-        };
 
         private readonly ContextMenuStrip propGridContextMenu = new();
         private MenuItem? resetMenu;
@@ -39,10 +24,11 @@ namespace PropertyGridSample
 
         private bool updatePropertyGrid = false;
         private bool useIdle = false;
+        private bool showDesignCorners;
 
         static MainWindow()
         {
-            InitSampleLocalization();
+            Calculator.InitFormulaEngine();
 
             // Registers known collection property editors.
             PropertyGrid.RegisterCollectionEditors();
@@ -50,6 +36,10 @@ namespace PropertyGridSample
 
         private static void InitSampleLocalization()
         {
+            if (!DoSampleLocalization)
+                return;
+            DoSampleLocalization = false;
+
             // Sample localization of "Custom" color item (which calls color dialog)
             KnownColorStrings.Default.Custom = "Custom...";
 
@@ -67,8 +57,9 @@ namespace PropertyGridSample
             knownColorsChoices.RemoveValue<PropertyGridKnownColors>(PropertyGridKnownColors.Black);
 
             // Sample localization of the property label
-            var prm = PropertyGrid.GetNewItemParams(typeof(Control), "Name");
-            prm.Label = "(name)";
+            var prm = PropertyGrid.GetNewItemParams(typeof(AbstractControl), "Name");
+            if(prm is not null)
+                prm.Label = "(name)";
         }
 
         private static void InitIgnorePropNames(ICollection<string> items)
@@ -79,12 +70,23 @@ namespace PropertyGridSample
             items.Add("Top");
         }
 
+        private bool ShowDesignCorners
+        {
+            get => showDesignCorners;
+            set
+            {
+                showDesignCorners = value;
+            }
+        }
+
         public PropertyGrid PropGrid => panel.PropGrid;
 
-        public Border ControlPanelBorder => controlPanelBorder;
+        public AbstractControl ControlParent => panel.FillPanel;
 
         public MainWindow()
         {
+            InitSampleLocalization();
+
             DoInsideLayout(Fn);
             panel.PropGrid.SuggestedInitDefaults();
 
@@ -108,13 +110,10 @@ namespace PropertyGridSample
 
                 propGridContextMenu.Opening += PropGridContextMenu_Opening;
 
-                controlPanelBorder.Normal.Paint += BorderSettings.DrawDesignCorners;
-                controlPanelBorder.Normal.DrawDefaultBorder = false;
-
                 panel.BindApplicationLog();
 
                 PropGrid.ApplyFlags |= PropertyGridApplyFlags.PropInfoSetValue
-                    | PropertyGridApplyFlags.ReloadAfterSetValue;
+                    | PropertyGridApplyFlags.ReloadAllAfterSetValue;
                 PropGrid.PropertyRightClick += PropGrid_PropertyRightClick;
                 PropGrid.Features = PropertyGridFeature.QuestionCharInNullable;
                 PropGrid.ProcessException += PropertyGrid_ProcessException;
@@ -129,11 +128,21 @@ namespace PropertyGridSample
                 panel.PropGrid.Required();
                 panel.ActionsControl.Required();
 
-                controlPanel.Parent = controlPanelBorder;
-
-                controlPanelBorder.Parent = parentParent;
-
-                parentParent.Parent = panel.FillPanel;
+                panel.FillPanel.MinChildMargin = 10;
+                panel.FillPanel.Paint += (s, e) =>
+                {
+                    if (!ShowDesignCorners)
+                        return;
+                    var rect = panel.FillPanel.FirstVisibleChild?.Bounds;
+                    if(rect is not null)
+                    {
+                        var inflated = rect.Value.Inflated();
+                        BorderSettings.DrawDesignCorners(
+                            e.Graphics,
+                            inflated,
+                            BorderSettings.DebugBorder);
+                    }
+                };
 
                 InitToolBox();
 
@@ -161,7 +170,6 @@ namespace PropertyGridSample
 
                 ToolBox.SelectedItem = ToolBox.FirstItem;
 
-                App.Idle += ApplicationIdle;
                 RunTests();
 
                 ComponentDesigner.InitDefault();
@@ -169,11 +177,16 @@ namespace PropertyGridSample
                 ComponentDesigner.SafeDefault.MouseLeftButtonDown += Designer_MouseLeftButtonDown;
 
                 panel.FillPanel.MouseDown += ControlPanel_MouseDown;
-                controlPanel.DragStart += ControlPanel_DragStart;
+                panel.FillPanel.DragStart += ControlPanel_DragStart;
 
                 panel.WriteWelcomeLogMessages();
                 updatePropertyGrid = true;
             }
+
+            panel.AfterDoubleClickAction += (s, e) =>
+            {
+                PropGrid.ReloadPropertyValues();
+            };
         }
 
         public VirtualListBox ToolBox => panel.LeftListBox;
@@ -284,21 +297,6 @@ namespace PropertyGridSample
 
         private static void Designer_MouseLeftButtonDown(object? sender, MouseEventArgs e)
         {
-            /*if(sender is Control control)
-            {
-                var name = control.Name ?? control.GetType().Name;
-                Application.LogNameValue("MouseLeftButtonDown", name);
-            }*/
-
-            /*
-            if (sender is not GroupBox groupBox)
-                return;
-            Application.LogNameValue("groupBox.GetTopBorderForSizer", groupBox.GetTopBorderForSizer());
-            Application.LogNameValue("groupBox.GetOtherBorderForSizer", groupBox.GetOtherBorderForSizer());
-            Application.LogNameValue("groupBox.IntrinsicPreferredSizePadding", groupBox.IntrinsicPreferredSizePadding);
-            Application.LogNameValue("groupBox.Padding", groupBox.Padding);
-            Application.LogNameValue("groupBox.IntrinsicLayoutPadding", groupBox.IntrinsicLayoutPadding);
-            */
         }
 
         internal bool LogSize { get; set; } = false;
@@ -309,7 +307,7 @@ namespace PropertyGridSample
             var type = item?.InstanceType;
             if (type == typeof(WelcomePage))
                 return;
-            if (item?.Instance == e.Instance || e.Instance is null)
+            if (item?.PropInstance == e.Instance || e.Instance is null)
                 updatePropertyGrid = true;
         }
 
@@ -342,7 +340,7 @@ namespace PropertyGridSample
 
             void DoAction()
             {
-                controlPanel.GetVisibleChildOrNull()?.Hide();
+                ControlParent.GetVisibleChildOrNull()?.Hide();
                 if (ToolBox.SelectedItem is not ControlListBoxItem item)
                 {
                     PropGrid.Clear();
@@ -351,35 +349,41 @@ namespace PropertyGridSample
 
                 var type = item.InstanceType;
 
-                if (item.Instance is Control control)
+                if (item.Instance is AbstractControl control)
                 {
-                    parentParent.DoInsideLayout(() =>
+                    var hasBorder = PropertyGridSettings.Default!.DesignCorners
+                    && item.HasTicks
+                    && !control.FlagsAndAttributes.HasFlag("NoDesignBorder");
+
+                    ControlParent.DoInsideLayout(() =>
                     {
-                        controlPanelBorder.HasBorder = PropertyGridSettings.Default!.DesignCorners
-                        && item.HasTicks
-                        && !control.FlagsAndAttributes.HasFlag("NoDesignBorder");
 
                         if (control.Name == null)
                         {
                             var s = control.GetType().ToString();
                             var splitted = s.Split('.');
-                            control.Name = splitted[splitted.Length - 1] + LogUtils.GenNewId().ToString();
+                            control.Name
+                            = splitted[splitted.Length - 1] + LogUtils.GenNewId().ToString();
                         }
 
                         if (control.Parent == null)
                         {
                             control.VerticalAlignment = VerticalAlignment.Top;
-                            control.Parent = controlPanel;
+                            control.Parent = ControlParent;
                         }
 
                         control.Visible = true;
+                        control.Refresh();
                     });
-                    parentParent.Refresh();
+
+                    ShowDesignCorners = hasBorder;
                 }
                 else
                 {
-                    controlPanelBorder.HasBorder = false;
+                    ShowDesignCorners = false;
                 }
+
+                ControlParent.Refresh();
 
                 if (type == typeof(WelcomePage))
                 {
@@ -400,24 +404,99 @@ namespace PropertyGridSample
                         AfterSetProps();
                     });
 
-                    SetBackground(SystemColors.Control);
-                    panel.RemoveActions();
-                    panel.AddActions(type);
+                    SetBackground(null);
+
+                    App.AddIdleTask(() =>
+                    {
+                        panel.RemoveActions();
+                        panel.AddActions(type);
+
+                        var methods = AssemblyUtils.EnumMethods(type);
+                        foreach (var method in methods)
+                        {
+                            if (method.IsSpecialName)
+                                continue;
+                            if (method.IsGenericMethod)
+                                continue;
+                            var retParam = method.ReturnParameter;
+                            var resultIsVoid = retParam.ParameterType == typeof(void);
+
+                            var prms = method.GetParameters();
+                            if (prms.Length > 0)
+                                continue;
+                            var browsable = AssemblyUtils.GetBrowsable(method);
+                            if (!browsable)
+                                continue;
+                            var methodName = $"{method.Name}()";
+                            var methodNameForDisplay = $"<b>{methodName}</b>";
+                            
+                            if (resultIsVoid)
+                            {
+                                methodNameForDisplay = $"{methodNameForDisplay} : void";
+                            }
+                            else
+                            {
+                                var retParamDisplayName =
+                                AssemblyUtils.GetTypeDisplayName(retParam.ParameterType);
+
+                                methodNameForDisplay
+                                = $"{methodNameForDisplay} : {retParamDisplayName}";
+                            }
+
+                            var item = panel.AddAction(methodName, () =>
+                            {
+                                var selectedControl = GetSelectedControl<Control>();
+                                if (selectedControl is null)
+                                    return;
+                                var result = method.Invoke(selectedControl, null);
+
+                                ListControlItem item = new();
+                                item.TextHasBold = true;
+
+                                var itemText = $"Called <b>{type.Name}.{methodName}</b>";
+
+                                if (!resultIsVoid)
+                                {
+                                    itemText += $" with result = <b>{result}</b>";
+                                }
+
+                                item.Text = itemText;
+                                
+                                App.AddLogItem(item);
+                            });
+
+                            item.DisplayText = methodNameForDisplay;
+                            item.TextHasBold = true;
+                        }
+                    });
                 }
+
+                App.AddIdleTask(() =>
+                {
+                    ControlParent.Refresh();
+                });
             }
 
             DoAction();
 
         }
 
-        private void SetBackground(Color color)
+        protected override void DisposeManaged()
         {
+            ComponentDesigner.SafeDefault.PropertyChanged -= Designer_PropertyChanged;
+            ComponentDesigner.SafeDefault.MouseLeftButtonDown -= Designer_MouseLeftButtonDown;
+
+            base.DisposeManaged();
+        }
+
+        private void SetBackground(Color? color)
+        {
+            /*
             if (PropertyGridSettings.Default!.DemoBackgroundIsWhite)
                 color = Color.White;
 
-            parentParent.BackgroundColor = color;
-            controlPanelBorder.BackgroundColor = color;
-            controlPanel.BackgroundColor = color;
+            ControlParent.BackgroundColor = color;
+            */
         }
 
         public class SettingsControl : Control
