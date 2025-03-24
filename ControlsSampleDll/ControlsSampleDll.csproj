@@ -96,6 +96,9 @@
     <IncludeFolders Include="DragAndDropSample" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\CommonData\GlobalUsing.cs" Link="GlobalUsing.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="..\CommonDialogsSample\CommonDialogsWindow.uixml.cs" Link="Links\CommonDialogsSample\CommonDialogsWindow.uixml.cs" />
     <None Include="..\CommonDialogsSample\CommonDialogsWindow.uixml" Link="Links\CommonDialogsSample\CommonDialogsWindow.uixml" />
     <UIXml Include="..\CommonDialogsSample\CommonDialogsWindow.uixml" Link="Links\CommonDialogsSample\CommonDialogsWindow.uixml" />
@@ -237,6 +240,6 @@
   </PropertyGroup>
   <Import Project="$(SignToolPath)" Condition="Exists('$(SignToolPath)')" />
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.710-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.717-beta" />
   </ItemGroup>
 </Project>

@@ -13,10 +13,15 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="Alternet.Demo.Run.sh">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\ControlsSampleDll\ControlsSampleDll.csproj" />
   </ItemGroup>
   <Import Project="$(SignToolPath)" Condition="Exists('$(SignToolPath)')" />
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.710-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.717-beta" />
   </ItemGroup>
 </Project>
