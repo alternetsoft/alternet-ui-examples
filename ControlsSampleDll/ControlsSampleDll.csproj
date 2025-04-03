@@ -137,6 +137,7 @@
   <ItemGroup>
     <Compile Include="..\EmployeeFormSample\EmployeeMainWindow.uixml.cs" Link="Links\EmployeeFormSample\EmployeeMainWindow.uixml.cs" />
     <UIXml Include="..\EmployeeFormSample\EmployeeMainWindow.uixml" Link="Links\EmployeeFormSample\EmployeeMainWindow.uixml" />
+    <None Include="..\EmployeeFormSample\EmployeeMainWindow.uixml" Link="Links\EmployeeFormSample\EmployeeMainWindow.uixml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\CustomControlsSample\Classes\**\*.cs">
@@ -236,10 +237,10 @@
     <EmbeddedResource Include="SkiaSharpMedia\opacity.svg" />
   </ItemGroup>
   <PropertyGroup>
-    <SignToolPath>$(MSBuildThisFileDirectory)\..\..\Alternet.UI.Interfaces\SignDll.proj</SignToolPath>
+    <SignToolPath>$(MSBuildThisFileDirectory)\..\..\Alternet.UI.Common\SignDll.proj</SignToolPath>
   </PropertyGroup>
   <Import Project="$(SignToolPath)" Condition="Exists('$(SignToolPath)')" />
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.717-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.719-beta" />
   </ItemGroup>
 </Project>

@@ -21,10 +21,10 @@
   <ItemGroup />
   <!-- ================================================ -->
   <PropertyGroup>
-    <SignToolPath>$(MSBuildThisFileDirectory)\..\..\Alternet.UI.Interfaces\SignDll.proj</SignToolPath>
+    <SignToolPath>$(MSBuildThisFileDirectory)\..\..\Alternet.UI.Common\SignDll.proj</SignToolPath>
   </PropertyGroup>
   <Import Project="$(SignToolPath)" Condition="Exists('$(SignToolPath)')" />
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.717-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.719-beta" />
   </ItemGroup>
 </Project>
