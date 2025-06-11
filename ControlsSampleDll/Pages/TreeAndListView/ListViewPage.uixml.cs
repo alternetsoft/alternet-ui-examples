@@ -51,9 +51,9 @@ namespace ControlsSample
 
             viewComboBox.AddEnumValues(typeof(ListViewView), ListViewView.Details);
             gridLinesComboBox.AddEnumValues(typeof(ListViewGridLinesDisplayMode),
-                ListViewGridLinesDisplayMode.None);
+                ListViewGridLinesDisplayMode.Vertical);
             columnWidthModeComboBox.AddEnumValues(typeof(ListViewColumnWidthMode),
-                ListViewColumnWidthMode.AutoSize);
+                ListViewColumnWidthMode.Fixed);
 
             listView.Items.ItemInserted += Items_ItemInserted;
             listView.Items.ItemRemoved += Items_ItemRemoved;
@@ -80,12 +80,6 @@ namespace ControlsSample
             listView!.View = ListViewView.Details;
 
             PropertyGridSample.ObjectInit.InitListView(listView);
-            /*
-            InitializeColumns();
-            AddItems(50);
-            foreach (var column in listView!.Columns)
-                column.WidthMode = ListViewColumnWidthMode.AutoSize;
-            */
         }
 
         private bool SlowRecreate

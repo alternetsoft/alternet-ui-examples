@@ -149,7 +149,8 @@ namespace WindowPropertiesSample
             {
                 App.Log("Modal Result: " + (result ? "Accepted" : "Canceled"));
                 OnWindowClosed();
-                dialogWindow.Dispose();
+
+                dialogWindow.SendDispose();
             });
         }
 
@@ -334,7 +335,6 @@ namespace WindowPropertiesSample
                     sizeToContentModeComboBox,
                     setSizeToContentButton,
                     setSizeButton,
-                    setClientSizeButton,
                     setBoundsButton,
                     increaseLocationButton,
                     setMinMaxSizeButton,
@@ -527,12 +527,6 @@ namespace WindowPropertiesSample
         {
             if (testWindow != null)
                 testWindow.Size = new SizeD(300, 300);
-        }
-
-        private void SetClientSizeButton_Click(object sender, EventArgs e)
-        {
-            if (testWindow != null)
-                testWindow.ClientSize = new SizeD(300, 300);
         }
 
         private void IncreaseLocationButton_Click(object sender, EventArgs e)

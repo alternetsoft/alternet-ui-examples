@@ -12,11 +12,32 @@ namespace ControlsSample
         {
             InitializeComponent();
 
-            GenericStrings.AddTenRows(checkListBox.Items.Add);
+            void AddSection(string title)
+            {
+                ListControlItem section1 = new(title);
+                section1.IsBold = true;
+                section1.Font = RealFont.IncSize(2);
+                section1.CheckBoxVisible = false;
+                checkListBox.BaseItems.Add(section1);
+            }
+
+            void AddItems()
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    checkListBox.Items.Add("Item " + LogUtils.GenNewId());
+                }
+            }
+
+            AddSection("Section 1");
+            AddItems();
+            AddSection("Section 2");
+            AddItems();
 
             checkListBox.SelectionChanged += CheckListBox_SelectionChanged;
             allowMultipleSelectionCheckBox.IsChecked =
                 checkListBox.SelectionMode == ListBoxSelectionMode.Multiple;
+            App.LogIf($"CheckListBoxDemo: Constructor done", false);
         }
 
         private void EditorButton_Click(object? sender, System.EventArgs e)
@@ -49,6 +70,12 @@ namespace ControlsSample
             string result = indices.Count > 100 ? 
                 GenericStrings.TooManyIndexesToDisplay : string.Join(",", indices);
             return result;
+        }
+
+        private void CheckListBox_SizeChanged(object? sender, EventArgs e)
+        {
+            App.LogIf(
+                $"CheckListBox: SizeChanged. InUpdates: {checkListBox.InUpdates}, ClientSize: ({checkListBox.ClientSize}), Size: ({checkListBox.Size})", false);
         }
 
         private void CheckListBox_CheckedChanged(object? sender, EventArgs e)

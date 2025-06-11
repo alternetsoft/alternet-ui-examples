@@ -28,8 +28,6 @@ namespace PropertyGridSample
 
         static MainWindow()
         {
-            Calculator.InitFormulaEngine();
-
             // Registers known collection property editors.
             PropertyGrid.RegisterCollectionEditors();
         }
@@ -168,7 +166,7 @@ namespace PropertyGridSample
                     Key.DownArrow,
                     Alternet.UI.ModifierKeys.Control);
 
-                ToolBox.SelectedItem = ToolBox.FirstItem;
+                ToolBox.SelectFirstItem();
 
                 RunTests();
 
@@ -188,7 +186,7 @@ namespace PropertyGridSample
             };
         }
 
-        public VirtualListBox ToolBox => panel.LeftListBox;
+        public VirtualTreeControl ToolBox => panel.LeftListBox;
 
         private void PropGrid_PropertyCustomCreate(object? sender, CreatePropertyEventArgs e)
         {
@@ -365,9 +363,9 @@ namespace PropertyGridSample
                         if (control.Name == null)
                         {
                             var s = control.GetType().ToString();
-                            var splitted = s.Split('.');
+                            var splittedText = s.Split('.');
                             control.Name
-                            = splitted[splitted.Length - 1] + LogUtils.GenNewId().ToString();
+                            = splittedText[splittedText.Length - 1] + LogUtils.GenNewId().ToString();
                         }
 
                         if (control.Parent == null)
@@ -425,8 +423,8 @@ namespace PropertyGridSample
                             var retParam = method.ReturnParameter;
                             var resultIsVoid = retParam.ParameterType == typeof(void);
 
-                            var prms = method.GetParameters();
-                            if (prms.Length > 0)
+                            var methodParameters = method.GetParameters();
+                            if (methodParameters.Length > 0)
                                 continue;
                             var browsable = AssemblyUtils.GetBrowsable(method);
                             if (!browsable)
@@ -452,21 +450,7 @@ namespace PropertyGridSample
                                 var selectedControl = GetSelectedControl<Control>();
                                 if (selectedControl is null)
                                     return;
-                                var result = method.Invoke(selectedControl, null);
-
-                                ListControlItem item = new();
-                                item.TextHasBold = true;
-
-                                var itemText = $"Called <b>{type.Name}.{methodName}</b>";
-
-                                if (!resultIsVoid)
-                                {
-                                    itemText += $" with result = <b>{result}</b>";
-                                }
-
-                                item.Text = itemText;
-                                
-                                App.AddLogItem(item);
+                                AssemblyUtils.InvokeMethodAndLogResult(selectedControl, method);
                             });
 
                             item.DisplayText = methodNameForDisplay;
@@ -495,12 +479,6 @@ namespace PropertyGridSample
 
         private void SetBackground(Color? color)
         {
-            /*
-            if (PropertyGridSettings.Default!.DemoBackgroundIsWhite)
-                color = Color.White;
-
-            ControlParent.BackgroundColor = color;
-            */
         }
 
         public class SettingsControl : Control
