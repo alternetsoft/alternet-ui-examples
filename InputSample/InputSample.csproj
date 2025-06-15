@@ -2,6 +2,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\CommonData\CommonProject.props" />
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.735-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.736-beta" />
   </ItemGroup>
 </Project>
