@@ -12,7 +12,8 @@ namespace PropertyGridSample
     {
         public static void LogClick(object? sender, EventArgs e)
         {
-            App.Log($"{sender?.GetType()} Click");
+            var s = $"{sender?.GetType()} Click";
+            App.LogReplace(s, s);
         }
 
         public static void InitButton(object control)
@@ -59,6 +60,13 @@ namespace PropertyGridSample
             button.TextVisible = true;
             button.Click += LogClick;
             button.LoadSvg(KnownSvgUrls.UrlImageOk, 32);
+
+            button.StickyChanged += (s, e) =>
+            {
+                App.LogReplace(
+                    $"SpeedButton.Sticky changed to [{button.Sticky}]",
+                    $"SpeedButton.Sticky");
+            };
         }
     }
 }

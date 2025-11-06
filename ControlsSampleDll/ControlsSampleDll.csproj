@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\CommonData\TargetFrameworks.props" />
   <PropertyGroup>
     <LangVersion>12.0</LangVersion>
     <Nullable>enable</Nullable>
     <UseStyleCop>false</UseStyleCop>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <IncludeSymbols>true</IncludeSymbols>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
@@ -218,9 +218,13 @@
     </UIXml>
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="..\PaintSample\Classes\Tools\FloodFill\FloodFillTool.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Remove="Resources\SamplePandaPdf.pdf" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Remove="..\CommonData\Sample.ico" Link="Sample.ico" />
     <EmbeddedResource Include="..\CommonData\Sample.ico" Link="Sample.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -241,6 +245,6 @@
   </PropertyGroup>
   <Import Project="$(SignToolPath)" Condition="Exists('$(SignToolPath)')" />
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.736-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.759-beta" />
   </ItemGroup>
 </Project>

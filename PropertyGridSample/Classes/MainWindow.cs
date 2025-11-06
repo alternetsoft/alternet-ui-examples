@@ -9,6 +9,7 @@ using Alternet.Drawing;
 using Alternet.UI;
 using Alternet.Base.Collections;
 using Alternet.UI.Localization;
+using Alternet.UI.Extensions;
 
 namespace PropertyGridSample
 {
@@ -20,9 +21,7 @@ namespace PropertyGridSample
 
         private readonly ContextMenuStrip propGridContextMenu = new();
         private MenuItem? resetMenu;
-        private readonly StatusBar statusBar = new();
 
-        private bool updatePropertyGrid = false;
         private bool useIdle = false;
         private bool showDesignCorners;
 
@@ -46,8 +45,14 @@ namespace PropertyGridSample
 
             // Sample localization of Enum property values
             var brushTypeChoices = PropertyGrid.GetChoices<BrushType>();
-            brushTypeChoices.SetLabelForValue<BrushType>(BrushType.LinearGradient, "Linear Gradient");
-            brushTypeChoices.SetLabelForValue<BrushType>(BrushType.RadialGradient, "Radial Gradient");
+
+            brushTypeChoices.SetLabelForValue<BrushType>(
+                BrushType.LinearGradient,
+                "Linear Gradient");
+
+            brushTypeChoices.SetLabelForValue<BrushType>(
+                BrushType.RadialGradient,
+                "Radial Gradient");
 
             // Sample of hiding Enum value in PropertyGrid
             var knownColorsChoices = PropertyGrid.GetChoices<PropertyGridKnownColors>();
@@ -56,7 +61,7 @@ namespace PropertyGridSample
 
             // Sample localization of the property label
             var prm = PropertyGrid.GetNewItemParams(typeof(AbstractControl), "Name");
-            if(prm is not null)
+            if (prm is not null)
                 prm.Label = "(name)";
         }
 
@@ -96,8 +101,6 @@ namespace PropertyGridSample
                 Title = "Alternet UI PropertyGrid Sample";
                 Size = (900, 700);
                 StartLocation = WindowStartLocation.CenterScreen;
-                StatusBar = statusBar;
-                statusBar.Text = "Ready";
                 Padding = 5;
                 Activated += MainWindow_Activated;
                 Deactivated += MainWindow_Deactivated;
@@ -123,6 +126,8 @@ namespace PropertyGridSample
 
                 ToolBox.SelectionChanged += ControlsListBox_SelectionChanged;
                 panel.LogControl.Required();
+                panel.LogControl.BindApplicationLog();
+
                 panel.PropGrid.Required();
                 panel.ActionsControl.Required();
 
@@ -132,7 +137,7 @@ namespace PropertyGridSample
                     if (!ShowDesignCorners)
                         return;
                     var rect = panel.FillPanel.FirstVisibleChild?.Bounds;
-                    if(rect is not null)
+                    if (rect is not null)
                     {
                         var inflated = rect.Value.Inflated();
                         BorderSettings.DrawDesignCorners(
@@ -166,8 +171,6 @@ namespace PropertyGridSample
                     Key.DownArrow,
                     Alternet.UI.ModifierKeys.Control);
 
-                ToolBox.SelectFirstItem();
-
                 RunTests();
 
                 ComponentDesigner.InitDefault();
@@ -177,75 +180,75 @@ namespace PropertyGridSample
                 panel.FillPanel.MouseDown += ControlPanel_MouseDown;
                 panel.FillPanel.DragStart += ControlPanel_DragStart;
 
-                updatePropertyGrid = true;
+                Invoke(UpdatePropertyGrid);
+
+                ControlParent.HasBorder = true;
+
+                toolBoxFilterEdit.VerticalAlignment = VerticalAlignment.Top;
+                toolBoxFilterEdit.MarginBottom = 2;
+                panel.LeftPanel.Children.Prepend(toolBoxFilterEdit);
+
+                toolBoxFilterEdit.InitFilterEdit();
+                panel.LeftPanel.Layout = LayoutStyle.Vertical;
             }
 
             panel.AfterDoubleClickAction += (s, e) =>
+                    {
+                        PropGrid.ReloadPropertyValues();
+                    };
+
+            App.AddIdleTask(() =>
             {
-                PropGrid.ReloadPropertyValues();
+                ToolBox.SelectFirstItemAndScroll();
+            });
+
+            toolBoxFilterEdit.DelayedTextChanged += (s, e) =>
+            {
+                if (DisposingOrDisposed)
+                    return;
+                var filter = toolBoxFilterEdit.TextBox.Text;
+
+                if(string.IsNullOrEmpty(filter))
+                {
+                    ToolBox.RootItem.DoInsideUpdate(() =>
+                    {
+                        ToolBox.RootItem.CollapseAll();
+                        ToolBox.ApplyVisibility(true);
+                    });
+                    return;
+                }
+
+                bool Fn(TreeViewItem item)
+                {
+                    var result = item.Parent == item.Root || ToolBox.ItemContainsText(item, filter);
+                    return result;
+                }
+
+                ToolBox.RootItem.DoInsideUpdate(() =>
+                {
+                    ToolBox.RootItem.ExpandAll();
+                    ToolBox.ApplyVisibilityFilter(Fn);
+
+                    ToolBox.ApplyVisibilityFilter((item) =>
+                    {
+                        if(!item.IsVisible)
+                            return false;
+                        return !item.HasItems || item.HasVisibleItems;
+                    });
+                });
             };
         }
 
-        public VirtualTreeControl ToolBox => panel.LeftListBox;
+
+        private readonly TextBoxAndButton toolBoxFilterEdit = new()
+        {
+        };
+
+        public StdTreeView ToolBox => panel.LeftListBox;
 
         private void PropGrid_PropertyCustomCreate(object? sender, CreatePropertyEventArgs e)
         {
-            /*
-            if (e.PropInfo.PropertyType != typeof(Color))
-                return;
-            e.PropertyItem = CreatePropertyAsColor(e.Label, e.PropName, e.Instance, e.PropInfo);
-            e.Handled = true;
-            */
         }
-
-        /*public virtual IPropertyGridItem CreatePropertyAsColor(
-                    string? label,
-                    string? name,
-                    object instance,
-                    PropertyInfo propInfo)
-        {
-            string propName = propInfo.Name;
-            label ??= propName;
-
-            var color = propInfo.GetValue(instance, null) as Color;
-            string strValue = PropGrid.ColorToString(color);
-
-            var prm = PropertyGrid.GetNewItemParams(instance.GetType(), propInfo);
-            prm.EditKindString = PropertyGridEditKindString.Ellipsis;
-            prm.ButtonClick += Prm_ButtonClick;
-            prm = prm.Constructed;
-
-            var prop = PropGrid.CreateStringItemWithKind(label, propName, strValue, prm);
-
-            PropGrid.OnPropertyCreated(prop, instance, propInfo, prm);
-            return prop;
-
-            void Prm_ButtonClick(object? sender, EventArgs e)
-            {
-                Application.AddIdleTask(Fn);
-
-                void Fn()
-                {
-                    if (sender is not IPropertyGridItem item)
-                        return;
-                    var value = PropGrid.GetPropertyValueAsString(item);
-                    Color? color = null;
-
-                    PropGrid.AvoidException(() =>
-                    {
-                        color = Color.Parse(value);
-                    });
-
-                    ColorDialog.Default.Color = color ?? Color.Black;
-                    if (ColorDialog.Default.ShowModal() != ModalResult.Accepted)
-                        return;
-                    var newValue = PropGrid.ColorToString(ColorDialog.Default.Color);
-                    if (newValue == value)
-                        return;
-                    PropGrid.SetPropertyValueAsStr(item, newValue);
-                }
-            }
-        }*/
 
         private void MainWindow_SizeChanged(object? sender, EventArgs e)
         {
@@ -300,7 +303,7 @@ namespace PropertyGridSample
 
         private void Designer_PropertyChanged(object? sender, ObjectPropertyChangedEventArgs e)
         {
-            RunWhenIdle(() =>
+            Post(() =>
             {
                 if (DisposingOrDisposed)
                     return;
@@ -309,7 +312,8 @@ namespace PropertyGridSample
                 if (type == typeof(WelcomePage))
                     return;
                 if (item?.PropInstance == e.Instance || e.Instance is null)
-                    updatePropertyGrid = true;
+                    Invoke(UpdatePropertyGrid);
+                Post(ControlParent.Refresh);
             });
         }
 
@@ -321,7 +325,7 @@ namespace PropertyGridSample
 
         private void ControlsListBox_SelectionChanged(object? sender, EventArgs e)
         {
-            updatePropertyGrid = true;
+            Invoke(UpdatePropertyGrid);
         }
 
         internal void AfterSetProps()
@@ -329,7 +333,12 @@ namespace PropertyGridSample
 
         }
 
-        internal void UpdatePropertyGrid(object? instance = null)
+        internal void UpdatePropertyGrid()
+        {
+            UpdatePropertyGrid(null);
+        }
+
+        internal void UpdatePropertyGrid(object? instance)
         {
             if (instance != null)
             {
@@ -410,52 +419,7 @@ namespace PropertyGridSample
 
                     App.AddIdleTask(() =>
                     {
-                        panel.RemoveActions();
-                        panel.AddActions(type);
-
-                        var methods = AssemblyUtils.EnumMethods(type);
-                        foreach (var method in methods)
-                        {
-                            if (method.IsSpecialName)
-                                continue;
-                            if (method.IsGenericMethod)
-                                continue;
-                            var retParam = method.ReturnParameter;
-                            var resultIsVoid = retParam.ParameterType == typeof(void);
-
-                            var methodParameters = method.GetParameters();
-                            if (methodParameters.Length > 0)
-                                continue;
-                            var browsable = AssemblyUtils.GetBrowsable(method);
-                            if (!browsable)
-                                continue;
-                            var methodName = $"{method.Name}()";
-                            var methodNameForDisplay = $"<b>{methodName}</b>";
-                            
-                            if (resultIsVoid)
-                            {
-                                methodNameForDisplay = $"{methodNameForDisplay} : void";
-                            }
-                            else
-                            {
-                                var retParamDisplayName =
-                                AssemblyUtils.GetTypeDisplayName(retParam.ParameterType);
-
-                                methodNameForDisplay
-                                = $"{methodNameForDisplay} : {retParamDisplayName}";
-                            }
-
-                            var item = panel.AddAction(methodName, () =>
-                            {
-                                var selectedControl = GetSelectedControl<Control>();
-                                if (selectedControl is null)
-                                    return;
-                                AssemblyUtils.InvokeMethodAndLogResult(selectedControl, method);
-                            });
-
-                            item.DisplayText = methodNameForDisplay;
-                            item.TextHasBold = true;
-                        }
+                        panel.SetMethodsAndActions(type, GetSelectedControl<Control>());
                     });
                 }
 
@@ -469,8 +433,16 @@ namespace PropertyGridSample
 
         }
 
+        protected override void OnSystemColorsChanged(EventArgs e)
+        {
+            base.OnSystemColorsChanged(e);
+            UpdatePropertyGrid();
+        }
+
         protected override void DisposeManaged()
         {
+            panel.LogControl.UnbindApplicationLog();
+
             ComponentDesigner.SafeDefault.ObjectPropertyChanged -= Designer_PropertyChanged;
             ComponentDesigner.SafeDefault.MouseLeftButtonDown -= Designer_MouseLeftButtonDown;
 
@@ -481,9 +453,8 @@ namespace PropertyGridSample
         {
         }
 
-        public class SettingsControl : Control
+        public class SettingsControl : HiddenBorder
         {
-
         }
     }
 }

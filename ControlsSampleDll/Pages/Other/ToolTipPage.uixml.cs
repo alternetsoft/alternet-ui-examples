@@ -10,6 +10,7 @@ namespace ControlsSample
     {
         private readonly RichToolTip toolTip = new();
 
+        private Action<object?, EventArgs>? showMethod;
         private ImageSet? customImage;
         private ImageSet? largeImage;
         private MessageBoxIcon toolTipIcon = MessageBoxIcon.Warning;
@@ -26,7 +27,7 @@ namespace ControlsSample
                 new FontAndColor(
                     Color.Red,
                     Color.LightGoldenrodYellow,
-                    Control.DefaultFont.Scaled(1.5)));
+                    Control.DefaultFont.Scaled(1.5f)));
 
             controlTemplate.Parent = this;
             controlTemplate.SetSizeToContent();
@@ -48,14 +49,20 @@ namespace ControlsSample
                 tooltipIconLabel)
             .SuggestedWidthToMax();
 
-            tooltipIconComboBox.BindEnumProp(
-                this,
-                nameof(ToolTipIcon),
-                (item) =>
-                {
-                    var icon = (MessageBoxIcon)item;
+            tooltipIconComboBox.IncludeValuePredicate = (item) =>
+            {
+                if(item is MessageBoxIcon icon)
                     return icon == MessageBoxIcon.None || MessageBoxSvg.GetImage(icon) is not null;
-                });
+                return false;
+            };
+
+            tooltipIconComboBox.EnumType = typeof(MessageBoxIcon);
+            tooltipIconComboBox.Value = ToolTipIcon;
+            tooltipIconComboBox.ValueChanged += (s, e) =>
+            {
+                var icon = (MessageBoxIcon)tooltipIconComboBox.Value;
+                ToolTipIcon = icon;
+            };
 
             showToolTipButton.Click += ShowToolTipButton_Click;
             hideToolTipButton.Click += HideToolTipButton_Click;
@@ -92,14 +99,50 @@ namespace ControlsSample
             {
             };
 
-            showTemplateButton.Click += (s, e) =>
+            void ShowFromTemplate(object? sender, EventArgs e)
             {
+                showMethod = ShowFromTemplate;
                 toolTip.SetToolTipFromTemplate(controlTemplate).ShowToolTip();
-            };
+            }
+
+            showTemplateButton.Click += ShowFromTemplate;
 
             popup.Add("Log Information", Log);
-            
-            popup.Add("Next Alignment", NextAligment);
+
+            void ZoomFont(int incValue)
+            {
+                toolTip.HideToolTip();
+                toolTip.Font = toolTip.RealFont.WithSize(toolTip.RealFont.Size + incValue);
+                toolTip.Font.ResetSkiaFont();
+                ShowToolTipButton_Click(this, EventArgs.Empty);
+            }
+
+            popup.Add("Zoom in font", () =>
+            {
+                ZoomFont(1);
+            });
+
+            popup.Add("Zoom out font", () =>
+            {
+                ZoomFont(-1);
+            });
+
+            popup.Add("Reset SkiaFont and reshow", () =>
+            {
+                toolTip.HideToolTip();
+                toolTip.RealFont.ResetSkiaFont();
+                ShowToolTipButton_Click(this, EventArgs.Empty);
+            });
+
+            popup.Add("Show SkiaSharp Font defaults", () =>
+            {
+                SkiaFontSettings.ShowFontSettingsDialog(() =>
+                {
+                    toolTip.HideToolTip();
+                });
+            });
+
+            popup.Add("Next Alignment", NextAlignment);
 
             atCenterCheckBox.CheckedChanged += (s, e) =>
             {
@@ -182,7 +225,7 @@ namespace ControlsSample
             ShowToolTipButton_Click(this, EventArgs.Empty);
         }
 
-        internal void NextAligment()
+        internal void NextAlignment()
         {
             toolTip.ToolTipAlignment = toolTip.ToolTipAlignment.NextValueNoStretchOrFill();
         }
@@ -208,17 +251,18 @@ namespace ControlsSample
         private void ShowImageButton_Click(object? sender, EventArgs e)
         {
             LoadImages();
+            showMethod = ShowImageButton_Click;
             toolTip.OnlyImage(largeImage).SetToolTipBackgroundColor(Color.ForestGreen).ShowToolTip();
         }
 
         private void LoadImages()
         {
-            ImageSet? GetImage(string resname, int backgupColorImageSize)
+            ImageSet? GetImage(string resName, int backupColorImageSize)
             {
-                var stream = typeof(ToolTipPage).Assembly.GetManifestResourceStream(resname);
+                var stream = typeof(ToolTipPage).Assembly.GetManifestResourceStream(resName);
                 ImageSet? result;
                 if (stream is null)
-                    result = (ImageSet)(Image)Color.Blue.AsImage(backgupColorImageSize);
+                    result = (ImageSet)(Image)Color.Blue.AsImage(backupColorImageSize);
                 else
                     result = new(stream);
                 return result;
@@ -230,6 +274,7 @@ namespace ControlsSample
 
         private void ShowToolTipButton_Click(object? sender, EventArgs e)
         {
+            showMethod = ShowToolTipButton_Click;
             if (customImageCheckBox.IsChecked)
             {
                 LoadImages();
@@ -293,6 +338,7 @@ namespace ControlsSample
 
         private void ShowSimpleButton_Click(object? sender, EventArgs e)
         {
+            showMethod = ShowSimpleButton_Click;
             toolTip.SetToolTip(tooltipMessageTextBox.Text ?? "This is a simple tooltip")
                 .SetIcon(ToolTipIcon)
                 .ShowToolTip();
@@ -301,6 +347,13 @@ namespace ControlsSample
         private void HideToolTipButton_Click(object? sender, EventArgs e)
         {
             toolTip.HideToolTip();
+            showMethod = null;
+        }
+
+        protected override void OnSystemColorsChanged(EventArgs e)
+        {
+            base.OnSystemColorsChanged(e);
+            showMethod?.Invoke(this, EventArgs.Empty);
         }
 
         public MessageBoxIcon ToolTipIcon

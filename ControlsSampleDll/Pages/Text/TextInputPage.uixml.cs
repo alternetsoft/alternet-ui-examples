@@ -18,6 +18,7 @@ namespace ControlsSample
         public static string TextBoxEmptyTextHint = "Sample Hint";
         public static string TextBoxSampleText = "Sample Text";
 
+        private Timer timer = new(100);
         private PopupPropertyGrid? popup;
 
         static TextInputPage()
@@ -47,7 +48,12 @@ namespace ControlsSample
 
             // ==== Other
 
-            Idle += TextInputPage_Idle;
+            timer.TickAction = () =>
+            {
+                ReportSelection();
+            };
+
+            timer.StartRepeated();
 
             textBox.PreviewKeyDown += TextBox_PreviewKeyDown;
             textBox.KeyDown += TextBox_KeyDown;
@@ -63,7 +69,7 @@ namespace ControlsSample
                 });
             };
 
-            panelSettings.DoInsideUpdate(() =>
+            panelSettings.DoInsideLayout(() =>
             {
                 panelSettings.AddInput("ReadOnly", textBox, nameof(TextBox.ReadOnly));
                 panelSettings.AddInput("Password", textBox, nameof(TextBox.IsPassword));
@@ -112,7 +118,15 @@ namespace ControlsSample
                 panelSettings.AddInput("Log Text", this, nameof(LogText));
                 panelSettings.AddInput("Log Position", this, nameof(LogPosition));
                 panelSettings.AddInput("Log Selection", this, nameof(LogSelection));
+
+                panelSettings.AddHorizontalLine();
             });
+        }
+
+        protected override void DisposeManaged()
+        {
+            timer.Stop();
+            base.DisposeManaged();
         }
 
         private void TextBox_KeyDown(object? sender, KeyEventArgs e)
@@ -199,7 +213,7 @@ namespace ControlsSample
 
         private string? reportedSelection;
 
-        private void TextInputPage_Idle(object? sender, EventArgs e)
+        private void ReportSelection()
         {
             textBox.IdleAction();
 
@@ -211,12 +225,16 @@ namespace ControlsSample
                 var selLength2 = textBox.SelectionLength;
                 var value = $"<{selText}>, Start = {selStart}, Length = {selLength}/{selLength2}";
 
-                if(reportedSelection != value)
+                if (reportedSelection != value)
                 {
                     App.LogNameValueReplace("TextBox.SelectedText", value);
                     reportedSelection = value;
                 }
             }
+        }
+
+        private void TextInputPage_Idle(object? sender, EventArgs e)
+        {
         }
 
         public static bool LogPosition { get; set; }

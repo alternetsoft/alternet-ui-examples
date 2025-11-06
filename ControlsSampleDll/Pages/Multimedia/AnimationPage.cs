@@ -9,7 +9,7 @@ using Alternet.UI;
 2023-11-25: Thanks to @neoxeo! He added new gif animation and open animation file feature.
 We approved his changes with little modifications.
  
- */
+*/
 
 namespace ControlsSample
 {
@@ -26,7 +26,7 @@ namespace ControlsSample
         private readonly AnimationPlayer animation = new();
         private readonly PopupPictureBox popup = new();
         
-        private readonly ComboBox selectComboBox = new()
+        private readonly EnumPicker selectComboBox = new()
         {
             Margin = 5,
         };
@@ -45,23 +45,43 @@ namespace ControlsSample
             animation.LoadFromUrl(defaultAnimationUrl, AnimationType.Gif);
             animation.Play();
 
-            selectComboBox.IsEditable = false;
-            selectComboBox.Add(AnimationHourGlass);
-            selectComboBox.Add(AnimationPlant);
-            selectComboBox.Add(AnimationSpinner);
-            selectComboBox.Add(AnimationAlternet);
-            selectComboBox.Add(AnimationCustom);
-            selectComboBox.SelectedItem = defaultAnimationUrl;
+            new HorizontalLine
+            {
+                Margin = 5,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+            }.Parent = this;
+
+            new Label
+            {
+                Text = "Select animation to play:",
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Margin = 5,
+            }.Parent = this;
+
+            List<string> animationUrls = new()
+            {
+                AnimationHourGlass,
+                AnimationPlant,
+                AnimationSpinner,
+                AnimationAlternet,
+                AnimationCustom
+            };
+
+            selectComboBox.AddRange(animationUrls);
+            selectComboBox.Value = defaultAnimationUrl;
             selectComboBox.Parent = this;
+            selectComboBox.ValueChanged += SelectComboBox_SelectedItemChanged;
 
-            selectComboBox.SelectedItemChanged += SelectComboBox_SelectedItemChanged;
+            var stackPanel = new VerticalStackPanel(this);
 
-            AddVerticalStackPanel().AddButtons(
-                ("Play", () => { animation.Play(); }),
-                ("Stop", animation.Stop),
-                ("Info", ShowInfo),
-                ("Show frame 0", ShowFrame))
-            .Margin(5).HorizontalAlignment(HorizontalAlignment.Left).SuggestedWidthToMax();
+            var playButton = new Button("Play", () => { animation.Play(); });
+            var stopButton = new Button("Stop", animation.Stop);
+            var infoButton = new Button("Info", ShowInfo);
+            var showFrameButton = new Button("Show frame 0", ShowFrame);
+
+            new ControlSet(playButton, stopButton, infoButton, showFrameButton)
+            .Margin(5).HorizontalAlignment(HorizontalAlignment.Left)
+            .Parent(stackPanel).SuggestedWidthToMax();
         }
 
         private void ShowFrame()
@@ -80,7 +100,7 @@ namespace ControlsSample
 
         private void SelectComboBox_SelectedItemChanged(object? sender, EventArgs e)
         {
-            if (selectComboBox.SelectedItem is not string url)
+            if (selectComboBox.Value is not string url)
                 return;
 
             if (url == AnimationCustom)
@@ -106,7 +126,7 @@ namespace ControlsSample
             else
             {
                 animation.Stop();
-                animation.LoadFromUrl(url);
+                animation.LoadFromUrl(url, AnimationType.Gif);
                 animation.Play();
             }
         }

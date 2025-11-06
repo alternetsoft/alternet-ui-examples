@@ -16,6 +16,7 @@ namespace MenuSample
 
         private readonly string ResPrefix;
         private readonly string CalendarUrl;
+        private readonly ContextMenu contextMenu;
 
         private int newItemIndex = 0;
 
@@ -33,7 +34,7 @@ namespace MenuSample
             {
                 var target = Command.CurrentTarget?.GetType().ToString() ?? "null";
                 var s = $"Run sample command on target <b>'{target}'</b> with param <b>'{param}'</b>";
-                TreeControlItem item = new(s);
+                TreeViewItem item = new(s);
                 item.TextHasBold = true;
                 App.AddLogItem(item);
             };
@@ -53,13 +54,51 @@ namespace MenuSample
             ExportToPngCommand?.Execute(null);
         }
 
-        public void SaveCommand_Click(object? sender, EventArgs e)
-        {
-            SaveCommand?.Execute(null);
-        }
-
         public MenuMainWindow()
         {
+            contextMenu = new ExampleContextMenu();
+            contextMenu.AddSeparator();
+
+            contextMenu.Add("Toggle top item visible", () =>
+            {
+                mainMenu.FirstItem?.SetVisible(!mainMenu.FirstItem.Visible);
+            });
+
+            contextMenu.Add("Toggle top item enabled", () =>
+            {
+                mainMenu.FirstItem?.SetEnabled(!mainMenu.FirstItem.Enabled);
+            });
+
+            contextMenu.Add("Toggle top item text", () =>
+            {
+                mainMenu.FirstItem?.SetText(
+                    mainMenu.FirstItem.Text.Contains("(Modified)") ? "_File" : "_File (Modified)");
+            });
+
+            contextMenu.AddSeparator();
+
+            contextMenu.Add("Toggle File|Open item visible", () =>
+            {
+                openMenuItem.SetVisible(!openMenuItem.Visible);
+            });
+
+            contextMenu.Add("Toggle File|Open item text", () =>
+            {
+                openMenuItem.SetText(
+                    openMenuItem.Text.Contains("(Modified)") ? "_Open..." : "_Open... (Modified)");
+            });
+
+            contextMenu.Add("Toggle File|Open shortcut", () =>
+            {
+                var shortcut1 = new KeyGesture(Key.O, ModifierKey.Control);
+                var shortcut2 = new KeyGesture(Key.O, ModifierKey.ControlShift);
+
+                if (openMenuItem.Shortcut?.HasKey(shortcut1) ?? false)
+                    openMenuItem.Shortcut = shortcut2;
+                else
+                    openMenuItem.Shortcut = shortcut1;
+            });
+
             var resFolder =
                 ImageSize == 16 ? "Resources.ToolBarPng.Small." : "Resources.ToolBarPng.Large.";
 
@@ -101,10 +140,8 @@ namespace MenuSample
 
             AddDynamicToolbarItem();
 
-            foreach (var value in Enum.GetValues(typeof(ImageToText)))
-                imageToTextDisplayModeComboBox.Items.Add(value!);
-            imageToTextDisplayModeComboBox.SelectedItem =
-                ImageToText.Horizontal;
+            imageToTextDisplayModeComboBox.EnumType = typeof(ImageToText);
+            imageToTextDisplayModeComboBox.Value = ImageToText.Horizontal;
 
             this.Closing += MainWindow_Closing;
 
@@ -139,19 +176,33 @@ namespace MenuSample
             fileMenu.Highlighted += MenuItem_Highlighted;
 
             aboutMenuItem.SvgImage = KnownColorSvgImages.ImgLogo;
+
+            this.Menu = mainMenu;
+
+            bool logItemChanged = false;
+
+            mainMenu.ItemChanged += (s,e) =>
+            {
+                if(!logItemChanged)
+                    return;
+                var itemText = (e.Item is MenuItem mi) ? mi.Text : e.Item.GetType().ToString();
+                LogEvent($"MainMenu ItemChanged: {e.Action} in '{itemText}'");
+            };
+
+            saveMenuItem.Command = SaveCommand;
         }
 
-        private void MenuItem_Highlighted(object sender, EventArgs e)
+        private void MenuItem_Highlighted(object? sender, EventArgs e)
         {
             LogEvent($"Menu Item '{(sender as MenuItem)?.Name}': Highlighted");
         }
 
-        private void MenuItem_Closed(object sender, EventArgs e)
+        private void MenuItem_Closed(object? sender, EventArgs e)
         {
             LogEvent($"Menu Item '{(sender as MenuItem)?.Name}': Closed");
         }
 
-        private void MenuItem_Opened(object sender, EventArgs e)
+        private void MenuItem_Opened(object? sender, EventArgs e)
         {
             LogEvent($"Menu Item '{(sender as MenuItem)?.Name}': Opened");
         }
@@ -261,12 +312,12 @@ namespace MenuSample
             MenuItem saveToolbarMenuItem =
                 new("_Save...", ToolbarDropDownMenuItem_Click);
             MenuItem exportToolbarMenuItem =
-                new("E_xport...", ToolbarDropDownMenuItem_Click);
+                new("Export...", ToolbarDropDownMenuItem_Click);
             contextMenu.Items.Add(openToolbarMenuItem);
             contextMenu.Items.Add(saveToolbarMenuItem);
             contextMenu.Items.Add(exportToolbarMenuItem);
 
-            toolbar.SetToolDropDownMenu(graphDropDownToolbarItem, contextMenu);
+            toolbar.SetToolDropDownMenu(graphDropDownToolbarItem, contextMenu, KnownButton.TextBoxCombo);
             
             dynamicToolbarItemsSeparator = toolbar.AddSeparator();
         }
@@ -282,8 +333,10 @@ namespace MenuSample
         private void OpenMenuItem_Click(object? sender, EventArgs e) =>
             LogEvent("Open");
 
-        private void SaveEnabledMenuItem_Click(object? sender, EventArgs e) =>
+        private void SaveEnabledMenuItem_Click(object? sender, EventArgs e)
+        {
             SaveCommand!.RaiseCanExecuteChanged();
+        }
 
         private void ExportToPdfMenuItem_Click(object? sender, EventArgs e) =>
             LogEvent("Export to PDF");
@@ -357,23 +410,23 @@ namespace MenuSample
                 "Separator item to normal" : "Normal item to separator";
         }
 
-        private void ContinousScrollingMenuItem_Click(object? sender, EventArgs e)
+        private void ContinuousScrollingMenuItem_Click(object? sender, EventArgs e)
         {
-            continousScrollingMenuItem.Checked = true;
+            continuousScrollingMenuItem.Checked = true;
             pageScrollingMenuItem.Checked = false;
-            LogEvent("Continous Scrolling Clicked");
+            LogEvent("Continuous Scrolling Clicked");
         }
 
         private void PageScrollingMenuItem_Click(object? sender, EventArgs e)
         {
-            continousScrollingMenuItem.Checked = false;
+            continuousScrollingMenuItem.Checked = false;
             pageScrollingMenuItem.Checked = true;
             LogEvent("Page Scrolling Clicked");
         }
 
-        private void GridMenuItem_Click(object sender, EventArgs e)
+        private void GridMenuItem_Click(object? sender, EventArgs e)
         {
-            LogEvent("Grid item is checked: " + ((MenuItem)sender).Checked);
+            LogEvent($"Grid item is checked: {(sender as MenuItem)?.Checked}");
         }
 
         private void ToggleSeparatorMenuItem_Click(object? sender, System.EventArgs e)
@@ -403,7 +456,7 @@ namespace MenuSample
 
         private void ContextMenuBorder_MouseRightButtonUp(object? sender, MouseEventArgs e)
         {
-            new ExampleContextMenu().Show(contextMenuBorder, Mouse.GetPosition(contextMenuBorder));
+            contextMenu.Show(contextMenuBorder, Mouse.GetPosition(contextMenuBorder));
         }
 
         private void ToolbarItem_Click(object? sender, EventArgs e)
@@ -521,6 +574,12 @@ namespace MenuSample
                 toolbar.IsVertical = isVertical;
         }
 
+        private void RecreateWindow_Click(object? sender, EventArgs e)
+        {
+            this.HasBorder = !this.HasBorder;
+            this.HasBorder = !this.HasBorder;
+        }
+
         private void ShowToolbarImagesCheckBox_CheckedChanged(
             object? sender,
             EventArgs e)
@@ -534,9 +593,11 @@ namespace MenuSample
             LogEvent($"Toolbar drop down menu item clicked: {item?.Text.Replace("_", "")}.");
         }
 
-        private void ImageToTextDisplayModeComboBox_SelectedItemChanged(object sender, EventArgs e)
+        private void ImageToTextDisplayModeComboBox_SelectedItemChanged(object? sender, EventArgs e)
         {
-            toolbar.ImageToText = (ImageToText)imageToTextDisplayModeComboBox.SelectedItem!;
+            if (toolbar == null || imageToTextDisplayModeComboBox.Value is not ImageToText value)
+                return;
+            toolbar.ImageToText = value;
             VerticalCheckBox_Changed(null, EventArgs.Empty);
         }
 

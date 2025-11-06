@@ -6,9 +6,8 @@ namespace ControlsSample
 {
     internal partial class ControlsTestWindow : Window
     {
-        public static bool TestEdgeBackend = false;
+        public static bool TestEdgeBackend = true;
 
-        private readonly StatusBar statusBar = new();
 #pragma warning disable
         private readonly PanelListBoxAndCards mainPanel;
 #pragma warning restore
@@ -28,7 +27,6 @@ namespace ControlsSample
 
             Icon = new("embres:ControlsSampleDll.Sample.ico");
 
-            this.StatusBar = statusBar;
             mainPanel.Parent = this;
             mainPanel.BindApplicationLog();
 
@@ -41,7 +39,23 @@ namespace ControlsSample
                 return MathUtils.Max(result1, result2, result3);
             }
 
+            AddPage<ListBoxHeaderTestPage>("ListBoxHeader");
+
             CreateWebBrowserPages();
+
+            AddPage<NativeSliderPage>("Native Slider");
+            AddPage<NativeTreeViewPage>("Native TreeView");
+            AddPage<PopupToolBarPage>("Popup ToolBar");
+
+            if (App.IsMacOS)
+            {
+                AddPage<SkiaDirectPaintMacOsPage>("SkiaSharp macOs Direct Paint Sample");
+            }
+
+            if (App.IsLinuxOS)
+            {
+                AddPage<SkiaDirectPaintGtkPage>("SkiaSharp Gtk3 Direct Paint Sample");
+            }
 
             mainPanel.LeftListBox.SelectFirstItem();
 
@@ -68,7 +82,8 @@ namespace ControlsSample
         public int AddEdgePage(string title)
         {
             var savedValue = WebBrowser.IsEdgeBackendEnabled;
-            if (DebugUtils.IsDebuggerAttached && TestEdgeBackend)
+
+            if (TestEdgeBackend)
                 WebBrowser.IsEdgeBackendEnabled = true;
 
             if (!WebBrowser.IsBackendAvailable(WebBrowserBackend.Edge))

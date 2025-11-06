@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 
 using Alternet.Drawing;
@@ -11,6 +12,8 @@ namespace ControlsSample
     {
         static MainWindow()
         {
+            DebugUtils.AreDeveloperToolsShown = true;
+
             DebugUtils.RegisterExceptionsLoggerIfDebug((e) =>
             {
             });
@@ -20,6 +23,71 @@ namespace ControlsSample
             DefaultUseParentFont = true;
 
             AddGlobalWindowNotification(new GlobalFormActivity());
+
+            StaticControlEvents.MainWindowDpiChanged += (s, e) =>
+            {
+                if (s is null)
+                    return;
+                App.Log($"MainWindow DPI changed: {((Window)s).DPI}");
+            };
+
+            DebugUtils.RecreateDeveloperToolsWindow = true;
+
+            var hookDeveloperToolsShown = false;
+
+            if (hookDeveloperToolsShown)
+            {
+                DebugUtils.DeveloperToolsShown += (s, e) =>
+                {
+                    void LogEvent(string message)
+                    {
+                        LogUtils.LogToFile(message);
+                        Debug.WriteLine(message);
+                    }
+
+                    LogEvent("Developer tools shown.");
+                    var firstControlOfMainWindow = App.MainWindow?.FirstChild;
+
+                    if (firstControlOfMainWindow is not null)
+                    {
+                        LogEvent($"First control of MainWindow is visible: {firstControlOfMainWindow.Visible}");
+                        LogEvent($"First control of MainWindow bounds: {firstControlOfMainWindow.Bounds}");
+                        LogEvent($"MainWindow child count: {App.MainWindow?.Children.Count}");
+                    }
+                    else
+                    {
+                        LogEvent("First control of MainWindow is null");
+                    }
+                };
+            }
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            var showStatusBar = false;
+
+            if (showStatusBar)
+            {
+                var statusBar = new ToolBar();
+                statusBar.Dock = DockStyle.Bottom;
+
+                var zoomInButtonId = statusBar.AddSpeedBtn(KnownButton.ZoomIn, () =>
+                {
+                    Font = RealFont.Larger();
+                });
+
+                var zoomOutButtonId = statusBar.AddSpeedBtn(KnownButton.ZoomOut, () =>
+                {
+                    Font = RealFont.Smaller();
+                });
+
+                statusBar.SetToolAlignRight(zoomInButtonId);
+                statusBar.SetToolAlignRight(zoomOutButtonId);
+
+                statusBar.Parent = this;
+            }
         }
 
         protected override void OnClosing(WindowClosingEventArgs e)
@@ -177,7 +245,8 @@ namespace ControlsSample
         {
             NameValue<Func<AbstractControl>>[] pages =
             {
-                new("DateTime", () => new DateTimePage()),
+                new("Time", () => new TimePage()),
+                new("Date", () => new DatePage()),
                 new("Calendar", () => new CalendarPage()),
                 new("Popup", () => new DateTimePopups()),
             };
@@ -228,8 +297,9 @@ namespace ControlsSample
         }
 
         AbstractControl CreateWebBrowserPage() => new WebBrowserPage();
-        /*AbstractControl CreateAllSamplesPage() => new AllSamplesPage();*/
+
         AbstractControl CreateInternalSamplesPage() => new InternalSamplesPage();
+
         AbstractControl CreateWelcomePage() => new WelcomePage();
 
         private void LinkLabel_LinkClicked(

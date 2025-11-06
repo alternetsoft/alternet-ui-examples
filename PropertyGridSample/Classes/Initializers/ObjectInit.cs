@@ -16,13 +16,224 @@ namespace PropertyGridSample
     public partial class ObjectInit
     {
         private const int defaultListHeight = 250;
-        public const string LoremIpsum =
-            "Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit. " +
-            "Suspendisse tincidunt orci vitae arcu congue commodo. " +
-            "Proin fermentum rhoncus dictum.\n";
+
+        public static string LoremIpsumSmall =
+"Beneath a sky stitched with teacup clouds, the girl tiptoed across checkerboard moss. " +
+"Each step made a peculiar sound—like libraries whispering to mushrooms. " +
+"Trees bent inward to eavesdrop, their leaves rustling riddles only crickets could decipher.";
+
+        public static string LoremIpsum = LoremIpsumSmall +
+Environment.NewLine + Environment.NewLine +
+"The map she carried was drawn entirely in nonsense, but somehow it felt correct. " +
+"It pulsed faintly in her hands, humming with ink made from stolen dreams and marmalade." +
+Environment.NewLine + Environment.NewLine +
+"“Left is usually right,” said the rabbit-shaped shadow, bowing courteously. " +
+"“Unless, of course, you're upside-down.”" +
+Environment.NewLine + Environment.NewLine +
+"And so, with a smile too wide for logic, she stepped forward—into a world where clocks " +
+"melted politely and hats outgrew heads.";
 
         private static ImageLists? imageLists;
         private static SizeD defaultListSize = new(defaultListHeight, defaultListHeight);
+
+        static ObjectInit()
+        {
+            AddAction<CardPanelHeader>(InitCardPanelHeader);
+            AddAction<RichToolTip>(InitRichToolTip);
+            AddAction<DatePicker>(InitDatePicker);
+            AddAction<TimePicker>(InitTimePicker);
+            AddAction<ListPicker>(InitListPicker);
+            AddAction<EnumPicker>(InitEnumPicker);
+            AddAction<ColorPicker>(InitColorPicker);
+            AddAction<FontNamePicker>(InitFontNamePicker);
+            AddAction<TextBoxWithListPopup>(InitTextBoxWithListPopup);
+            AddAction<StdSlider>(InitGenericSlider);
+
+            Actions.Add(typeof(PageSetupDialog), InitPageSetupDialog);
+            Actions.Add(typeof(PrintPreviewDialog), InitPrintPreviewDialog);
+            Actions.Add(typeof(PrintDialog), InitPrintDialog);
+            Actions.Add(typeof(ContextMenu), InitContextMenu);
+            Actions.Add(typeof(SplittedPanel), InitSplittedPanel);
+            Actions.Add(typeof(ScrollViewer), InitScrollViewer);
+            Actions.Add(typeof(HorizontalStackPanel), InitStackPanel);
+            Actions.Add(typeof(VerticalStackPanel), InitStackPanel);
+            Actions.Add(typeof(StackPanel), InitStackPanel);
+            Actions.Add(typeof(ScrollBar), InitScrollBar);
+            Actions.Add(typeof(SpeedButton), InitSpeedButton);
+            Actions.Add(typeof(PictureBox), InitPictureBox);
+            Actions.Add(typeof(ToolBar), InitGenericToolBar);
+            Actions.Add(typeof(FindReplaceControl), InitFindReplaceControl);
+            Actions.Add(typeof(ToolBarSet), InitGenericToolBarSet);
+            Actions.Add(typeof(CardPanel), InitCardPanel);
+            Actions.Add(typeof(TextBox), InitTextBox);
+            Actions.Add(typeof(TextBoxAndLabel), InitTextBoxAndLabel);
+            Actions.Add(typeof(TextBoxAndButton), InitTextBoxAndButton);
+            Actions.Add(typeof(RichTextBox), InitRichTextBox);
+            Actions.Add(typeof(ComboBoxAndLabel), InitComboBoxAndLabel);
+            Actions.Add(typeof(MultilineTextBox), InitMultilineTextBox);
+            Actions.Add(typeof(Label), InitGenericLabel);
+            Actions.Add(typeof(LabelAndButton), InitLabelAndButton);
+            Actions.Add(typeof(GenericWrappedTextControl), InitGenericWrappedTextControl);
+            Actions.Add(typeof(LinkLabel), InitLinkLabel);
+            Actions.Add(typeof(Button), InitButton);
+            Actions.Add(typeof(SpeedTextButton), InitSpeedTextButton);
+            Actions.Add(typeof(SpeedColorButton), InitSpeedColorButton);
+            Actions.Add(typeof(SideBarPanel), InitSideBarPanel);
+            Actions.Add(typeof(TabControl), InitGenericTabControl);
+            Actions.Add(typeof(VirtualListBox), InitVListBox);
+            Actions.Add(typeof(FileListBox), InitFileListBox);
+            Actions.Add(typeof(StdListBox), InitStdListBox);
+            Actions.Add(typeof(ListBox), InitListBox);
+            Actions.Add(typeof(ComboBox), InitComboBox);
+            Actions.Add(typeof(StdComboBox), InitStdComboBox);
+            Actions.Add(typeof(StdCheckListBox), InitCheckListBox);
+            Actions.Add(typeof(CheckedListBox), InitCheckedListBox);
+
+            Actions.Add(typeof(UserControl), (c) =>
+            {
+                var control = (c as UserControl)!;
+                control.HasBorder = true;
+                control.SuggestedSize = 200;
+                control.ParentBackColor = true;
+                control.Paint += (sender, e) =>
+                {
+                    e.Graphics.FillRectangle(control.RealBackgroundColor.AsBrush, e.ClientRectangle);
+                    (sender as UserControl)?.DrawDefaultBackground(e);
+                };
+            });
+
+            Actions.Add(typeof(SaveFileDialog), (c) =>
+            {
+                var control = (c as SaveFileDialog)!;
+                control.Title = "Some title";
+            });
+
+            Actions.Add(typeof(OpenFileDialog), (c) =>
+            {
+                var control = (c as OpenFileDialog)!;
+                control.Title = "Some title";
+            });
+
+            Actions.Add(typeof(NumericUpDown), (c) =>
+            {
+                NumericUpDown control = (c as NumericUpDown)!;
+                control.SuggestedWidth = 200;
+            });
+
+            Actions.Add(typeof(Border), (c) =>
+            {
+                var border = (c as Border)!;
+                border.ParentBackColor = false;
+                border.ParentForeColor = false;
+                border.SuggestedSize = defaultListSize;
+                SetBackgrounds(border);
+
+                border.Layout = LayoutStyle.Vertical;
+                Button button = new();
+                button.Text = "Click me";
+                button.Parent = border;
+                button.Click += Button_Click;
+
+                border.VisualStateChanged += Border_VisualStateChanged;
+
+                static void Button_Click(object? sender, EventArgs e)
+                {
+                    App.Log("Button in Border clicked.");
+                }
+
+                static void Border_VisualStateChanged(object? sender, EventArgs e)
+                {
+                    App.LogNameValue("Border.VisualState", (sender as Border)?.VisualState);
+                }
+            });
+
+            Actions.Add(typeof(StatusBar), (c) =>
+            {
+                (c as StatusBar)!.Panels.Add(new("text1"));
+                (c as StatusBar)!.Panels.Add(new("text2"));
+            });
+
+            Actions.Add(typeof(CheckBox), (c) =>
+            {
+                (c as CheckBox)!.Text = "CheckBox";
+            });
+
+            Actions.Add(typeof(RadioButton), (c) =>
+            {
+                (c as RadioButton)!.Text = "RadioButton";
+            });
+
+            Actions.Add(typeof(StdTreeView), (c) =>
+            {
+                StdTreeView treeView = (c as StdTreeView)!;
+                treeView.SuggestedSize = defaultListSize;
+                InitVirtualTreeControl(treeView);
+            });
+
+            Actions.Add(typeof(TreeView), (c) =>
+            {
+                TreeView treeView = (c as TreeView)!;
+                treeView.SuggestedSize = defaultListSize;
+                InitVirtualTreeControl(treeView);
+            });
+
+            Actions.Add(typeof(ListView), (c) =>
+            {
+                ListView listView = (c as ListView)!;
+                listView.SuggestedSize = defaultListSize;
+                InitListView(listView);
+            });
+
+            Actions.Add(typeof(GroupBox), (c) =>
+            {
+                GroupBox groupBox = (c as GroupBox)!;
+                groupBox.Title = "GroupBox";
+                groupBox.SuggestedSize = 150;
+                groupBox.MinChildMargin = 10;
+
+                groupBox.Layout = LayoutStyle.Vertical;
+
+                Label label = new("Label 1");
+                label.Parent = groupBox;
+
+                CheckBox checkBox = new("CheckBox 1");
+                checkBox.Parent = groupBox;
+            });
+
+            Actions.Add(typeof(Panel), InitPanel);
+
+            Actions.Add(typeof(AbstractControl), (c) =>
+            {
+                AbstractControl control = (c as AbstractControl)!;
+                control.SuggestedSize = defaultListHeight;
+            });
+
+            Actions.Add(typeof(ProgressBar), (c) =>
+            {
+                ProgressBar control = (c as ProgressBar)!;
+                control.OrientationChanged += OrientationChanged;
+                control.Value = 50;
+                control.SuggestedWidth = 200;
+
+                static void OrientationChanged(object? sender, EventArgs e)
+                {
+                    if (sender is not ProgressBar control)
+                        return;
+                    if (control.Orientation == ProgressBarOrientation.Vertical)
+                        control.SuggestedSize = (Coord.NaN, 250);
+                    else
+                        control.SuggestedSize = (250, Coord.NaN);
+                    control.PerformLayout();
+                }
+
+            });
+
+            Actions.Add(typeof(PanelOkCancelButtons), (c) =>
+            {
+                PanelOkCancelButtons control = (c as PanelOkCancelButtons)!;
+                control.HasBorder = true;
+            });
+        }
 
         public static ImageLists LoadImageLists()
         {
@@ -138,6 +349,73 @@ namespace PropertyGridSample
             }
         }
 
+        public static void InitDatePicker(DatePicker control)
+        {
+        }
+
+        public static void InitTimePicker(TimePicker control)
+        {
+        }
+
+        public static void InitListPicker(ListPicker control)
+        {
+            control.Add("Item 1");
+            control.Add("Item 2");
+            control.Add("Item 3");
+            control.Add("Item 4");
+            control.Add("Item 5");
+            control.Add("Item 6");
+            control.Add("Item 7");
+            control.Add("Item 8");
+
+            control.Value = "Item 4";
+        }
+
+        public static void InitEnumPicker(EnumPicker control)
+        {
+            control.EnumType = typeof(FontStyle);
+            control.Value = FontStyle.Regular;
+        }
+
+        public static void InitGenericSlider(StdSlider control)
+        {
+            control.ValueChanged += (s,e) =>
+            {
+                App.Invoke(() =>
+                {
+                    App.LogReplace(
+                        $"GenericSlider: V: {control.Value}, LTS: {control.LeftTopSpacerSize}, W:{control.MaxLeftTopSpacerSize}",
+                        "GenericSlider:");
+                });
+            };
+        }
+
+        public static void InitTextBoxWithListPopup(TextBoxWithListPopup control)
+        {
+            control.Text = "some text";
+
+            var btn = control.ButtonCombo;
+
+            btn.Add("Item 1");
+            btn.Add("Item 2");
+            btn.Add("Item 3");
+            btn.Add("Item 4");
+            btn.Add("Item 5");
+            btn.Add("Item 6");
+            btn.Add("Item 7");
+            btn.Add("Item 8");
+
+            control.SyncTextAndComboButton();
+        }
+
+        public static void InitFontNamePicker(FontNamePicker control)
+        {
+        }
+
+        public static void InitColorPicker(ColorPicker control)
+        {
+        }
+
         public static void InitRichToolTip(RichToolTip control)
         {
             control.HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -156,193 +434,6 @@ namespace PropertyGridSample
             {
                 if (o is T tObject)
                     action(tObject);
-            });
-        }
-
-        static ObjectInit()
-        {
-            AddAction<RichToolTip>(InitRichToolTip);
-
-            Actions.Add(typeof(PageSetupDialog), InitPageSetupDialog);
-            Actions.Add(typeof(PrintPreviewDialog), InitPrintPreviewDialog);
-            Actions.Add(typeof(PrintDialog), InitPrintDialog);
-            Actions.Add(typeof(ContextMenu), InitContextMenu);
-            Actions.Add(typeof(SplittedPanel), InitSplittedPanel);
-            Actions.Add(typeof(ScrollViewer), InitScrollViewer);
-            Actions.Add(typeof(HorizontalStackPanel), InitStackPanel);
-            Actions.Add(typeof(VerticalStackPanel), InitStackPanel);
-            Actions.Add(typeof(StackPanel), InitStackPanel);
-            Actions.Add(typeof(ScrollBar), InitScrollBar);
-            Actions.Add(typeof(SpeedButton), InitSpeedButton);
-            Actions.Add(typeof(PictureBox), InitPictureBox);
-            Actions.Add(typeof(ToolBar), InitGenericToolBar);
-            Actions.Add(typeof(FindReplaceControl), InitFindReplaceControl);
-            Actions.Add(typeof(ToolBarSet), InitGenericToolBarSet);
-            Actions.Add(typeof(CardPanel), InitCardPanel);
-            Actions.Add(typeof(TextBox), InitTextBox);
-            Actions.Add(typeof(TextBoxAndLabel), InitTextBoxAndLabel);
-            Actions.Add(typeof(TextBoxAndButton), InitTextBoxAndButton);
-            Actions.Add(typeof(RichTextBox), InitRichTextBox);
-            Actions.Add(typeof(ComboBoxAndLabel), InitComboBoxAndLabel);
-            Actions.Add(typeof(MultilineTextBox), InitMultilineTextBox);
-            Actions.Add(typeof(GenericLabel), InitGenericLabel);
-            Actions.Add(typeof(Label), InitLabel);
-            Actions.Add(typeof(GenericTextControl), InitGenericTextControl);
-            Actions.Add(typeof(LinkLabel), InitLinkLabel);
-            Actions.Add(typeof(Button), InitButton);
-            Actions.Add(typeof(SpeedTextButton), InitSpeedTextButton);
-            Actions.Add(typeof(SpeedColorButton), InitSpeedColorButton);
-            Actions.Add(typeof(SideBarPanel), InitSideBarPanel);
-            Actions.Add(typeof(TabControl), InitGenericTabControl);
-            Actions.Add(typeof(VirtualListBox), InitVListBox);
-            Actions.Add(typeof(ListBox), InitListBox);
-            Actions.Add(typeof(ComboBox), InitComboBox);
-            Actions.Add(typeof(ColorComboBox), InitColorComboBox);
-            Actions.Add(typeof(FontComboBox), InitFontComboBox);
-            Actions.Add(typeof(CheckListBox), InitCheckListBox);
-
-            Actions.Add(typeof(UserControl), (c) =>
-            {
-                var control = (c as UserControl)!;
-                control.HasBorder = true;
-                control.SuggestedSize = 200;
-            });
-
-            Actions.Add(typeof(SaveFileDialog), (c) =>
-            {
-                var control = (c as SaveFileDialog)!;
-                control.Title = "Some title";
-            });
-
-            Actions.Add(typeof(OpenFileDialog), (c) =>
-            {
-                var control = (c as OpenFileDialog)!;
-                control.Title = "Some title";
-            });
-
-            Actions.Add(typeof(Slider), (c) =>
-            {
-                Slider control = (c as Slider)!;
-                control.SuggestedSize = 200;
-            });
-
-            Actions.Add(typeof(NumericUpDown), (c) =>
-            {
-                NumericUpDown control = (c as NumericUpDown)!;
-                control.SuggestedWidth = 200;
-            });
-
-            Actions.Add(typeof(DateTimePicker), (c) =>
-            {
-                DateTimePicker control = (c as DateTimePicker)!;
-                control.SuggestedWidth = 200;
-            });
-
-            Actions.Add(typeof(Border), (c) =>
-            {
-                var border = (c as Border)!;
-                border.ParentBackColor = false;
-                border.ParentForeColor = false;
-                border.SuggestedSize = defaultListSize;
-                SetBackgrounds(border);
-
-                border.Layout = LayoutStyle.Vertical;
-                Button button = new();
-                button.Text = "Click me";
-                button.Parent = border;
-                button.Click += Button_Click;
-
-                border.VisualStateChanged += Border_VisualStateChanged;
-
-                static void Button_Click(object? sender, EventArgs e)
-                {
-                    App.Log("Button in Border clicked.");
-                }
-
-                static void Border_VisualStateChanged(object? sender, EventArgs e)
-                {
-                    App.LogNameValue("Border.VisualState", (sender as Border)?.VisualState);
-                }
-            });
-
-            Actions.Add(typeof(StatusBar), (c) =>
-            {
-                (c as StatusBar)!.Panels.Add(new("text1"));
-                (c as StatusBar)!.Panels.Add(new("text2"));
-            });
-
-            Actions.Add(typeof(CheckBox), (c) =>
-            {
-                (c as CheckBox)!.Text = "CheckBox";
-            });
-
-            Actions.Add(typeof(RadioButton), (c) =>
-            {
-                (c as RadioButton)!.Text = "RadioButton";
-            });
-
-            Actions.Add(typeof(VirtualTreeControl), (c) =>
-            {
-                VirtualTreeControl treeView = (c as VirtualTreeControl)!;
-                treeView.SuggestedSize = defaultListSize;
-                InitVirtualTreeControl(treeView);
-            });
-
-            Actions.Add(typeof(ListView), (c) =>
-            {
-                ListView listView = (c as ListView)!;
-                listView.SuggestedSize = defaultListSize;
-                InitListView(listView);
-            });
-
-            Actions.Add(typeof(GroupBox), (c) =>
-            {
-                GroupBox groupBox = (c as GroupBox)!;
-                groupBox.Title = "GroupBox";
-                groupBox.SuggestedSize = 150;
-                groupBox.MinChildMargin = 10;
-
-                groupBox.Layout = LayoutStyle.Vertical;
-
-                Label label = new("Label 1");
-                label.Parent = groupBox;
-
-                CheckBox checkBox = new("CheckBox 1");
-                checkBox.Parent = groupBox;
-            });
-
-            Actions.Add(typeof(Panel), InitPanel);
-
-            Actions.Add(typeof(AbstractControl), (c) =>
-            {
-                AbstractControl control = (c as AbstractControl)!;
-                control.SuggestedSize = defaultListHeight;
-            });
-
-            Actions.Add(typeof(ProgressBar), (c) =>
-            {
-                ProgressBar control = (c as ProgressBar)!;
-                control.OrientationChanged += OrientationChanged;
-                control.Value = 50;
-                control.SuggestedWidth = 200;
-
-                static void OrientationChanged(object? sender, EventArgs e)
-                {
-                    if (sender is not ProgressBar control)
-                        return;
-                    if (control.Orientation == ProgressBarOrientation.Vertical)
-                        control.SuggestedSize = (Double.NaN, 250);
-                    else
-                        control.SuggestedSize = (250, Double.NaN);
-                    control.PerformLayout();
-                }
-
-            });
-
-            Actions.Add(typeof(PanelOkCancelButtons), (c) =>
-            {
-                PanelOkCancelButtons control = (c as PanelOkCancelButtons)!;
-                control.HasBorder = true;
             });
         }
 
@@ -500,8 +591,8 @@ namespace PropertyGridSample
 
             void InitializeColumns()
             {
-                listView?.Columns.Add(new ListViewColumn("Column 1"));
-                listView?.Columns.Add(new ListViewColumn("Column 2"));
+                listView?.Columns.Add(new ListViewColumn("Column One"));
+                listView?.Columns.Add(new ListViewColumn("Column Two"));
             }
 
             void AddDefaultItems()
@@ -540,7 +631,7 @@ namespace PropertyGridSample
 
         }
 
-        public static void InitVirtualTreeControl(VirtualTreeControl control)
+        public static void InitVirtualTreeControl(TreeView control)
         {
             if (App.SafeWindow.UseSmallImages)
                 control.ImageList = LoadImageLists().Small;
@@ -551,7 +642,7 @@ namespace PropertyGridSample
             AddItems(control, 10);
         }
 
-        public static void InitTreeView(TreeView control)
+        public static void InitVirtualTreeControl(StdTreeView control)
         {
             if (App.SafeWindow.UseSmallImages)
                 control.ImageList = LoadImageLists().Small;
@@ -562,13 +653,24 @@ namespace PropertyGridSample
             AddItems(control, 10);
         }
 
-        private static int GenItemIndex()
+        public static void InitTreeView(StdTreeView control)
+        {
+            if (App.SafeWindow.UseSmallImages)
+                control.ImageList = LoadImageLists().Small;
+            else
+                control.ImageList = LoadImageLists().Large;
+
+            control.HorizontalAlignment = HorizontalAlignment.Stretch;
+            AddItems(control, 10);
+        }
+
+        public static int GenItemIndex()
         {
             newItemIndex++;
             return newItemIndex;
         }
 
-        private static void AddItems(TreeView treeView, int count)
+        public static void AddItems(StdTreeView treeView, int count)
         {
             treeView.BeginUpdate();
             try
@@ -584,13 +686,13 @@ namespace PropertyGridSample
                         var childItem = new TreeViewItem(
                             item.Text + "." + j,
                             imageIndex);
-                        item.Items.Add(childItem);
+                        item.Add(childItem);
 
                         if (i < 5)
                         {
                             for (int k = 0; k < 2; k++)
                             {
-                                childItem.Items.Add(
+                                childItem.Add(
                                     new TreeViewItem(
                                         item.Text + "." + k,
                                         imageIndex));
@@ -598,7 +700,7 @@ namespace PropertyGridSample
                         }
                     }
 
-                    treeView.Items.Add(item);
+                    treeView.Add(item);
                 }
             }
             finally
@@ -607,7 +709,7 @@ namespace PropertyGridSample
             }
         }
 
-        private static void AddItems(VirtualTreeControl treeView, int count)
+        public static void AddItems(TreeView treeView, int count)
         {
             treeView.BeginUpdate();
             try
@@ -615,12 +717,12 @@ namespace PropertyGridSample
                 for (int i = 0; i < count; i++)
                 {
                     int imageIndex = i % 4;
-                    var item = new TreeControlItem(
+                    var item = new TreeViewItem(
                         "Item " + GenItemIndex(),
                         imageIndex);
                     for (int j = 0; j < 3; j++)
                     {
-                        var childItem = new TreeControlItem(
+                        var childItem = new TreeViewItem(
                             item.Text + "." + j,
                             imageIndex);
                         item.Add(childItem);
@@ -630,7 +732,7 @@ namespace PropertyGridSample
                             for (int k = 0; k < 2; k++)
                             {
                                 childItem.Add(
-                                    new TreeControlItem(
+                                    new TreeViewItem(
                                         item.Text + "." + k,
                                         imageIndex));
                             }

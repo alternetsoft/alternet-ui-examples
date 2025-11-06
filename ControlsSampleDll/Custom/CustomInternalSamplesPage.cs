@@ -7,7 +7,7 @@ namespace Alternet.UI
 {
     public class CustomInternalSamplesPage : Panel
     {
-        private readonly VirtualTreeControl view = new()
+        private readonly StdTreeView view = new()
         {
             SuggestedWidth = 350,
             SuggestedHeight = 400,
@@ -48,10 +48,10 @@ namespace Alternet.UI
                 view.RootItem.Add(SampleItems.Pop());
             }
 
-            RunWhenIdle(view.SelectFirstItem);
+            RunWhenIdle(view.SelectFirstItemAndScroll);
         }
 
-        public static Stack<TreeControlItem> SampleItems = new();
+        public static Stack<TreeViewItem> SampleItems = new();
 
         [Conditional("DEBUG")]
         public static void AddIfDebug(string text, Func<Window> createForm)
@@ -61,7 +61,7 @@ namespace Alternet.UI
 
         public static void Add(string text, Func<Window> createForm)
         {
-            TreeControlItem item = new(text);
+            TreeViewItem item = new(text);
             item.CustomAttr.SetAttribute<Action>("Fn", Fn);
             SampleItems.Push(item);
 

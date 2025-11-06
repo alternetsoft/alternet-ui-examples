@@ -11,12 +11,12 @@
                 CommandParameter="Sample binding message from Window"/>
   </Window.InputBindings>
 
-  <Window.Menu>
-    <MainMenu>
+  <Window.Components>
+    <MainMenu Name="mainMenu">
       <MenuItem Text="_File" IsTextLocalized="true" Name="fileMenu">
         <MenuItem Text="_Open..." Name="openMenuItem" IsTextLocalized="true"
                   Click="OpenMenuItem_Click" Shortcut="Ctrl+O" />
-        <MenuItem Text="_Save..." Name="saveMenuItem" Click="SaveCommand_Click"
+        <MenuItem Text="_Save..." Name="saveMenuItem"
                   Shortcut="Ctrl+S" IsTextLocalized="true"/>
         <MenuItem Text="_Save Enabled" Name="saveEnabledMenuItem" IsTextLocalized="true"
                   Click="SaveEnabledMenuItem_Click" Checked="True" />
@@ -31,8 +31,8 @@
       </MenuItem>
       <MenuItem Text="_View" IsTextLocalized="true">
         <MenuItem Text="_Scrolling" IsTextLocalized="true">
-          <MenuItem Text="Continous" Name="continousScrollingMenuItem" Checked="True"
-                    Click="ContinousScrollingMenuItem_Click" IsTextLocalized="true"/>
+          <MenuItem Text="Continuous" Name="continuousScrollingMenuItem" Checked="True"
+                    Click="ContinuousScrollingMenuItem_Click" IsTextLocalized="true"/>
           <MenuItem Text="Page" Name="pageScrollingMenuItem"
                     Click="PageScrollingMenuItem_Click" IsTextLocalized="true"/>
         </MenuItem>
@@ -45,6 +45,8 @@
         <MenuItem Text="Sample Command" Command="SampleCommand"
                   CommandParameter="param1" />
         <MenuItem Text="Toggle Sample Command Enabled" Command="ToggleSampleCommandEnabled"/>
+        <MenuItem Text="-"/>
+        <MenuItem Text="Recreate Window" Name="recreateWindowButton" Click="RecreateWindow_Click"/>
       </MenuItem>
       <MenuItem Text="_Help" IsTextLocalized="true">
         <MenuItem Text="Index" IsTextLocalized="true" Enabled="false" />
@@ -52,7 +54,7 @@
                   Name="aboutMenuItem" Click="AboutMenuItem_Click" />
       </MenuItem>
     </MainMenu>
-  </Window.Menu>
+  </Window.Components>
 
   <Window.StatusBar>
     <StatusBar>
@@ -156,10 +158,9 @@
         </StackPanel>
         <StackPanel Margin="10,0,0,0">
           <Label Text="Image to Text:" Margin="5,5,0,3" IsTextLocalized="true"/>
-          <ComboBox IsEditable="false"
+          <EnumPicker
               Name="imageToTextDisplayModeComboBox"
-              SelectedItemChanged=
-                        "ImageToTextDisplayModeComboBox_SelectedItemChanged"
+              ValueChanged= "ImageToTextDisplayModeComboBox_SelectedItemChanged"
               Margin="5,5,0,5"/>
         </StackPanel>
       </HorizontalStackPanel>

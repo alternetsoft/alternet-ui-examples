@@ -49,14 +49,76 @@ namespace PropertyGridSample
             InitTestsTextBox();
             InitTestsPictureBox();
             InitTestsListBox();
+            InitTestsStdTreeView();
             InitTestsTreeView();
             InitTestsListView();
             InitTestsButton();
             InitTestsSpeedButton();
             InitTestsTabControl();
+            InitTestsSlider();
+            InitTestsLabel();
+            InitTestsPanel();
+
+            void InitTestsPanel()
+            {
+                AddControlAction<Panel>("Add Paint event", (c) =>
+                {
+                    c.Paint += (s, e) =>
+                    {
+                        e.Graphics.DrawText("Hello", (10, 10));
+                    };
+
+                    c.Refresh();
+                });
+            }
+
+            void InitTestsLabel()
+            {
+                AddControlAction<Label>("Log mouse events", (c) =>
+                {
+                    ObjectInit.LogMouseEventsIf(true, c);
+                });
+
+                AddControlAction<Label>("MakeComplexLabel", (c) =>
+                {
+                    ObjectInit.MakeComplexLabel(c);
+                });
+
+                AddControlAction<Label>("Set LoremIpsum", (c) =>
+                {
+                    c.Text = ObjectInit.LoremIpsum;
+                    c.WordWrap = true;
+                });
+
+                AddControlAction<GenericWrappedTextControl>("Set LoremIpsum", (c) =>
+                {
+                    c.Text = ObjectInit.LoremIpsum;
+                });
+            }
+
+            void InitTestsSlider()
+            {
+                AddControlAction<StdSlider>("SetSpacerColor", (c) =>
+                {
+                    c.SetSpacerColor(LightDarkColors.Red);
+                });
+
+                AddControlAction<StdSlider>("SetSliderRange(50,120)", (s) =>
+                {
+                    s.Minimum = 50;
+                    s.Maximum = 120;
+                });
+            }
 
             void InitTestsTabControl()
             {
+                AddControlAction<TabControl>("Align text vertically", (c) =>
+                {
+                    c.TabAlignment = TabAlignment.Left;
+                    c.ImageToText = ImageToText.Vertical;
+                    c.IsVerticalText = true;
+                });
+
                 AddControlAction<TabControl>("Enum loaded pages", (c) =>
                 {
                     LogUtils.LogRange(c.LoadedPages.Select(x => x.GetType()));
@@ -74,18 +136,131 @@ namespace PropertyGridSample
 
             void InitTestsSpeedButton()
             {
+                AddControlAction<SpeedButton>("Set Right Side", (c) =>
+                {
+                    c.ShortcutKeys = Keys.Control | Keys.F;
+                    c.ConfigureAsMenuItem();
+                });
+
+                AddControlAction<SpeedButton>("Set DropDown", (c) =>
+                {
+                    c.DropDownMenu = new ContextMenu();
+                    c.DropDownMenu.Add("Item 1", () => App.Log("Item 1 clicked"));
+                    c.DropDownMenu.Add("Item 2", () => App.Log("Item 2 clicked"));
+                });
+
                 AddControlAction<SpeedButton>("Set Command", (c) =>
                 {
                     c.Command = NamedCommands.CommandAppLog;
                     c.CommandParameter = "SpeedButton.Command executed";
                 });
+
+                AddControlAction<SpeedButton>("Setup like bordered CheckBox", (c) =>
+                {
+                    c.Sticky = true; // Similar to IsChecked in CheckBox.
+                    c.StickyToggleOnClick = true;
+                    c.UseThemeForSticky = SpeedButton.KnownTheme.CheckBorder;
+                    c.UseTheme = SpeedButton.KnownTheme.StaticBorder;
+                });
+
+                AddControlAction<SpeedButton>("Setup as Checkable PushButton", (c) =>
+                {
+                    c.Sticky = true; // Similar to IsChecked in CheckBox.
+                    c.StickyToggleOnClick = true;
+                    c.UseThemeForSticky = SpeedButton.KnownTheme.PushButtonHovered;
+                    c.UseTheme = SpeedButton.KnownTheme.PushButton;
+                });
+
+                AddControlAction<SpeedButton>("Add mouse events logging", (c) =>
+                {
+                    c.MouseDown += (s, e) => App.Log("SpeedButton MouseDown");
+                    c.MouseUp += (s, e) => App.Log("SpeedButton MouseUp");
+                });
             }
 
             void InitTestsListBox()
             {
+                ObjectUniqueId? overlayId = null;
+
+                AddControlAction<VirtualListBox>("Set empty text", (c) =>
+                {
+                    c.EmptyText = "No items in the list";
+                });
+
+
+                AddControlAction<VirtualListBox>("Show simple tooltip", (c) =>
+                {
+                    overlayId = c.ShowOverlayToolTipSimple(
+                        "This is tooltip text",
+                        null,
+                        null,
+                        OverlayToolTipFlags.UseSystemColors | OverlayToolTipFlags.DismissAfterInterval);
+                });
+
+                AddControlAction<VirtualListBox>("Add tooltip overlay", (c) =>
+                {
+                    OverlayToolTipParams data = new()
+                    {
+                        Title = "This is title",
+                        Text = "This is tooltip text",
+                        Icon = MessageBoxIcon.Information,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                    };
+
+                    overlayId = c.ShowOverlayToolTip(data);
+                });
+
+                AddControlAction<VirtualListBox>("Add overlay", (c) =>
+                {
+                    var overlay = new ControlOverlayWithText()
+                    {
+                        Text = "Overlay text",
+                        Location = (10, 10),
+                        TextColor = Color.Red,
+                        BackColor = Color.FromArgb(128, Color.Yellow),
+                        Font = c.Font,
+                    };
+
+                    overlayId = overlay.UniqueId;
+
+                    c.AddOverlay(overlay);
+
+                    overlay.SetRemovalTimer(1500, c);
+                });
+
+                AddControlAction<VirtualListBox>("Remove overlay", (c) =>
+                {
+                    if (overlayId is not null)
+                    {
+                        c.RemoveOverlay(overlayId.Value);
+                        overlayId = null;
+                    }
+                });                
+
                 AddControlAction<VirtualListBox>("Add 5000 items", (c) =>
                 {
                     ObjectInit.AddManyItems(c);
+                });
+
+                AddControlAction<ListBox>("Add 100 items", (c) =>
+                {
+                    ObjectInit.AddManyItems(c, 100);
+                });
+
+                AddControlAction<CheckedListBox>("Recreate Native Window", (c) =>
+                {
+                    c.Handler.RecreateWindow();
+                });
+
+                AddControlAction<ListBox>("Recreate Native Window", (c) =>
+                {
+                    c.Handler.RecreateWindow();
+                });
+
+                AddControlAction<CheckedListBox>("Toggle selected item checked", (c) =>
+                {
+                    c.SetItemChecked(c.SelectedIndex, !c.GetItemChecked(c.SelectedIndex));
                 });
 
                 AddControlAction<VirtualListBox>("Set dark theme", (c) =>

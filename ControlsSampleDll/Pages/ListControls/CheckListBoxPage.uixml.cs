@@ -31,13 +31,50 @@ namespace ControlsSample
 
             AddSection("Section 1");
             AddItems();
+
             AddSection("Section 2");
+
+            var item1 = new ListControlItemWithNotify("Radio Button 1");
+            item1.IsChecked = true;
+            var item2 = new ListControlItemWithNotify("Radio Button 2");
+
+            item1.IsRadioButton = true;
+            item2.IsRadioButton = true;
+
+            item1.Group = new();
+            item2.Group = item1.Group;
+
+            item1.PropertyChanged += RadioButtonItemChanged;
+            item2.PropertyChanged += RadioButtonItemChanged;
+
+            checkListBox.Add(item1);
+            checkListBox.Add(item2);
+
+            AddSection("Section 3");
             AddItems();
 
             checkListBox.SelectionChanged += CheckListBox_SelectionChanged;
             allowMultipleSelectionCheckBox.IsChecked =
                 checkListBox.SelectionMode == ListBoxSelectionMode.Multiple;
             App.LogIf($"CheckListBoxDemo: Constructor done", false);
+
+            checkListBox.HasBorder = VirtualListBox.DefaultUseInternalScrollBars;
+        }
+
+        private void RadioButtonItemChanged(
+            object? sender, 
+            PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "CheckState")
+            {
+                var item = (ListControlItemWithNotify)sender!;
+
+                if (item.IsChecked)
+                {
+                    ListControlItem.UncheckOtherItemsInGroup(checkListBox.BaseItems, item);
+                    checkListBox.Refresh();
+                }
+            }
         }
 
         private void EditorButton_Click(object? sender, System.EventArgs e)
@@ -72,12 +109,6 @@ namespace ControlsSample
             return result;
         }
 
-        private void CheckListBox_SizeChanged(object? sender, EventArgs e)
-        {
-            App.LogIf(
-                $"CheckListBox: SizeChanged. InUpdates: {checkListBox.InUpdates}, ClientSize: ({checkListBox.ClientSize}), Size: ({checkListBox.Size})", false);
-        }
-
         private void CheckListBox_CheckedChanged(object? sender, EventArgs e)
         {
             string checkedIndicesString = IndicesToStr(checkListBox.CheckedIndices);
@@ -91,6 +122,13 @@ namespace ControlsSample
                 IndicesToStr(checkListBox.SelectedIndices);
             App.Log(
                 $"CheckListBox: SelectionChanged. Selected: ({selectedIndicesStr})");
+        }
+
+        private void UseInternalScrollBars_CheckedChanged(
+            object? sender,
+            EventArgs e)
+        {
+            checkListBox.UseInternalScrollBars = useInternalScrollBars.IsChecked;
         }
 
         private void AllowMultipleSelectionCheckBox_CheckedChanged(

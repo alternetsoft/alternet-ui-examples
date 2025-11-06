@@ -94,6 +94,11 @@ namespace Alternet.UI
             MinimumSize = (800, 600);
 
             StartLocation = WindowStartLocation.CenterScreen;
+
+            App.AddIdleTask(() =>
+            {
+                pageContainer!.SelectedIndex = 0;
+            });
         }
 
         public static bool FormLoadFromResName(string resName, object obj, UixmlLoader.Flags flags)
@@ -144,7 +149,7 @@ namespace Alternet.UI
             }
         }
 
-        public void Initialize()
+        public virtual void Initialize()
         {
             pageContainer = new(SplittedTreeAndCards.TreeKind.ListBox);
             panel.Parent = this;
@@ -184,11 +189,6 @@ namespace Alternet.UI
             }
 
             ActiveControl = pageContainer.LeftControl;
-
-            App.AddIdleTask(() =>
-            {
-                pageContainer.SelectedIndex = 0;
-            });           
         }
 
         protected virtual void AddPages()

@@ -17,15 +17,18 @@ namespace PrintingSample
         public PrintingMainWindow()
         {
             toolBar.Parent = this;
-            toolBar.SetBorderAndMargin(AnchorStyles.Bottom, AnchorStyles.Bottom);
+            toolBar.SetVisibleBorders(false, false, false, true);
+            toolBar.Padding = 10;
 
             toolBar.AddTextBtn("Print Immediately", null, PrintImmediatelyMenuItem_Click);
-            toolBar.AddSeparator();
+            toolBar.AddSpacer();
             toolBar.AddTextBtn("Print...", null, PrintMenuItem_Click);
-            toolBar.AddSeparator();
+            toolBar.AddSpacer();
             toolBar.AddTextBtn("Page Setup...", null, PageSetupMenuItem_Click);
-            toolBar.AddSeparator();
+            toolBar.AddSpacer();
             toolBar.AddTextBtn("Print Preview...", null, PrintPreviewMenuItem_Click);
+
+            toolBar.SpeedButtons.SetUseTheme(SpeedButton.KnownTheme.RoundBorder);
 
             Icon = App.DefaultIcon;
             InitializeComponent();
@@ -39,7 +42,7 @@ namespace PrintingSample
         private void DrawingArea_Paint(object? sender, PaintEventArgs e)
         {
             var dc = e.Graphics;
-            var bounds = e.ClipRectangle;
+            var bounds = e.ClientRectangle;
 
             if (originAtMarginCheckBox.IsChecked)
             {
@@ -102,7 +105,7 @@ namespace PrintingSample
             }
         }
 
-        private void PrintImmediatelyMenuItem_Click(object sender, System.EventArgs e)
+        private void PrintImmediatelyMenuItem_Click(object? sender, System.EventArgs e)
         {
             var document = CreatePrintDocument();
             document.PrintPage += Document_PrintPage;
@@ -137,7 +140,7 @@ namespace PrintingSample
             return document;
         }
 
-        private void PrintMenuItem_Click(object sender, System.EventArgs e)
+        private void PrintMenuItem_Click(object? sender, System.EventArgs e)
         {
             var dialog = new PrintDialog();
             var document = CreatePrintDocument();
@@ -154,7 +157,7 @@ namespace PrintingSample
             });
         }
 
-        private void PageSetupMenuItem_Click(object sender, System.EventArgs e)
+        private void PageSetupMenuItem_Click(object? sender, System.EventArgs e)
         {
             var pageSetupDialog = new PageSetupDialog();
             var document = CreatePrintDocument();
@@ -175,7 +178,7 @@ namespace PrintingSample
             });
         }
 
-        private void PrintPreviewMenuItem_Click(object sender, System.EventArgs e)
+        private void PrintPreviewMenuItem_Click(object? sender, System.EventArgs e)
         {
             var dialog = new PrintPreviewDialog();
             var document = CreatePrintDocument();
@@ -188,11 +191,6 @@ namespace PrintingSample
 
         private void Document_PrintPage(object? sender, PrintPageEventArgs e)
         {
-            /*var pb = e.PageBounds;
-            var ppb = e.PrintablePageBounds;
-            var phpb = e.PhysicalPageBounds;
-            var mb = e.MarginBounds;*/
-
             int pageNumber = e.PageNumber;
 
             var bounds = new RectD(new PointD(), originAtMarginCheckBox.IsChecked

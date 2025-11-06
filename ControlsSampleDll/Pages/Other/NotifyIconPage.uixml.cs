@@ -16,15 +16,35 @@ namespace ControlsSample
         {
             InitializeComponent();
 
-                notifyIcon = new NotifyIcon { Icon = Image, Text = notifyIconTextTextBox.Text };
-                notifyIcon.Click += NotifyIcon_Click;
-                notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
-                notifyIcon.Menu = new ExampleContextMenu();
-        }
+            notifyIcon = new NotifyIcon
+            {
+                Icon = Image,
+                Text = notifyIconTextTextBox.Text,
+            };
 
-        private void NotifyIcon_DoubleClick(object? sender, EventArgs e)
-        {
-            App.Log("NotifyIcon: DoubleClick");
+            notifyIcon.Click += NotifyIcon_Click;
+
+            notifyIcon.RightMouseButtonDoubleClick
+                += (s, e) => App.Log("NotifyIcon: RightMouseButtonDoubleClick");
+
+            notifyIcon.RightMouseButtonDown += (s, e) => App.Log("NotifyIcon: RightMouseButtonDown");
+            notifyIcon.RightMouseButtonUp += (s, e) => App.Log("NotifyIcon: RightMouseButtonUp");
+
+            notifyIcon.LeftMouseButtonDoubleClick
+                += (s, e) => App.Log("NotifyIcon: LeftMouseButtonDoubleClick");
+
+            notifyIcon.LeftMouseButtonDown += (s, e) => App.Log("NotifyIcon: LeftMouseButtonDown");
+            notifyIcon.LeftMouseButtonUp += (s, e) => App.Log("NotifyIcon: LeftMouseButtonUp");
+
+        notifyIcon.Menu = new ExampleContextMenu();
+
+            mainStackPanel.UseInternalContextMenu = true;
+
+            mainStackPanel.ContextMenuStrip.Add("Toggle first context menu item enabled", () =>
+            {
+                if (notifyIcon?.Menu?.Items.Count > 0)
+                    notifyIcon.Menu.Items[0].Enabled = !notifyIcon.Menu.Items[0].Enabled;
+            });
         }
 
         private void NotifyIcon_Click(object? sender, EventArgs e)

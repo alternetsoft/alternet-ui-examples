@@ -1,4 +1,5 @@
 ﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Alternet.UI;
@@ -14,8 +15,15 @@ namespace ControlsSample
 
         private readonly VirtualListBox listBox = new()
         {
-            SuggestedWidth = 350,
+            Dock = DockStyle.Fill,
             Margin = (0,0,0,5),
+        };
+
+        private readonly Splitter splitter = new()
+        {
+            Dock = DockStyle.Right,
+            MinExtra = 150,
+            MinSize = 150,
         };
 
         public VListBoxSamplePage()
@@ -31,6 +39,9 @@ namespace ControlsSample
             }
 
             InitializeComponent();
+
+            tab1.Width = 400;
+
             Title = "Virtual";
 
             findExactCheckBox.BindBoolProp(this, nameof(FindExact));
@@ -38,6 +49,8 @@ namespace ControlsSample
             findText.TextChanged += FindText_TextChanged;
             PropertyGridSample.ObjectInit.InitVListBox(listBox);
 
+            splitter.TargetMode = SplitterTargetMode.NextVisibleSibling;
+            Children.Prepend(splitter);
             Children.Prepend(listBox);
             listBox.SelectionChanged += ListBox_SelectionChanged;
             listBox.MouseLeftButtonDown += ListBox_MouseLeftButtonDown;
@@ -98,6 +111,12 @@ namespace ControlsSample
                 App.LogNameValueReplace("VListBox.Items[0].Alignment", item.Alignment);
                 listBox.Invalidate();
             });
+
+            contextMenu.AddSeparator();
+            contextMenu.Add(ControlUtils.CreateMenuItemRenderingModeSelector(listBox));
+            contextMenu.Add(ControlUtils.CreateMenuItemTrackPaintingTime(listBox));
+
+            listBox.HasBorder = VirtualListBox.DefaultUseInternalScrollBars || App.IsWindowsOS;
         }
 
         private void ListBox_CheckedChanged(object? sender, EventArgs e)
@@ -114,20 +133,7 @@ namespace ControlsSample
 
         private void RoundSelectionCheckBox_CheckedChanged(object? sender, EventArgs e)
         {
-            if (roundSelectionCheckBox.IsChecked)
-            {
-                BorderSettings border = new();
-                border.UniformRadiusIsPercent = false;
-                border.UniformCornerRadius = 10;
-
-                listBox.CurrentItemBorder = border;
-                listBox.SelectionBorder = border;
-            }
-            else
-            {
-                listBox.CurrentItemBorder = null;
-                listBox.SelectionBorder = null;
-            }
+            listBox.SetSelectionAndCurrentItemRoundBorders(roundSelectionCheckBox.IsChecked);
         }
 
         private void ListBox_HandleCreated(object? sender, EventArgs e)
@@ -158,10 +164,19 @@ namespace ControlsSample
             object? sender, 
             MouseEventArgs e)
         {
+            if (!cbLogHitTestEvent.Checked)
+                return;
+
             var result = listBox.HitTest(Mouse.GetPosition(listBox));
+            
             var item = (result == null ? "<none>" : listBox.GetItem(result.Value)?.ToString());
 
-            item ??= result?.ToString();
+            item ??= result?.ToString() ?? string.Empty;
+
+            var splitted = StringUtils.Split(item);
+
+            if(splitted.Length > 1)
+                item = $"{splitted[0]}...";
 
             App.Log($"HitTest result: Item: '{item}'");
         }
@@ -177,6 +192,9 @@ namespace ControlsSample
 
         private void ListBox_SelectionChanged(object? sender, EventArgs e)
         {
+            if (!cbLogSelectedEvent.Checked)
+                return;
+
             string s = IndexesToStr(listBox.SelectedIndexes);
             App.Log($"ListBox: SelectionChanged. SelectedIndexes: ({s})");
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Alternet.Drawing;
 using Alternet.UI;
@@ -7,8 +8,23 @@ namespace ControlsSample
 {
     public partial class CommonDialogsWindow : Window
     {
+        public static string LoremIpsum =
+"Beneath a sky stitched with teacup clouds, the girl tiptoed across checkerboard moss. " +
+"Each step made a peculiar sound—like libraries whispering to mushrooms. " +
+"Trees bent inward to eavesdrop, their leaves rustling riddles only crickets could decipher." +
+Environment.NewLine + Environment.NewLine +
+"The map she carried was drawn entirely in nonsense, but somehow it felt correct. " +
+"It pulsed faintly in her hands, humming with ink made from stolen dreams and marmalade." +
+Environment.NewLine + Environment.NewLine +
+"“Left is usually right,” said the rabbit-shaped shadow, bowing courteously. " +
+"“Unless, of course, you're upside-down.”" +
+Environment.NewLine + Environment.NewLine +
+"And so, with a smile too wide for logic, she stepped forward—into a world where clocks " +
+"melted politely and hats outgrew heads.";
+
         private const string CustomTitle = @"Custom Title";
         private FontInfo fontInfo = AbstractControl.DefaultFont;
+        private string messageBoxText = "Message Box Text";
 
         public CommonDialogsWindow(WindowKind kind)
             : base(kind)
@@ -27,25 +43,65 @@ namespace ControlsSample
             Icon = App.DefaultIcon;
             InitializeComponent();
 
-            messageBoxButtonsComboBox.Add(MessageBoxButtons.OK);
-            messageBoxButtonsComboBox.Add(MessageBoxButtons.OKCancel);
-            messageBoxButtonsComboBox.Add(MessageBoxButtons.YesNoCancel);
-            messageBoxButtonsComboBox.Add(MessageBoxButtons.YesNo);
-            messageBoxButtonsComboBox.SelectedItem = MessageBoxButtons.OKCancel;
+            List<MessageBoxButtons> messageBoxButtons =
+                [
+                    MessageBoxButtons.OK,
+                    MessageBoxButtons.OKCancel,
+                    MessageBoxButtons.YesNoCancel,
+                    MessageBoxButtons.YesNo,
+                ];
 
-            messageBoxIconComboBox.AddEnumValues(typeof(MessageBoxIcon), MessageBoxIcon.None);
-            exceptionTypeComboBox.AddEnumValues(
-                typeof(TestExceptionType),
-                TestExceptionType.FileNotFoundException);
+            messageBoxButtonsComboBox.UseContextMenuAsPopup = true;
 
-            messageBoxDefaultButtonComboBox.Add(MessageBoxDefaultButton.Button1);
-            messageBoxDefaultButtonComboBox.Add(MessageBoxDefaultButton.Button2);
-            messageBoxDefaultButtonComboBox.Add(MessageBoxDefaultButton.Button3);
-            messageBoxDefaultButtonComboBox.SelectedItem = MessageBoxDefaultButton.Button1;
+            if (MessageBox.UseInternalDialog)
+            {
+                messageBoxButtonsComboBox.AddEnumValues(typeof(MessageBoxButtons));
+            }
+            else
+            {
+                messageBoxButtonsComboBox.AddRange(messageBoxButtons);
+            }
+
+            messageBoxButtonsComboBox.Value = MessageBoxButtons.OKCancel;
+
+            MessageBoxIcon[] messageBoxIcons =
+                [
+                    MessageBoxIcon.None,
+                    MessageBoxIcon.Information,
+                    MessageBoxIcon.Warning,
+                    MessageBoxIcon.Error,
+                ];
+            messageBoxIconComboBox.AddRange(messageBoxIcons);
+            messageBoxIconComboBox.Value = MessageBoxIcon.None;
+
+            exceptionTypeComboBox.EnumType = typeof(TestExceptionType);
+            exceptionTypeComboBox.Value = TestExceptionType.FileNotFoundException;
+
+            List<MessageBoxDefaultButton> messageBoxDefaultButtons =
+                [
+                    MessageBoxDefaultButton.Button1,
+                    MessageBoxDefaultButton.Button2,
+                    MessageBoxDefaultButton.Button3,
+                ];
+
+            messageBoxDefaultButtonComboBox.AddRange(messageBoxDefaultButtons);
+            messageBoxDefaultButtonComboBox.UseContextMenuAsPopup = true;
+            messageBoxDefaultButtonComboBox.Value = MessageBoxDefaultButton.Button1;
 
             tabControl.MinSizeGrowMode = WindowSizeToContentMode.Height;
 
             this.ResumeLayout();
+
+            showMessageBoxButton.ContextMenuStrip.Add("Toggle message box text",
+                () => ToggleText(ref messageBoxText, "Message Box Text"));
+        }
+
+        private void ToggleText(ref string toggledText, string text)
+        {
+            if (toggledText == text)
+                toggledText = LoremIpsum;
+            else
+                toggledText = text;
         }
 
         enum TestExceptionType
@@ -152,12 +208,12 @@ namespace ControlsSample
             try
             {
                 MessageBox.Show(
-                    "Message Box Text",
+                    messageBoxText,
                     "Message Box Caption",
-                    (MessageBoxButtons)messageBoxButtonsComboBox.SelectedItem!,
-                    (MessageBoxIcon)messageBoxIconComboBox.SelectedItem!,
-                    (MessageBoxDefaultButton)
-                        messageBoxDefaultButtonComboBox.SelectedItem!,
+                    (MessageBoxButtons?)messageBoxButtonsComboBox.Value ?? MessageBoxButtons.OK,
+                    (MessageBoxIcon?)messageBoxIconComboBox.Value ?? MessageBoxIcon.None,
+                    (MessageBoxDefaultButton?)
+                        messageBoxDefaultButtonComboBox.Value ?? MessageBoxDefaultButton.Button1,
                     (e) =>
                     {
                         LogResult("Message Box Result: " + e.Result);
@@ -173,7 +229,7 @@ namespace ControlsSample
         {
             ExceptionUtils.ForceUnhandledExceptionToUseDialog();
 
-            throw (TestExceptionType)exceptionTypeComboBox.SelectedItem! switch
+            throw (TestExceptionType)exceptionTypeComboBox.Value! switch
             {
                 TestExceptionType.InvalidOperationException => 
                     new InvalidOperationException("Test message"),

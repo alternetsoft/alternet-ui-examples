@@ -9,14 +9,13 @@ namespace PropertyGridSample
 {
     public partial class ObjectInit
     {
-        public static void InitGenericLabel(object control)
+        public static void MakeComplexLabel(Label label)
         {
-            if (control is not GenericLabel label)
-                return;
-            label.ParentBackColor = true;
+            label.ParentBackColor = false;
+            label.ParentForeColor = false;
             label.Text = "GenericLabel";
             label.HorizontalAlignment = HorizontalAlignment.Left;
-            label.ForegroundColor = Color.Sienna;
+            label.ForegroundColor = LightDarkColors.Blue;
             label.MnemonicCharIndex = 3;
             label.ImageVisible = true;
             label.TextAlignment = HVAlignment.Center;
@@ -24,12 +23,14 @@ namespace PropertyGridSample
             label.DisabledImage = DefaultImage.ToGrayScale();
             label.SuggestedSize = (300, 300);
 
+            SetBackgrounds(label);
+
             label.Borders ??= new();
             var border = BorderSettings.Default.Clone();
             border.UniformCornerRadius = 15;
             border.UniformRadiusIsPercent = true;
             var doubleBorder = border.Clone();
-            doubleBorder.Width = 2;
+            doubleBorder.Width = 5;
 
             label.Borders.SetAll(border);
             label.Borders.SetObject(doubleBorder, VisualControlState.Hovered);
@@ -39,24 +40,74 @@ namespace PropertyGridSample
             label.StateObjects ??= new();
             label.StateObjects.Colors ??= new();
             label.StateObjects.Colors.SetObject(colors, VisualControlState.Hovered);
-            SetBackgrounds(label);
+
+            label.PerformLayoutAndInvalidate();
         }
 
-        public static void InitGenericTextControl(object control)
+        public static void InitGenericLabel(object control)
         {
-            if (control is not GenericTextControl label)
+            if (control is not Label label)
+                return;
+            label.Name = "Label18";
+            label.Text = "This is a label";
+            label.HorizontalAlignment = HorizontalAlignment.Left;
+        }
+
+        public static void LogMouseEventsIf(bool condition, AbstractControl control)
+        {
+            if(!condition)
+                return;
+
+            var s = control.GetType();
+
+            control.VisualStateChanged += (s, e) =>
+            {
+                App.LogReplace(
+                    $"{s}.VisualState = {(s as AbstractControl)?.VisualState}",
+                    $"{s}.VisualState");
+            };
+
+            control.MouseEnter += (s, e) =>
+            {
+                App.Log($"{s}.MouseEnter");
+            };
+            control.MouseLeave += (s, e) =>
+            {
+                App.Log($"{s}.MouseLeave");
+            };
+            control.MouseDown += (s, e) =>
+            {
+                App.Log($"{s}.MouseDown");
+            };
+            control.MouseMove += (s, e) =>
+            {
+                App.LogReplace($"{s}.MouseMove: {e.Location}", $"{s}.MouseMove");
+            };
+            control.MouseUp += (s, e) =>
+            {
+                App.Log($"{s}.MouseUp");
+            };
+            control.MouseHover += (s, e) =>
+            {
+                App.Log($"{s}.MouseHover");
+            };
+        }
+
+        public static void InitLabelAndButton(object control)
+        {
+            if (control is not LabelAndButton label)
                 return;
             label.Text = "This is text";
             label.HorizontalAlignment = HorizontalAlignment.Left;
         }
 
-        public static void InitLabel(object control)
+        public static void InitGenericWrappedTextControl(object control)
         {
-            if (control is not Label label)
+            if (control is not GenericWrappedTextControl label)
                 return;
-            label.Text = LoremIpsum.Replace("\n",StringUtils.OneSpace).Trim();
+            label.TextWrapping = TextWrapping.Word;
+            label.Text = "This is text";
             label.HorizontalAlignment = HorizontalAlignment.Left;
-            label.MaxTextWidth = 200;
         }
 
         public static void InitLinkLabel(object control)

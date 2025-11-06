@@ -21,6 +21,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.736-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.759-beta" />
   </ItemGroup>
 </Project>

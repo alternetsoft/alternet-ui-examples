@@ -47,16 +47,19 @@ namespace ControlsSample
             listView.SmallImageList = imageLists.Small;
             listView.LargeImageList = imageLists.Large;
 
-            AddDefaultItems();
+            viewComboBox.EnumType = typeof(ListViewView);
+            viewComboBox.Value = ListViewView.Details;
 
-            viewComboBox.AddEnumValues(typeof(ListViewView), ListViewView.Details);
-            gridLinesComboBox.AddEnumValues(typeof(ListViewGridLinesDisplayMode),
-                ListViewGridLinesDisplayMode.Vertical);
-            columnWidthModeComboBox.AddEnumValues(typeof(ListViewColumnWidthMode),
-                ListViewColumnWidthMode.Fixed);
+            gridLinesComboBox.EnumType = typeof(ListViewGridLinesDisplayMode);
+            gridLinesComboBox.Value = ListViewGridLinesDisplayMode.Vertical;
 
             listView.Items.ItemInserted += Items_ItemInserted;
             listView.Items.ItemRemoved += Items_ItemRemoved;
+
+            AddDefaultItems();
+
+            columnWidthModeComboBox.EnumType = typeof(ListViewColumnWidthMode);
+            columnWidthModeComboBox.Value = listView.Columns[0].WidthMode;
         }
 
         private void EditItemsButton_Click(object? sender, System.EventArgs e)
@@ -71,8 +74,8 @@ namespace ControlsSample
 
         private void InitializeColumns()
         {
-            listView?.Columns.Add(new ListViewColumn("Column 1"));
-            listView?.Columns.Add(new ListViewColumn("Column 2"));
+            listView?.Columns.Add(new ListViewColumn("Column One"));
+            listView?.Columns.Add(new ListViewColumn("Column Two"));
         }
 
         private void AddDefaultItems()
@@ -80,6 +83,14 @@ namespace ControlsSample
             listView!.View = ListViewView.Details;
 
             PropertyGridSample.ObjectInit.InitListView(listView);
+
+            listView.Columns[0].WidthMode = ListViewColumnWidthMode.FixedInPercent;
+            listView.Columns[0].Width = 40;
+            listView.Columns[0].MinAutoWidth = 100;
+
+            listView.Columns[1].WidthMode = ListViewColumnWidthMode.FixedInPercent;
+            listView.Columns[1].Width = 40;
+            listView.Columns[1].MinAutoWidth = 100;
         }
 
         private bool SlowRecreate
@@ -117,7 +128,7 @@ namespace ControlsSample
             if (listView is null)
                 return;
             listView.View = (ListViewView)
-                (viewComboBox.SelectedItem ?? throw new InvalidOperationException());
+                (viewComboBox.Value ?? throw new InvalidOperationException());
         }
 
         private void GridLinesComboBox_SelectedItemChanged(object? sender, EventArgs e)
@@ -127,7 +138,7 @@ namespace ControlsSample
             if (listView is null)
                 return;
             listView.GridLinesDisplayMode = (ListViewGridLinesDisplayMode)
-                (gridLinesComboBox.SelectedItem ??
+                (gridLinesComboBox.Value ??
                 throw new InvalidOperationException());
         }
 
@@ -136,7 +147,7 @@ namespace ControlsSample
             EventArgs e)
         {
             var mode = (ListViewColumnWidthMode)(
-                columnWidthModeComboBox.SelectedItem ??
+                columnWidthModeComboBox.Value ??
                 throw new InvalidOperationException());
 
             foreach (var column in listView!.Columns)

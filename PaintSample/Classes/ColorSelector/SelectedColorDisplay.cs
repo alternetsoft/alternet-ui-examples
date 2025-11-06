@@ -3,7 +3,7 @@ using Alternet.UI;
 
 namespace PaintSample
 {
-    internal class SelectedColorDisplay : Control
+    internal class SelectedColorDisplay : HiddenBorder
     {
         private Color selectedColor = Color.Empty;
 
@@ -23,25 +23,26 @@ namespace PaintSample
             }
         }
 
-        public override SizeD GetPreferredSize(SizeD availableSize)
+        public override SizeD GetPreferredSize(PreferredSizeContext context)
         {
             return (50, 50);
         }
 
-        private readonly Brush backgroundHatchBrush = new HatchBrush(BrushHatchStyle.BackwardDiagonal, Color.Gray);
+        private readonly Brush backgroundHatchBrush
+            = new HatchBrush(BrushHatchStyle.BackwardDiagonal, Color.Gray);
 
         protected override void OnPaint(PaintEventArgs e)
         {
             var dc = e.Graphics;
 
-            dc.FillRectangle(Brushes.LightGray, e.ClipRectangle);
-            dc.FillRectangle(backgroundHatchBrush, e.ClipRectangle);
+            dc.FillRectangle(Brushes.LightGray, e.ClientRectangle);
+            dc.FillRectangle(backgroundHatchBrush, e.ClientRectangle);
             dc.DrawLine(
                 Pens.Gray,
-                e.ClipRectangle.TopRight + new PointD(-1, 0),
-                e.ClipRectangle.BottomRight + new PointD(-1, 0));
+                e.ClientRectangle.TopRight + new PointD(-1, 0),
+                e.ClientRectangle.BottomRight + new PointD(-1, 0));
 
-            var innerRect = e.ClipRectangle;
+            var innerRect = e.ClientRectangle;
             innerRect.Inflate(-10, -10);
 
             dc.FillRectangle(new SolidBrush(SelectedColor), innerRect);

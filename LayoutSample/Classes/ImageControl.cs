@@ -5,9 +5,9 @@ using Alternet.UI.Extensions;
 
 namespace LayoutSample
 {
-    internal class ImageControl : Control
+    internal class ImageControl : HiddenBorder
     {
-        private double zoom = 1;
+        private Coord zoom = 1;
 
         public ImageControl()
         {
@@ -16,7 +16,7 @@ namespace LayoutSample
 
         public Image? Image { get; set; }
 
-        public double Zoom
+        public Coord Zoom
         {
             get => zoom;
             set
@@ -26,11 +26,11 @@ namespace LayoutSample
             }
         }
 
-        public override SizeD GetPreferredSize(SizeD availableSize)
+        public override SizeD GetPreferredSize(PreferredSizeContext context)
         {
             var image = Image;
             if (image == null)
-                return new SizeD();
+                return SizeD.Empty;
 
             var size = image.SizeDip(this);
             var zoom = Zoom;
@@ -39,13 +39,17 @@ namespace LayoutSample
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            var bounds = ClientRectangle;
-            e.Graphics.FillRectangle(Brushes.White, bounds);
 
             var image = Image;
 
             if (image != null)
+            {
+                var size = image.SizeDip(this);
+                var bounds = ((0, 0), new SizeD(size.Width * zoom, size.Height * zoom));
+                e.Graphics.FillRectangle(DefaultColors.WindowBackColor.AsBrush, bounds);
                 e.Graphics.DrawImage(image, bounds);
+                e.Graphics.DrawRectangle(LightDarkColors.Red.AsPen, bounds);
+            }
         }
     }
 }

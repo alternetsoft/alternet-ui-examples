@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 using Alternet.Drawing;
 
@@ -14,7 +15,9 @@ namespace ControlsSample
     {
         static Program()
         {
+            UnixStdStreamRedirector.RedirectStdErrOnMacOs();
             KnownAssemblies.PreloadReferenced();
+            FormulaEngine.Init();
         }
 
         public static void InitSamples()
@@ -80,6 +83,8 @@ namespace ControlsSample
 
             var testBadFont = false;
 
+            AppUtils.SetSystemAppearanceIfDebug();
+
             var application = new Application();
 
             LogSimple("Application created.");
@@ -108,7 +113,7 @@ namespace ControlsSample
             LogSimple("InitSamples Done.");
 
             if (testBadFont)
-                AbstractControl.DefaultFont = new Font("abrakadabra", 12);
+                AbstractControl.DefaultFont = new Font("PineApple", 12);
 
             var window = new MainWindow();
 

@@ -41,7 +41,7 @@ namespace Alternet.UI
         public override void DefaultPaint(PaintEventArgs e)
         {
             var dc = e.Graphics;
-            var bounds = e.ClipRectangle;
+            var bounds = e.ClientRectangle;
 
             var brush = GetBackgroundBrush();
             if (brush != null)
@@ -56,7 +56,7 @@ namespace Alternet.UI
             var mark = Mark;
             if (mark != null)
             {
-                var markSize = minBoundsSize * 0.7;
+                var markSize = minBoundsSize * 0.7f;
                 var markBounds = RectD.FromCenter(bounds.Center, new SizeD(markSize, markSize));
 
                 if (mark == TicTacToeControl.PlayerMark.X)

@@ -15,7 +15,7 @@ namespace ExplorerUISample
             TopVisible = false,
             BottomVisible = false,
         };
-        private readonly TreeView treeView = new()
+        private readonly StdTreeView treeView = new()
         {
             HasBorder = false,
         };
@@ -50,21 +50,34 @@ namespace ExplorerUISample
             listView.Items.Add(new ListViewItem(new[] { 
                 "3rd quarter results - Mary", "1M", date }, 3));
 
-            const int FolderImageIndex = 1;
-            var maryM = new TreeViewItem("MaryM", FolderImageIndex);
-            maryM.Items.Add(new TreeViewItem("Docs", FolderImageIndex));
-            maryM.Items.Add(new TreeViewItem("New Reports", FolderImageIndex));
-            maryM.Items.Add(new TreeViewItem("Misc", FolderImageIndex));
-            var meetings = new TreeViewItem("Meetings", FolderImageIndex);
-            meetings.Items.Add(new TreeViewItem("May", FolderImageIndex));
-            meetings.Items.Add(new TreeViewItem("June", FolderImageIndex));
-            meetings.Items.Add(new TreeViewItem("July", FolderImageIndex));
-            maryM.Items.Add(meetings);
-            treeView.Items.Add(maryM);
+            var folderImage = FileListBox.GetDefaultFolderImage();
+
+            var imageSize = SvgUtils.GetSvgSize(ScaleFactor);
+
+            TreeViewItem CreateFolderItem(string name)
+            {
+                TreeViewItem result = new(name);
+                result.SvgImage = folderImage;
+                result.SvgImageSize = imageSize;
+                return result;
+            }
+
+            var firstItem = CreateFolderItem("MaryM");
+            firstItem.Add(CreateFolderItem("Docs"));
+            firstItem.Add(CreateFolderItem("New Reports"));
+            firstItem.Add(CreateFolderItem("Misc"));
+
+            var meetings = CreateFolderItem("Meetings");
+            meetings.Add(CreateFolderItem("May"));
+            meetings.Add(CreateFolderItem("June"));
+            meetings.Add(CreateFolderItem("July"));
+
+            firstItem.Add(meetings);
+            treeView.Add(firstItem);
             treeView.ExpandAll();            
 
             var imageList = LoadImageList();
-            treeView.ImageList = imageList;
+
             listView.SmallImageList = imageList;
             listView.Columns[0].WidthMode = ListViewColumnWidthMode.AutoSize;
             listView.Columns[1].WidthMode = ListViewColumnWidthMode.AutoSize;

@@ -37,7 +37,6 @@ namespace ControlsSample
         {
         };
 
-        private bool refreshRequested;
         private SkiaSharpSample.SampleBase? currentSample;
 
         public SkiaSharpExamplesWindow()
@@ -86,7 +85,7 @@ namespace ControlsSample
                 sample.Init();
                 sample.RefreshRequested += OnRefreshRequested;
 
-                var newItem = new TreeControlItem(sample.Title);
+                var newItem = new TreeViewItem(sample.Title);
                 newItem.Action = () =>
                 {
                     App.AddBackgroundInvokeAction(() =>
@@ -101,13 +100,17 @@ namespace ControlsSample
                 actionsListBox.Add(newItem);
             }
 
-            Idle += SkiaSharpExamplesWindow_Idle;
-
             if (actionsListBox.RootItem.ItemCount > 0)
             {
                 actionsListBox.SelectionChanged += ActionsListBox_SelectionChanged;
-                actionsListBox.SelectFirstItem();
-                refreshRequested = true;
+                actionsListBox.ListBox.SelectedItemIsBold = true;
+
+                App.AddIdleTask(() =>
+                {
+                    actionsListBox.SelectFirstItemAndScroll();
+                    DrawSelectedItem();
+                    actionsListBox.ListBox.Refresh();
+                });
             }
 
             pictureBox.Click += PictureBox_Click;
@@ -123,21 +126,15 @@ namespace ControlsSample
             AppUtils.ShellExecute(obj);
         }
 
-        private void SkiaSharpExamplesWindow_Idle(object? sender, EventArgs e)
-        {
-            if (!refreshRequested)
-                return;
-            DrawSelectedItem();
-            refreshRequested = false;
-        }
-
         private void OnRefreshRequested(object? sender, EventArgs e)
         {
             if (sender is not SkiaSharpSample.SampleBase sample)
                 return;
             string title = sample.Title;
             if (title == (actionsListBox.SelectedItem as ListControlItem)?.Text)
-                refreshRequested = true;
+            {
+                DrawSelectedItem();
+            }
         }
 
         private void Draw(Action<SKCanvas,int,int> action)
@@ -159,14 +156,17 @@ namespace ControlsSample
 
         private void ActionsListBox_SelectionChanged(object? sender, EventArgs e)
         {
-            refreshRequested = true;
+            DrawSelectedItem();
         }
 
         private void DrawSelectedItem()
         {
-            if (actionsListBox.SelectedItem is not ListControlItem item)
-                return;
-            item.Action?.Invoke();
+            Invoke(() =>
+            {
+                if (actionsListBox.SelectedItem is not ListControlItem item)
+                    return;
+                item.Action?.Invoke();
+            });
         }
     }
 }

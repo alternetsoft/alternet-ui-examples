@@ -39,7 +39,7 @@ namespace Alternet.UI
         public override void DefaultPaint(PaintEventArgs e)
         {
             var dc = e.Graphics;
-            var rect = e.ClipRectangle;
+            var rect = e.ClientRectangle;
 
             dc.FillRectangle(Color.LightGoldenrodYellow.AsBrush, rect);
 
@@ -73,13 +73,46 @@ namespace Alternet.UI
                 Color.Red,
                 Color.LightGreen);
 
-            dc.SetPixel(5, 0, Color.Red);
-            dc.SetPixel(160, 0, Color.Red);
-            dc.SetPixel(50, 150, Color.Red);
-
             dc.DrawRectangle(Color.Red.AsPen, rect);
 
+            dc.DrawPolygon(
+                Color.Red.AsPen,
+                new PointD[]
+                {
+                    new (10, 50),
+                    new (100, 50),
+                    new (50, 100),
+                });
+
+            DrawLines2(dc, (50, 250, 100, 100));
+
             dc.DrawImage(image, (50, 150));
+        }
+
+        public void DrawLines2(Graphics dc, RectD bounds)
+        {
+            var points = new[]
+                       {
+                new PointD(20, 20),   // A
+                new PointD(120, 30),  // B
+                new PointD(100, 120), // C
+                new PointD(30, 100),  // D
+            };
+
+            dc.DrawLines(Pens.Brown, points);
+        }
+
+        public void DrawLines(Graphics dc, RectD bounds)
+        {
+            var lines = new List<PointD>();
+            var w = bounds.Width / 6;
+            for (Coord x = 0; x < bounds.Width; x += w)
+            {
+                lines.Add(bounds.TopLeft + new SizeD(x, 0));
+                lines.Add(bounds.BottomLeft + new SizeD(x, 0));
+            }
+
+            dc.DrawLines(Pens.Brown, lines.ToArray());
         }
     }
 }

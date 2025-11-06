@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using System.Text;
+
 using Alternet.Drawing;
+using Alternet.Skia;
 using Alternet.UI;
 
 using SkiaSharp;
@@ -46,6 +48,8 @@ namespace PaintSample
 
         public PaintMainWindow()
         {
+            toolbar.SetMargins(true, true, true, true);
+
             var optionsId = toolbar.AddControl(optionsPlaceholder);
             toolbar.SetToolAlignCenter(optionsId, true);
 
@@ -98,8 +102,10 @@ namespace PaintSample
             testMenu.Add("Convert To Disabled", DoConvertToDisabled);
             testMenu.Add("Convert To Disabled (Skia)", DoConvertToDisabledSkia);
 
+            /*
             if (!App.IsLinuxOS)
                 testMenu.Add("Sample draw", DoDrawOnBitmap);
+            */
 
             testMenu.Add("Rotate", DoRotate);
 
@@ -177,9 +183,11 @@ namespace PaintSample
                 var url = AssemblyUtils.GetImageUrlInAssembly(
                     GetType().Assembly,
                     "Resources.ToolIcons." + tool.GetType().Name.Replace("Tool", "") + ".svg");
-                var (normalImage, disabledImage) =
-                    ToolBarUtils.GetNormalAndDisabledSvg(url, this);
-                var buttonId = toolbar.AddSpeedBtn(tool.Name, normalImage, disabledImage);
+
+                var svgSize = ToolBarUtils.GetDefaultImageSize(this);
+                var svg = new MonoSvgImage(url);
+
+                var buttonId = toolbar.AddSpeedBtn(tool.Name, svg);
 
                 void ClickMe()
                 {
@@ -524,7 +532,7 @@ namespace PaintSample
 
         public void DoConvertToDisabledSkia()
         {
-            var result = SkiaUtils.ConvertToGrayscale((SKBitmap)Document.Bitmap);
+            var result = SkiaHelper.ConvertToGrayscale((SKBitmap)Document.Bitmap);
             Document.Bitmap = (Bitmap)result;
         }
 
@@ -640,7 +648,7 @@ namespace PaintSample
             Bitmap toucan = new("SampleImages/toucan.png");
             toucan.Rescale(toucan.Size * 3);
 
-            var backgroundSize = (toucan.Size * 1.5).ToSize();
+            var backgroundSize = (toucan.Size * 1.5f).ToSize();
 
             var background = Image.Create(backgroundSize.Width, backgroundSize.Height, Color.LightGreen);
 
@@ -649,6 +657,7 @@ namespace PaintSample
             Document.Bitmap = background;
         }
 
+        /*
         public void DoDrawOnBitmap()
         {
             CreateNewDocument();
@@ -660,7 +669,9 @@ namespace PaintSample
 
             Document.Bitmap = bitmap;
         }
+        */
 
+        /*
         public void DrawSample(Graphics dc, PointD location, RectD rect)
         {
             dc.FillRectangle(Color.WhiteSmoke.AsBrush, rect);
@@ -695,5 +706,6 @@ namespace PaintSample
             dc.DrawText(s, location, font, Color.Green, Color.Empty);
             dc.DestroyClippingRegion();
         }
+        */
     }
 }

@@ -15,6 +15,24 @@ namespace DrawingSample
         {
             DataContext = page;
 
+            if (App.IsMacOS)
+            {
+                translationXSlider.IsEnabled = false;
+                translationYSlider.IsEnabled = false;
+                scaleFactorXSlider.IsEnabled = false;
+                scaleFactorYSlider.IsEnabled = false;
+                rotationSlider.IsEnabled = false;
+            }
+
+            resetButton.Click += (s, e) =>
+            {
+                translationXSlider.Value = 0;
+                translationYSlider.Value = 0;
+                scaleFactorXSlider.Value = 0;
+                scaleFactorYSlider.Value = 0;
+                rotationSlider.Value = 0;
+            };
+
             translationXSlider.Value = page.TranslationX;
             translationXSlider.ValueChanged += (s, e) =>
             {
@@ -45,7 +63,7 @@ namespace DrawingSample
                 page.Rotation = rotationSlider.Value;
             };
 
-            GetChildrenRecursive().Action<Slider>((c) => c.ClearTicks());
+            GetChildrenRecursive().Action<StdSlider>((c) => c.ClearTicks());
         }
     }
 }

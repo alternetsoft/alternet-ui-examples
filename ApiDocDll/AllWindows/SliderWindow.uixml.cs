@@ -4,6 +4,7 @@ using System;
 
 namespace ApiDoc
 {
+    [ControlCategory("Internal")]
     public partial class SliderWindow : Window
     {
         public SliderWindow()
@@ -14,7 +15,7 @@ namespace ApiDoc
         public void SliderExample1()
         {
             #region SliderCSharpCreation
-            var Slider = new Alternet.UI.Slider()
+            var Slider = new Alternet.UI.StdSlider()
             {
                 Minimum = 50,
                 Maximum = 200,

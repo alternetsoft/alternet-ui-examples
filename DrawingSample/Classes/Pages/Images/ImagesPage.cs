@@ -48,11 +48,11 @@ namespace DrawingSample
             var font = AbstractControl.DefaultFont;
             var textHeight = dc.MeasureText("M", font).Height;
 
-            double spacing = 10;
+            Coord spacing = 10;
 
             dc.DrawText($"Image size: {image.PixelSize.Width}x{image.PixelSize.Height} px", font, Brushes.Black, new PointD(spacing, spacing));
 
-            var imageLocation = new PointD(spacing, spacing * 1.5 + textHeight);
+            var imageLocation = new PointD(spacing, spacing * 1.5f + textHeight);
             dc.DrawImage(image, imageLocation);
             dc.DrawRectangle(dashPen, magnifiedRect.OffsetBy(imageLocation.X, imageLocation.Y));
 
@@ -63,12 +63,16 @@ namespace DrawingSample
 
             dc.InterpolationMode = InterpolationMode;
 
-            for (var factor = 1.0; factor <= 3; factor++)
+            for (var factor = 1.0f; factor <= 3; factor++)
             {
                 dc.DrawText(factor * 100 + "%", font, Brushes.Black, new PointD(x, y));
 
                 var sourceRect = new RectD(new PointD(x, y + textHeight + spacing / 2), magnifiedRect.Size * factor);
-                dc.DrawImage(image, sourceRect, magnifiedRect);
+                var pixels = magnifiedRect.PixelFromDip(control.ScaleFactor);
+
+                var subImage = image.GetSubBitmap(pixels);
+
+                dc.DrawImage(subImage, sourceRect);
 
                 x += spacing + sourceRect.Width;
             }

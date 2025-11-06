@@ -10,7 +10,7 @@ namespace DrawingSample
         private readonly Timer timer;
         private readonly List<ClipAreaPart> clipAreaParts = new();
 
-        private double x;
+        private Coord x;
         private bool mouseDown;
         private ClipOperation selectedClipOperation = ClipOperation.Union;
 
@@ -51,9 +51,9 @@ namespace DrawingSample
             PointD[] GetPolygonPoints()
             {
                 var lines = new List<PointD>();
-                var r = Math.Min(bounds.Width, bounds.Height) * 0.3;
+                var r = Math.Min(bounds.Width, bounds.Height) * 0.3f;
                 var c = bounds.Center;
-                for (double a = 0; a <= 360; a += 10)
+                for (Coord a = 0; a <= 360; a += 10)
                 {
                     lines.Add(DrawingUtils.GetPointOnCircle(c, r, a));
                 }
@@ -66,20 +66,19 @@ namespace DrawingSample
             using var region = new Region(GetPolygonPoints());
             ApplyRegionParts(region);
 
-            dc.Clip = region;
+            dc.DoInsideClipped(region, () =>
+            {
+                if (x >= bounds.Width)
+                    x = 0;
 
-            if (x >= bounds.Width)
-                x = 0;
+                dc.FillRectangle(Brushes.SkyBlue, bounds);
 
-            dc.FillRectangle(Brushes.SkyBlue, bounds);
+                dc.PushTransform(TransformMatrix.CreateTranslation(x, 0));
 
-            dc.PushTransform(TransformMatrix.CreateTranslation(x, 0));
+                DrawScene(dc, bounds);
+            });
 
-            DrawScene(dc, bounds);
-
-            dc.Clip = null;
-
-            dc.Pop();
+            dc.PopTransform();
 
             dc.DrawText(
                 "Click and drag the mouse to add or subtract rectangles to/from the clip region.",

@@ -11,42 +11,97 @@ namespace ControlsSample
         {
             InitializeComponent();
 
-            clearTicksButton.Visible = App.IsWindowsOS || App.IsLinuxOS;
+            mainTabControl.MinSizeGrowMode = WindowSizeToContentMode.Height;
 
-            foreach (SliderTickStyle item in Enum.GetValues(typeof(SliderTickStyle)))
+            tickStyleComboBox.EnumType = typeof(SliderTickStyle);
+
+            progressBarControlSlider.ValueChanged += ProgressBarControlSlider_ValueChanged;
+            progressBarControlSlider.Value = 6;
+
+            tickStyleComboBox.ValueChanged += TickStyleComboBox_SelectedItemChanged;
+            tickStyleComboBox.Value = SliderTickStyle.None;
+
+            progressBarControlSlider.TickStyle = SliderTickStyle.None;
+
+            sliderv1.TickStyle = SliderTickStyle.None;
+            sliderv2.TickStyle = SliderTickStyle.TopLeft;
+            sliderv3.TickStyle = SliderTickStyle.BottomRight;
+            sliderv4.TickStyle = SliderTickStyle.Both;
+
+            sliderh1.TickStyle = SliderTickStyle.None;
+            sliderh2.TickStyle = SliderTickStyle.TopLeft;
+            sliderh3.TickStyle = SliderTickStyle.BottomRight;
+            sliderh4.TickStyle = SliderTickStyle.Both;
+
+            sliderh1.ValueDisplay = displayH1;
+            sliderh2.ValueDisplay = displayH2;
+            sliderh3.ValueDisplay = displayH3;
+            sliderh4.ValueDisplay = displayH4;
+
+            sliderh3.TickFrequency = 10;
+            sliderh4.TickFrequency = 10;
+
+            sliderv2.TickFrequency = 10;
+            sliderv3.TickFrequency = 10;
+
+            progressBarControlSlider.SetSpacerColorToDefault();
+
+            sliderh3.SetFarSpacerColor(LightDarkColors.Green);
+            sliderv1.SetFarSpacerColor(LightDarkColors.Green);
+            sliderv2.SetFarSpacerColor(LightDarkColors.Red);
+
+            sliderh1.SetBorderColors(Color.Transparent);
+            sliderh1.SetBottomBorderColor(DefaultColors.BorderColor);
+            sliderh1.UseControlColors(false);
+
+            sliderh4.ValueFormat = "{0:0.00} miles";
+
+            sliderh3.FormatValueForDisplay += (s, e) =>
             {
-                if (item == SliderTickStyle.Both && !App.IsWindowsOS)
-                    continue;
-                tickStyleComboBox.Items.Add(item);
-            }
-
-            tickStyleComboBox.SelectedItemChanged += TickStyleComboBox_SelectedItemChanged;
-            tickStyleComboBox.SelectedIndex = 0;
-            progressBarControlSlider.Value = 1;
+                e.FormattedValue = $"{e.Value} km";
+            };
         }
 
-        private void TickStyleComboBox_SelectedItemChanged(object? sender, EventArgs e)
+        private void HasBorderButton_Click(object? sender, EventArgs e)
         {
-            if (tickStyleComboBox.SelectedItem is null)
-                return;
-
-            this.DoInsideUpdate(() =>
+            DoInsideLayout(() =>
             {
                 foreach (var slider in GetAllSliders())
                 {
-                    slider.TickStyle = (SliderTickStyle)(tickStyleComboBox.SelectedItem);
+                    slider.HasBorder = !slider.HasBorder;
                 }
             });
         }
 
+        private void ToggleColorsButton_Click(object? sender, EventArgs e)
+        {
+            DoInsideLayout(() =>
+            {
+                foreach (var slider in GetAllSliders())
+                {
+                    slider.UseControlColors(slider.ParentBackColor);
+                }
+            });
+        }
+
+        private void TickStyleComboBox_SelectedItemChanged(object? sender, EventArgs e)
+        {
+            if (tickStyleComboBox.Value is not SliderTickStyle tick)
+                return;
+            progressBarControlSlider.TickStyle = tick;
+        }
+
         private void Slider_ValueChanged(object? sender, EventArgs e)
         {
-            App.Log("New slider value is: " + ((Slider)sender!).Value);
+            App.LogNameValueReplace("Slider.Value",((StdSlider)sender!).Value);
         }
 
         private void ProgressBarControlSlider_ValueChanged(object? sender, EventArgs e)
         {
-            progressBar.Value = progressBarControlSlider.Value;
+            Invoke(() =>
+            {
+                progressBar.Value = progressBarControlSlider.Value;
+            });
         }
 
         private void ClearTicksButton_Click(object? sender, EventArgs e)
@@ -61,15 +116,26 @@ namespace ControlsSample
         {
             foreach (var slider in GetAllSliders())
             {
-                if (slider.Value < slider.Maximum)
-                    slider.Value++;
+                slider.Value++;
             }
         }
 
-        private IEnumerable<Slider> GetAllSliders()
+        private void DecreaseAllButton_Click(object? sender, EventArgs e)
         {
-            return new AbstractControl[] { horizontalSlidersPanel, verticalSlidersGrid }
-                .SelectMany(x => x.Children.OfType<Slider>());
+            foreach (var slider in GetAllSliders())
+            {
+                slider.Value--;
+            }
+        }
+
+        public static IEnumerable<T> GetAllChildrenOfType<T>(params AbstractControl[] parents)
+        {
+            return parents.SelectMany(x => x.Children.OfType<T>());
+        }
+
+        private IEnumerable<StdSlider> GetAllSliders()
+        {
+            return GetAllChildrenOfType<StdSlider>(horizontalSlidersPanel, verticalSlidersGrid);
         }
     }
 }

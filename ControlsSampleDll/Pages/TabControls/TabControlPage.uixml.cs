@@ -35,26 +35,24 @@ namespace ControlsSample
                 var page1 = InsertPage();
                 var page2 = InsertPage();
 
-                tabAlignmentComboBox.AddEnumValues(TabAlignment.Top);
-                tabAlignmentComboBox.SelectedItemChanged +=
+                tabAlignmentComboBox.EnumType = typeof(TabAlignment);
+                tabAlignmentComboBox.Value = TabAlignment.Top;
+                tabAlignmentComboBox.ValueChanged +=
                     TabAlignmentComboBox_SelectedItemChanged;
 
                 ImageSet image;
-                ImageSet? svgImage;
 
                 if(UseSmallImages)
                 {
                     image = ImageSet.FromUrl($"{ResPrefixSmall}Calendar16.png");
-                    svgImage = KnownSvgImages.ImgGear.AsNormal(16, IsDarkBackground);
                 }
                 else
                 {
                     image = ImageSet.FromUrl($"{ResPrefixLarge}Calendar32.png");
-                    svgImage = KnownSvgImages.ImgGear.AsNormal(32, IsDarkBackground);
                 }
 
                 tabControl.SetTabImage(0, image);
-                tabControl.SetTabImage(2, svgImage);
+                tabControl.SetTabSvg(2, KnownSvgImages.ImgGear, null, LightDarkColors.Blue);
 
                 tabControl.TabSizeChanged += TabControl_TabSizeChanged;
                 tabControl.SelectedIndexChanged += TabControl_SelectedIndexChanged;
@@ -80,6 +78,26 @@ namespace ControlsSample
                         () => App.Log("Disabled command 2 clicked"));
                     item.Enabled = false;
                 }
+
+                tabControl.HeaderControl.ContextMenuStrip.Add("Toggle vertical text", () =>
+                {
+                    if(tabControl.IsVerticalText)
+                    {
+                        tabControl.ImageToText = ImageToText.Horizontal;
+                        tabControl.IsVerticalText = false;
+                    }
+                    else
+                    {
+                        tabControl.ImageToText = ImageToText.Vertical;
+                        tabControl.IsVerticalText = true;
+                    }
+                });
+
+                tabControl.HasCloseButton = true;
+                tabControl.CloseButtonClick += (s, e) =>
+                {
+                    App.Log("Close button clicked");
+                };
             }
         }
 
@@ -178,13 +196,16 @@ namespace ControlsSample
 
         private void TabAlignmentComboBox_SelectedItemChanged(object? sender, EventArgs e)
         {
-            if(tabAlignmentComboBox.SelectedItem is TabAlignment tabAlignment)
+            if(tabAlignmentComboBox.Value is TabAlignment tabAlignment)
                 tabControl.TabAlignment = tabAlignment;
 
             var preferredSize = tabAlignmentComboBox.GetPreferredSize();
             tabAlignmentComboBox.InvalidateBestSize();
             var preferredSize2 = tabAlignmentComboBox.GetPreferredSize();
-            App.DebugLogIf($"tabAlignmentComboBox.PreferredSize = {preferredSize} {preferredSize2}", true);
+
+            App.DebugLogIf(
+                $"tabAlignmentComboBox.PreferredSize = {preferredSize} {preferredSize2}",
+                true);
         }
     }
 }

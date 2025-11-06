@@ -8,7 +8,6 @@ namespace Alternet.UI
     /// </summary>
     public partial class FancyProgressBar : ProgressBar
     {
-        private readonly SolidBrush gaugeBackgroundBrush = new((Color)"#484854");
         private readonly Font font = Control.DefaultFont;
         private readonly Pen pointerPen1 = new((Color)"#FC4154", 3);
         private readonly Pen pointerPen2 = new((Color)"#FF827D", 1);
@@ -20,6 +19,7 @@ namespace Alternet.UI
         {
             UserPaint = true;
             ValueChanged += Control_ValueChanged;
+            BackgroundColor = (Color)"#484854";
         }
 
         /// <inheritdoc/>
@@ -29,7 +29,7 @@ namespace Alternet.UI
         public override ProgressBarOrientation Orientation { get; set; }
 
         /// <inheritdoc/>
-        public override SizeD GetPreferredSize(SizeD availableSize)
+        public override SizeD GetPreferredSize(PreferredSizeContext context)
         {
             return new SizeD(200, 100);
         }
@@ -40,12 +40,12 @@ namespace Alternet.UI
         /// <inheritdoc/>
         protected override void OnPaint(PaintEventArgs e)
         {
-            var bounds = e.ClipRectangle;
+            var bounds = e.ClientRectangle;
             var dc = e.Graphics;
 
-            var scaleBounds = bounds.InflatedBy(-4, -4);
+            var scaleBounds = bounds.InflatedBy(-2, -2);
 
-            dc.FillRectangle(gaugeBackgroundBrush, bounds);
+            dc.FillRectangle(BackColor.AsBrush, bounds);
 
             /*
             GradientStop[] gradientStops =
@@ -66,13 +66,24 @@ namespace Alternet.UI
 
             dc.DrawBorderWithBrush(DefaultColors.GetControlBorderBrush(this), bounds);
 
-            dc.Clip = new Region(scaleBounds);
-
             var fontMaxSize = dc.MeasureText(
                 new string('M', Maximum.ToString().Length),
                 font);
 
-            void DrawTicks(double ticksStartX, double offsetInSteps)
+            dc.DoInsideClipped(
+                scaleBounds,
+                () =>
+                {
+                    DrawTicks(scaleBounds.Left + (scaleBounds.Width * 0.45f), 0);
+                    DrawTicks(scaleBounds.Left + (scaleBounds.Width * 0.7f), 0.5f);
+
+                    var pointerLineStartPoint = new PointD(scaleBounds.Left, bounds.Center.Y);
+                    var pointerLineEndPoint = new PointD(scaleBounds.Right, bounds.Center.Y);
+                    dc.DrawLine(pointerPen1, pointerLineStartPoint, pointerLineEndPoint);
+                    dc.DrawLine(pointerPen2, pointerLineStartPoint, pointerLineEndPoint);
+                });
+
+            void DrawTicks(Coord ticksStartX, Coord offsetInSteps)
             {
                 int step = 10;
 
@@ -106,27 +117,19 @@ namespace Alternet.UI
                         value.ToString(),
                         font,
                         Brushes.White,
-                        startPoint - new SizeD(fontMaxSize.Width * 0.6, fontMaxSize.Height / 2));
+                        startPoint - new SizeD(fontMaxSize.Width * 0.6f, fontMaxSize.Height / 2));
 
                     y += yStep;
                 }
             }
-
-            DrawTicks(scaleBounds.Left + (scaleBounds.Width * 0.45), 0);
-            DrawTicks(scaleBounds.Left + (scaleBounds.Width * 0.7), 0.5);
-
-            var pointerLineStartPoint = new PointD(scaleBounds.Left, bounds.Center.Y);
-            var pointerLineEndPoint = new PointD(scaleBounds.Right, bounds.Center.Y);
-            dc.DrawLine(pointerPen1, pointerLineStartPoint, pointerLineEndPoint);
-            dc.DrawLine(pointerPen2, pointerLineStartPoint, pointerLineEndPoint);
         }
 
-        internal static double MapRanges(
-            double value,
-            double from1,
-            double to1,
-            double from2,
-            double to2) =>
+        internal static Coord MapRanges(
+            Coord value,
+            Coord from1,
+            Coord to1,
+            Coord from2,
+            Coord to2) =>
             ((value - from1) / (to1 - from1) * (to2 - from2)) + from2;
 
         private void Control_ValueChanged(object? sender, EventArgs e)

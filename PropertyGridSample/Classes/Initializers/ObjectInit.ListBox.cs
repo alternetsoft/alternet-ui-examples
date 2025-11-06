@@ -28,7 +28,7 @@ namespace PropertyGridSample
 
         public static void AddDefaultOwnerDrawItems(
             Control control,
-            Action<ListControlItem> addAction,
+            Action<TreeViewItem> addAction,
             bool addLong = true)
         {
             string ResPrefix2 = $"{UrlResPrefix}ToolBarPng.Large.";
@@ -38,7 +38,7 @@ namespace PropertyGridSample
 
             var svgImageSize = 24; /* image sizes are always in pixels */
 
-            ListControlItem item = new();
+            TreeViewItem item = new();
             item.DisplayText = "This is display text";
             item.Text = "This is some text";
             item.Image = Image.FromUrlCached(PhotoUrl);
@@ -48,7 +48,7 @@ namespace PropertyGridSample
             item.Text = "Bold item (right, vert center)";
             item.Alignment = (HorizontalAlignment.Right, VerticalAlignment.Center);
             item.FontStyle = FontStyle.Bold;
-            item.MinHeight = control.PixelToDip(svgImageSize);
+            item.MinHeight = control.PixelToDip(svgImageSize) * 3;
             item.SvgImage = KnownSvgImages.ImgBold;
             item.SvgImageSize = svgImageSize;
             addAction(item);
@@ -58,14 +58,14 @@ namespace PropertyGridSample
             item.Image = Image.FromUrlCached(CalendarUrl);
             item.CheckState = CheckState.Indeterminate;
             item.DisabledImage = item.Image?.ToGrayScale();
-            item.ForegroundColor = Color.Green;
-            item.BackgroundColor = Color.Lavender;
+            item.ForegroundColor = Color.White;
+            item.BackgroundColor = Color.ForestGreen;
             item.Text = "Green <b>item</b> at center";
             item.LabelFlags = DrawLabelFlags.TextHasBold;
             addAction(item);
 
             item = new();
-            item.Text = "H = 60 (bottom, vert center)";
+            item.Text = "H = 60 (bottom, center)";
             item.CheckBoxVisible = false;
             item.MinHeight = 60;
             item.Alignment = (HorizontalAlignment.Center, VerticalAlignment.Bottom);
@@ -82,7 +82,7 @@ namespace PropertyGridSample
             addAction(item);
 
             item = new();
-            item.Font = Control.DefaultFont.Scaled(1.5);
+            item.Font = Control.DefaultFont.Scaled(1.5f);
             item.Text = "Custom Font";
             addAction(item);
 
@@ -91,7 +91,7 @@ namespace PropertyGridSample
             item.Alignment = HVAlignment.Center;
             item.CheckBoxVisible = false;
             item.Border = new();
-            item.Border.Color = Color.Red;
+            item.Border.Color = LightDarkColors.Red;
             item.Border.UniformCornerRadius = 25;
             item.Border.UniformRadiusIsPercent = true;
             addAction(item);
@@ -99,19 +99,34 @@ namespace PropertyGridSample
             if (addLong)
             {
                 item = new();
-                item.Text = LoremIpsum.Replace(StringUtils.OneNewLine, StringUtils.OneSpace);
+                item.Text = LoremIpsumSmall;
                 addAction(item);
             }
 
+            addAction(new TreeViewSeparatorItem());
+
             for (int i = 0; i < 150; i++)
             {
-                ListControlItem newItem = new($"Item {i}");
+                TreeViewItem newItem = new($"Item {i}");
 
                 if (i == 128)
                     newItem.DisplayText = newItem.Text + ": dd";
 
                 addAction(newItem);
             }
+        }
+
+        public static void AddManyItems(ListBox listBox, int numItems)
+        {
+            listBox.DoInsideUpdate(() =>
+            {
+                for (int i = 0; i < numItems; i++)
+                    listBox.Items.Add($"Item #{LogUtils.GenNewId()}");
+
+                App.Log($"Added {numItems} items");
+            });
+
+            listBox.SelectLastItem();
         }
 
         public static void AddManyItems(VirtualListBox listBox)
@@ -125,6 +140,14 @@ namespace PropertyGridSample
             });
 
             listBox.SelectLastItemAndScroll();
+        }
+
+        public static void InitFileListBox(object control)
+        {
+            if (control is not FileListBox listBox)
+                return;
+            listBox.SuggestedSize = defaultListSize;
+            listBox.SelectInitialFolder();
         }
 
         public static void InitVListBox(object control)
@@ -148,9 +171,44 @@ namespace PropertyGridSample
             }
         }
 
+        public static void InitCheckedListBox(object control)
+        {
+            InitListBox(control);
+            if (control is not CheckedListBox listBox)
+                return;
+            listBox.CheckedItemsChanged += (s, e) =>
+            {
+                LogItems("ListBox CheckedItemsChanged", listBox.CheckedItems);
+            };
+        }
+
+        public static void LogItems(string prefix, IReadOnlyList<object?> items)
+        {
+            if (items.Count > 100)
+                App.LogReplace($"{prefix}: {items.Count} items", prefix);
+            else
+            {
+                var st = items.Count == 0 ? "<none>" :
+                string.Join(", ", items.Select(x => x?.ToString()));
+                App.LogReplace($"{prefix}: {st}", prefix);
+            }
+        }
+
         public static void InitListBox(object control)
         {
             if (control is not ListBox listBox)
+                return;
+            listBox.SuggestedSize = defaultListSize;
+
+            foreach (var item in GetTenItems())
+                listBox.Items.Add(item);
+
+            listBox.SelectedIndexChanged += (s, e) => LogItems("ListBox SelectedIndexChanged", listBox.SelectedItems);
+        }
+
+        public static void InitStdListBox(object control)
+        {
+            if (control is not StdListBox listBox)
                 return;
             listBox.SuggestedSize = defaultListSize;
             listBox.Items.AddRange(GetTenItems());
@@ -158,10 +216,21 @@ namespace PropertyGridSample
 
         public static void InitCheckListBox(object control)
         {
-            if (control is not CheckListBox listBox)
+            if (control is not StdCheckListBox listBox)
                 return;
             listBox.SuggestedSize = defaultListHeight;
             listBox.Items.AddRange(GetTenItems());
+        }
+
+        public static void InitStdComboBox(object control)
+        {
+            if (control is not StdComboBox comboBox)
+                return;
+            var items = GetTenItems();
+            comboBox.AddRange(items);
+            comboBox.HorizontalAlignment = HorizontalAlignment.Left;
+            comboBox.IsEditable = false;
+            comboBox.SuggestedWidth = 200;
         }
 
         public static void InitComboBox(object control)
@@ -171,24 +240,6 @@ namespace PropertyGridSample
             comboBox.Items.AddRange(GetTenItems());
             comboBox.HorizontalAlignment = HorizontalAlignment.Left;
             comboBox.SuggestedWidth = 200;
-        }
-
-        public static void InitFontComboBox(object control)
-        {
-            if (control is not FontComboBox comboBox)
-                return;
-            comboBox.HorizontalAlignment = HorizontalAlignment.Left;
-            comboBox.SuggestedWidth = 200;
-            comboBox.Value = Control.DefaultFont.Name;
-        }
-
-        public static void InitColorComboBox(object control)
-        {
-            if (control is not ColorComboBox comboBox)
-                return;
-            comboBox.HorizontalAlignment = HorizontalAlignment.Left;
-            comboBox.SuggestedWidth = 200;
-            comboBox.Value = Color.Red;
         }
     }
 }
