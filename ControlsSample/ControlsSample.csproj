@@ -3,7 +3,7 @@
   <Import Project="..\CommonData\TargetFrameworks.props" />
   <PropertyGroup>
     <NuGetAuditMode>direct</NuGetAuditMode>
-    <Platforms>AnyCPU;x64;x86</Platforms>
+    <Platforms>AnyCPU</Platforms>
     <LangVersion>12.0</LangVersion>
     <Nullable>enable</Nullable>
     <UseStyleCop>false</UseStyleCop>
@@ -13,7 +13,13 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="ControlsSample.Dark.bat" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="Alternet.Demo.Run.sh">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ControlsSample.Dark.bat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -30,6 +36,6 @@
   </ItemGroup>
   <Import Project="$(SignToolPath)" Condition="Exists('$(SignToolPath)')" />
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.759-beta" />
+    <PackageReference Include="Alternet.UI" Version="0.9.802-beta" />
   </ItemGroup>
 </Project>
