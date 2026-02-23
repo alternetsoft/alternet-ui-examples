@@ -36,6 +36,6 @@
   </ItemGroup>
   <Import Project="$(SignToolPath)" Condition="Exists('$(SignToolPath)')" />
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.802-beta" />
+    <PackageReference Include="Alternet.UI" Version="1.0.1" />
   </ItemGroup>
 </Project>

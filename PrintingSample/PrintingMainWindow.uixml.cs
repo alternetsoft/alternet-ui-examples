@@ -37,6 +37,7 @@ namespace PrintingSample
 
             // This is important if OS style is BlackOnWhite.
             DrawingArea.BackgroundColor = Color.White;
+            DrawingArea.ParentBackColor = false;
         }
 
         private void DrawingArea_Paint(object? sender, PaintEventArgs e)
@@ -54,9 +55,9 @@ namespace PrintingSample
             DrawFirstPage(dc, bounds);
         }
 
-        public static void DrawFirstPage(Graphics dc, RectD bounds, bool forScreen = true)
+        public static void DrawFirstPage(Graphics dc, RectD bounds, bool forScreen = true, int pageIndex = 1)
         {
-            const string TextToDraw = "The brown fox jumps over the lazy dog.";
+            string TextToDraw = $"The brown fox jumps over the lazy dog. Page {pageIndex}";
 
             dc.DrawRectangle(Pens.Blue, bounds);
 
@@ -146,12 +147,14 @@ namespace PrintingSample
             var document = CreatePrintDocument();
 
             dialog.Document = document;
-            dialog.AllowSelection = true;
-            dialog.AllowSomePages = false;
+            dialog.AllowSelection = false;
+            dialog.AllowSomePages = true;
 
             document.PrintPage += Document_PrintPage;
 
-            dialog.ShowAsync(() =>
+            dialog.Log();
+
+            dialog.ShowAsync(this, () =>
             {
                 document.Print();
             });
@@ -163,12 +166,13 @@ namespace PrintingSample
             var document = CreatePrintDocument();
 
             pageSetupDialog.Document = document;
-            //setupDlg.AllowMargins = false;
-            //setupDlg.AllowOrientation = false;
-            //setupDlg.AllowPaper = false;
-            //setupDlg.AllowPrinter = false;
+            
+            pageSetupDialog.AllowMargins = true;
+            pageSetupDialog.AllowOrientation = true;
+            pageSetupDialog.AllowPaper = true;
+            pageSetupDialog.AllowPrinter = true;
 
-            pageSetupDialog.ShowAsync(() =>
+            pageSetupDialog.ShowAsync(this, () =>
             {
                 //document.DefaultPageSettings = pageSetupDialog.PageSettings;
                 //document.PrinterSettings = pageSetupDialog.PrinterSettings;
@@ -196,14 +200,18 @@ namespace PrintingSample
             var bounds = new RectD(new PointD(), originAtMarginCheckBox.IsChecked
                 ? e.MarginBounds.Size : e.PrintablePageBounds.Size);
 
-            if (pageNumber == 1)
+            e.DrawingContext.Save();
+
+            if (pageNumber <= 2)
             {
-                DrawFirstPage(e.DrawingContext, bounds, false);
+                DrawFirstPage(e.DrawingContext, bounds, false, pageNumber);
             }
             else
             {
                 DrawAdditionalPage(e.DrawingContext, pageNumber, bounds);
             }
+
+            e.DrawingContext.Restore();
 
             var v = additionalPagesCountNumericUpDown.Value;
 

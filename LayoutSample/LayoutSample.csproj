@@ -8,6 +8,6 @@
     <EmbeddedResource Include="$(CommonResourcesPath)\logo128x128.png" Link="Resources\logo128x128.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="0.9.802-beta" />
+    <PackageReference Include="Alternet.UI" Version="1.0.1" />
   </ItemGroup>
 </Project>
