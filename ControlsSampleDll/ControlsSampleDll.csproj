@@ -121,6 +121,9 @@
     <Compile Include="..\PrintingSample\PrintingMainWindow.uixml.cs" Link="Links\PrintingSample\PrintingMainWindow.uixml.cs" />
     <None Include="..\PrintingSample\PrintingMainWindow.uixml" Link="Links\PrintingSample\PrintingMainWindow.uixml" />
     <UIXml Include="..\PrintingSample\PrintingMainWindow.uixml" Link="Links\PrintingSample\PrintingMainWindow.uixml" />
+
+    <Compile Include="..\PrintingSample\Patch\*.cs" Link="Links\PrintingSample\Patch\%(RecursiveDir)%(Filename)%(Extension)" />
+
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\ThreadingSample\ThreadingMainWindow.uixml.cs" Link="Links\ThreadingSample\ThreadingMainWindow.uixml.cs" />
