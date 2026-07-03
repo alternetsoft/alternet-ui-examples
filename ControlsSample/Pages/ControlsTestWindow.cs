@@ -4,8 +4,10 @@ using Alternet.UI;
 
 namespace ControlsSample
 {
-    internal partial class ControlsTestWindow : Window
+    public partial class ControlsTestWindow : Window
     {
+        public static BaseCollection<PageInfo> Pages = new BaseCollection<PageInfo>();
+
         public static bool TestEdgeBackend = true;
 
 #pragma warning disable
@@ -14,6 +16,33 @@ namespace ControlsSample
 
         static ControlsTestWindow()
         {
+            int CreateWebBrowserPages()
+            {
+                var result1 = AddWebBrowserPage("Browser IE", WebBrowserBackend.IELatest);
+                var result2 = AddWebBrowserPage("Browser WebKit", WebBrowserBackend.WebKit);
+                var result3 = AddEdgePage("Browser Edge");
+
+                return MathUtils.Max(result1, result2, result3);
+            }
+
+            CreateWebBrowserPages();
+
+            if (!App.IsMaui)
+            {
+                AddPage<PopupToolBarPage>("Popup ToolBar");
+            }
+
+            /*
+            if (App.IsMacOS)
+            {
+                AddPage<SkiaDirectPaintMacOsPage>("SkiaSharp macOs Direct Paint Sample");
+            }
+
+            if (App.IsLinuxOS)
+            {
+                AddPage<SkiaDirectPaintGtkPage>("SkiaSharp Gtk3 Direct Paint Sample");
+            }
+            */
         }
 
         public ControlsTestWindow()
@@ -30,31 +59,9 @@ namespace ControlsSample
             mainPanel.Parent = this;
             mainPanel.BindApplicationLog();
 
-            int CreateWebBrowserPages()
+            foreach (var page in Pages)
             {
-                var result1 = AddWebBrowserPage("Browser IE", WebBrowserBackend.IELatest);
-                var result2 = AddWebBrowserPage("Browser WebKit", WebBrowserBackend.WebKit);
-                var result3 = AddEdgePage("Browser Edge");
-
-                return MathUtils.Max(result1, result2, result3);
-            }
-
-            AddPage<ListBoxHeaderTestPage>("ListBoxHeader");
-
-            CreateWebBrowserPages();
-
-            AddPage<NativeSliderPage>("Native Slider");
-            AddPage<NativeTreeViewPage>("Native TreeView");
-            AddPage<PopupToolBarPage>("Popup ToolBar");
-
-            if (App.IsMacOS)
-            {
-                AddPage<SkiaDirectPaintMacOsPage>("SkiaSharp macOs Direct Paint Sample");
-            }
-
-            if (App.IsLinuxOS)
-            {
-                AddPage<SkiaDirectPaintGtkPage>("SkiaSharp Gtk3 Direct Paint Sample");
+                mainPanel.Add(page.Title, page.CreateFn);
             }
 
             mainPanel.LeftListBox.SelectFirstItem();
@@ -68,18 +75,19 @@ namespace ControlsSample
         internal PanelListBoxAndCards MainPanel => mainPanel;
 #pragma warning restore
 
-        public int AddPage<T>(string? title = null)
+        public static int AddPage<T>(string? title = null)
             where T : AbstractControl, new()
         {
             return AddPage(title ?? typeof(T).ToString(), () => new T());
         }
 
-        public int AddPage(string title, Func<AbstractControl> createFn)
+        public static int AddPage(string title, Func<AbstractControl> createFn)
         {
-            return mainPanel.Add(title, createFn);
+            Pages.Add(new PageInfo { Title = title, CreateFn = createFn });
+            return Pages.Count - 1;
         }
 
-        public int AddEdgePage(string title)
+        public static int AddEdgePage(string title)
         {
             var savedValue = WebBrowser.IsEdgeBackendEnabled;
 
@@ -120,7 +128,7 @@ namespace ControlsSample
             return AddPage(title, OuterFn);
         }
 
-        public int AddWebBrowserPage(
+        public static int AddWebBrowserPage(
             string title,
             WebBrowserBackend backend)
         {
@@ -146,16 +154,23 @@ namespace ControlsSample
             return AddPage(title, Fn);
         }
 
-        private void LogSizeEvent(object? sender, string evName)
+        private static void LogSizeEvent(object? sender, string evName)
         {
             var control = sender as AbstractControl;
             var name = control?.Name ?? control?.GetType().Name;
             App.LogIf($"{evName}: {name}, Bounds: {control!.Bounds}", false);
         }
 
-        private void Log_SizeChanged(object? sender, EventArgs e)
+        private static void Log_SizeChanged(object? sender, EventArgs e)
         {
             LogSizeEvent(sender, "SizeChanged");
+        }
+
+        public class PageInfo
+        {
+            public string? Title;
+
+            public Func<AbstractControl>? CreateFn;
         }
     }
 }

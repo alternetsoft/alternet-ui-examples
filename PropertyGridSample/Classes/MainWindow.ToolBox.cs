@@ -10,11 +10,11 @@ using System.Diagnostics;
 
 namespace PropertyGridSample
 {
-    public partial class MainWindow
+    public partial class MainControl
     {
         public static readonly List<Type> LimitedTypesStatic = new();
 
-        private readonly List<Type> LimitedTypes = new();
+        readonly List<Type> LimitedTypes = new();
 
         private T? GetSelectedControl<T>()
         {
@@ -42,38 +42,29 @@ namespace PropertyGridSample
             {
                 List<Type> noTicks = new();
 
-                if (App.IsMacOS)
-                {
-                    noTicks.Add(typeof(CheckBox));
-                }
+                noTicks.Add(typeof(ResizableBorder));
+                noTicks.Add(typeof(ResizableWindowBorder));
 
                 bool logAddedControls = false;
                 bool logNotAddedControls = false;
 
                 ToolBoxAdd<Border>();
                 ToolBoxAdd<PictureBox>();
-                ToolBoxAdd<Button>();
                 ToolBoxAdd<ToolBar>();
                 ToolBoxAdd<SplittedPanel>();
                 ToolBoxAdd<Calendar>();
-                ToolBoxAdd<CheckBox>();
-                ToolBoxAdd<ComboBox>();
                 ToolBoxAdd<StdComboBox>();
-                ToolBoxAdd<GroupBox>();
                 ToolBoxAdd<HorizontalStackPanel>();
                 ToolBoxAdd<TabControl>();
                 ToolBoxAdd<LinkLabel>();
                 ToolBoxAdd<StdListBox>();
-                ToolBoxAdd<ListView>();
                 ToolBoxAdd<MultilineTextBox>();
                 ToolBoxAdd<NumericUpDown>();
                 ToolBoxAdd<Panel>();
                 ToolBoxAdd<PanelOkCancelButtons>();
-                ToolBoxAdd<ProgressBar>();
-                ToolBoxAdd<RadioButton>();
-                ToolBoxAdd<RichTextBox>();
                 ToolBoxAdd<FindReplaceControl>();
                 ToolBoxAdd<StdSlider>();
+                ToolBoxAdd<StdProgressBar>();
                 ToolBoxAdd<ScrollBar>();
                 ToolBoxAdd<StackPanel>();
                 ToolBoxAdd<TextBox>();
@@ -94,6 +85,7 @@ namespace PropertyGridSample
                 ToolBoxAdd<Calculator>();
                 ToolBoxAdd<LabelAndButton>();
                 ToolBoxAdd<IntPicker>();
+                ToolBoxAdd<StdIntPicker>();
                 ToolBoxAdd<DatePicker>();
                 ToolBoxAdd<DateTimePicker>();
                 ToolBoxAdd<TimePicker>();
@@ -102,13 +94,20 @@ namespace PropertyGridSample
                 ToolBoxAdd<ColorPicker>();
                 ToolBoxAdd<TextBoxWithListPopup>();
                 ToolBoxAdd<CardPanelHeader>();
-                ToolBoxAdd<TreeView>();
                 ToolBoxAdd<StdTreeView>();
-                ToolBoxAdd<ListBox>();
                 ToolBoxAdd<Label>();
-                ToolBoxAdd<CheckedListBox>();
                 ToolBoxAdd<FileListBox>();
                 ToolBoxAdd<FontListBox>();
+                ToolBoxAdd<GenericItemControl>();
+                ToolBoxAdd<StdCheckBox>();
+                ToolBoxAdd<StdRadioButton>();
+                ToolBoxAdd<StdButton>();
+                ToolBoxAdd<ShapeControl>();
+                ToolBoxAdd<ResizableBorder>();
+                ToolBoxAdd<ResizableWindowBorder>();
+                ToolBoxAdd<StdCheckListBox>();
+                ToolBoxAdd<EditableListPicker>();
+                ToolBoxAdd<TextPicker>();
 
                 void ToolBoxAdd<T>()
                 {
@@ -116,12 +115,6 @@ namespace PropertyGridSample
                 }
 
                 /*
-                This is commented out because Slider control doesn't work property on Windows when dark mode is enabled.
-                ToolBoxAdd<Alternet.UI.Slider>();
-                */
-
-                /*
-                ToolBoxAdd<StdCheckListBox>();
                 ToolBoxAdd<Alternet.UI.HiddenBorder>();
                 ToolBoxAdd<Alternet.UI.VerticalLine>();
                 ToolBoxAdd<Alternet.UI.ContainerControl>();
@@ -149,18 +142,13 @@ namespace PropertyGridSample
                 ToolBoxAdd<Alternet.UI.ValueEditorUInt32>();
                 ToolBoxAdd<Alternet.UI.ValueEditorUInt64>();
                 ToolBoxAdd<Alternet.UI.HeaderLabel>();
-                ToolBoxAdd<Alternet.UI.Grid>();
-                ToolBoxAdd<Alternet.UI.LayoutPanel>();
                 ToolBoxAdd<Alternet.UI.SplittedTreeAndCards>();
                 ToolBoxAdd<Alternet.UI.ScrollViewer>();
-                ToolBoxAdd<Alternet.UI.PanelListBoxAndCards>();
-                ToolBoxAdd<Alternet.UI.PanelTreeAndCards>();
                 ToolBoxAdd<Alternet.UI.SplittedControlsPanel>();
                 ToolBoxAdd<Alternet.UI.Splitter>();
                 ToolBoxAdd<Alternet.UI.ColorComboBox>();
                 ToolBoxAdd<Alternet.UI.FontComboBox>();
                 ToolBoxAdd<Alternet.UI.ListBoxHeader>();
-                ToolBoxAdd<Alternet.UI.ActionsListBox>();
                 ToolBoxAdd<Alternet.UI.LogListBox>();
                 ToolBoxAdd<Alternet.UI.VirtualCheckListBox>();
                 ToolBoxAdd<Alternet.UI.AnimationPlayer>();
@@ -172,20 +160,12 @@ namespace PropertyGridSample
                 ToolBoxAdd<Alternet.UI.PreviewTextFile>();
                 ToolBoxAdd<Alternet.UI.PreviewUixml>();
                 ToolBoxAdd<Alternet.UI.PreviewUixmlSplitted>();
-                ToolBoxAdd<Alternet.UI.PropertyGrid>();
-                ToolBoxAdd<Alternet.UI.HScrollBar>();
-                ToolBoxAdd<Alternet.UI.VScrollBar>();
                 ToolBoxAdd<Alternet.UI.FontSizePicker>();
                 ToolBoxAdd<Alternet.UI.SpeedButtonWithListPopup>();
                 ToolBoxAdd<Alternet.UI.SpeedDateButton>();
                 ToolBoxAdd<Alternet.UI.SpeedEnumButton>();
                 ToolBoxAdd<Alternet.UI.WebBrowser>();
-                ToolBoxAdd<Alternet.UI.PanelFormSelector>();
-                ToolBoxAdd<Alternet.UI.PanelMultilineTextBox>();
-                ToolBoxAdd<Alternet.UI.PanelRichTextBox>();
                 ToolBoxAdd<Alternet.UI.PanelSettings>();
-                ToolBoxAdd<Alternet.UI.PanelWebBrowser>();
-                ToolBoxAdd<Alternet.UI.PanelWithToolBar>();
                 */
 
                 if (DebugUtils.IsDebugDefined)
@@ -247,11 +227,9 @@ namespace PropertyGridSample
                 items.Add(CreateDialogItem<SelectDirectoryDialog>());
                 items.Add(CreateDialogItem<FontDialog>());
 
-                /*
                 items.Add(CreateDialogItem<PageSetupDialog>());
                 items.Add(CreateDialogItem<PrintPreviewDialog>());
                 items.Add(CreateDialogItem<PrintDialog>());
-                */
 
                 items.Sort();
 
@@ -288,13 +266,7 @@ namespace PropertyGridSample
 
                 ToolBox.RootItem.Sort();
 
-                ControlListBoxItem item = new(typeof(WelcomePage))
-                {
-                    Text = "Welcome Page",
-                };
-                ToolBox.RootItem.Insert(0, item);
-
-                item = new(typeof(SettingsControl))
+                ControlListBoxItem item = new(typeof(SettingsControl))
                 {
                     PropInstance = PropertyGridSettings.Default,
                     EventInstance = new object(),

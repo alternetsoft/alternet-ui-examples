@@ -159,6 +159,143 @@ namespace MenuSample
             statusAddButton.Click += StatusAddButton_Click;
             statusRemoveButton.Click += StatusRemoveButton_Click;
             statusEditButton.Click += StatusEditButton_Click;
+            statusAddSeparatorButton.Click += StatusAddSeparatorButton_Click;
+            statusAddResizableButton.ClickAction = () =>
+            {
+                StatusBar ??= new StatusBar();
+                var panel = GetStatusBar()?.Add("This is a resizable item with long text");
+                var control = panel?.Control;
+
+                if (control != null && panel != null)
+                {
+                    panel.HasBorder = true;
+                    control.HorizontalAlignment = HorizontalAlignment.Fill;
+                }
+            };
+
+            var menu = new ContextMenu();
+
+            menu.Add("Add item at the right", () =>
+            {
+                var panel = GetBar().Add("AtRight");
+                panel.HorizontalAlignment = HorizontalAlignment.Right;
+            });
+
+            menu.Add("Add selector", () =>
+            {
+                ListPicker control = new();
+
+                control.Add("Item 1");
+                control.Add("Item 2");
+                control.Add("Item 3");
+                control.Add("Item 4");
+                control.Add("Item 5");
+                control.Add("Item 6");
+                control.Add("Item 7");
+                control.Add("Item 8");
+
+                control.Value = "Item 4";
+
+                control.VerticalAlignment = VerticalAlignment.Center;
+                control.SuggestedWidth = 100;
+
+                GetBar().AddControl(control);
+            });
+
+            menu.Add("Add image", AddImagePanel);
+
+            menu.Add("Add text only button", () =>
+            {
+                var panel = new StatusBarPanel(BarPanelKind.TextButton);
+                panel.Text = "Button" + newItemIndex.ToString();
+                newItemIndex++;
+                panel.ControlClicked += (s, e) => App.Log("You clicked " + panel.Text);
+
+                GetBar().Panels.Add(panel);
+            });
+
+            menu.Add("Add progress bar", () =>
+            {
+                var panel = new StatusBarPanel(BarPanelKind.ProgressBar);
+
+                panel.ControlCreated += (s, e) =>
+                {
+                    var progressBar = panel.AsProgressBar;
+
+                    if (progressBar != null)
+                    {
+                        progressBar.Value = 50;
+                        progressBar.Minimum = 0;
+                        progressBar.Maximum = 100;
+                    }
+                };
+
+                GetBar().Panels.Add(panel);
+            });
+
+            menu.Add("Add speed button", () =>
+            {
+                var panel = new StatusBarPanel(BarPanelKind.SpeedButton);
+                panel.SvgImage = KnownSvgImages.ImgArrowUp;
+                panel.ToolTip = "Sample tooltip";
+                panel.ControlClicked += (s, e) => App.Log("You clicked speed button");
+                GetBar().Panels.Add(panel);
+            });
+
+            menu.Add("Add spacer", () =>
+            {
+                var panel = new StatusBarPanel(BarPanelKind.Spacer);
+                GetBar().Panels.Add(panel);
+            });
+
+            BarPanel? FindCustomControlPanel()
+            {
+                foreach (var panel in GetBar().Panels)
+                {
+                    if (panel.Kind == BarPanelKind.CustomControl)
+                        return panel;
+                }
+
+                return null;
+            }
+
+            menu.Add("Add custom control (check box)", AddCustomControlCheckBox);
+
+            menu.Add("Add custom control (color button)", AddCustomControlColorButtonPanel);
+
+            menu.Add("Change custom control in panel", () =>
+            {
+                var panel = FindCustomControlPanel();
+
+                if (panel is null)
+                {
+                    AddCustomControlCheckBox();
+                    return;
+                }
+
+                if (panel.CustomControl is StdCheckBox)
+                    panel.CustomControl = CreateSpeedColorButton();
+                if (panel.CustomControl is SpeedColorButton)
+                    panel.CustomControl = null;
+                else
+                    panel.CustomControl = CreateCheckBox();
+            });
+
+            menu.Add("Change first panel kind", () =>
+            {
+                var panel = GetBar().Panels.FirstOrDefault();
+
+                if (panel is null)
+                    return;
+
+                var nextKind = panel.Kind + 1;
+
+                if (!Enum.IsDefined<BarPanelKind>(nextKind))
+                    nextKind = 0;
+                panel.Kind = (BarPanelKind)nextKind;
+            });
+
+            statusMoreActions.DropDownMenu = menu;
 
             eventsListBox.ContextMenu.Required();
 
@@ -190,6 +327,18 @@ namespace MenuSample
             };
 
             saveMenuItem.Command = SaveCommand;
+
+            AddImagePanel();
+            AddCustomControlColorButtonPanel();
+
+            var panel = new StatusBarPanel(BarPanelKind.Separator);
+            GetBar().Panels.Add(panel);
+
+            if (fillStatusBarPanel.Control is not null)
+            {
+                fillStatusBarPanel.Control.Background
+                    = new HatchBrush(BrushHatchStyle.DiagonalCross, fillStatusBarPanel.Control.ForeColor);
+            }
         }
 
         private void MenuItem_Highlighted(object? sender, EventArgs e)
@@ -207,7 +356,10 @@ namespace MenuSample
             LogEvent($"Menu Item '{(sender as MenuItem)?.Name}': Opened");
         }
 
-        private StatusBar? GetStatusBar() => StatusBar as StatusBar;
+        private StatusBar? GetStatusBar()
+        {
+            return StatusBar as StatusBar;
+        }
 
         private void StatusAddButton_Click(object? sender, System.EventArgs e)
         {
@@ -215,9 +367,43 @@ namespace MenuSample
             GetStatusBar()?.Add($"Panel {GenItemIndex()}");
         }
 
+        private void StatusAddSeparatorButton_Click(object? sender, System.EventArgs e)
+        {
+            StatusBar ??= new StatusBar();
+            GetStatusBar()?.AddSeparator();
+        }
+
+        private void AddCustomControlStdButton()
+        {
+            var panel = new StatusBarPanel(BarPanelKind.CustomControl);
+            panel.CustomControl = CreateStdButton();
+            GetBar().Panels.Add(panel);
+        }
+
+        private void AddCustomControlCheckBox()
+        {
+            var panel = new StatusBarPanel(BarPanelKind.CustomControl);
+            panel.CustomControl = CreateCheckBox();
+            GetBar().Panels.Add(panel);
+        }
+
+        private void AddCustomControlColorButtonPanel()
+        {
+            var panel = new StatusBarPanel(BarPanelKind.CustomControl);
+            GetBar().Panels.Add(panel);
+            panel.CustomControl = CreateSpeedColorButton();
+        }
+
         private void StatusRemoveButton_Click(object? sender, System.EventArgs e)
         {
             GetStatusBar()?.Panels.RemoveLast();
+        }
+
+        private StatusBar GetBar()
+        {
+            if (StatusBar is not Alternet.UI.StatusBar)
+                StatusBar = new StatusBar();
+            return (StatusBar)StatusBar;
         }
 
         private void StatusRecreateButton_Click(object? sender, EventArgs e)
@@ -249,6 +435,13 @@ namespace MenuSample
                 return;
             control.Background = new SolidBrush(Color.Purple);
             DrawingUtils.SetDebugBackgroundToParents(control);
+        }
+
+        private void AddImagePanel()
+        {
+            var panel = new StatusBarPanel(BarPanelKind.PictureBox);
+            panel.SvgImage = KnownColorSvgImages.ImgError;
+            GetBar().Panels.Add(panel);
         }
 
         private void MainWindow_Closing(object? sender, WindowClosingEventArgs e)
@@ -332,6 +525,52 @@ namespace MenuSample
 
         private void OpenMenuItem_Click(object? sender, EventArgs e) =>
             LogEvent("Open");
+
+        private StdSlider CreateSlider()
+        {
+            var slider = new StdSlider()
+            {
+                Minimum = 0,
+                Maximum = 100,
+                Value = 50,
+                VerticalAlignment = VerticalAlignment.Center,
+                SuggestedWidth = 100,
+                SuggestedHeight = 16,
+            };
+
+            return slider;
+        }
+
+        private StdButton CreateStdButton()
+        {
+            var button = new StdButton()
+            {
+                ToolTip = "StdButton",
+                VerticalAlignment = VerticalAlignment.Stretch,
+            };
+            return button;
+        }
+
+        private StdCheckBox CreateCheckBox()
+        {
+            var button = new StdCheckBox()
+            {
+                Text = "StdCheckBox",
+                VerticalAlignment = VerticalAlignment.Stretch,
+                IsChecked = true,
+            };
+            return button;
+        }
+
+        private SpeedColorButton CreateSpeedColorButton()
+        {
+            var button = new SpeedColorButton()
+            {
+                ToolTip = "Speed color button",
+                VerticalAlignment = VerticalAlignment.Stretch,
+            };
+            return button;
+        }
 
         private void SaveEnabledMenuItem_Click(object? sender, EventArgs e)
         {
@@ -523,7 +762,9 @@ namespace MenuSample
             object? sender,
             EventArgs e)
         {
-            toolbar.TextVisible = (sender as CheckBox)?.IsChecked ?? true;
+            if(sender is not StdCheckBox checkBox)
+                return;
+            toolbar.TextVisible = checkBox.IsChecked;
             VerticalCheckBox_Changed(null, EventArgs.Empty);
         }
 
@@ -584,7 +825,9 @@ namespace MenuSample
             object? sender,
             EventArgs e)
         {
-            toolbar.ImageVisible = (sender as CheckBox)?.IsChecked ?? true;
+            if (sender is not StdCheckBox checkBox)
+                return;
+            toolbar.ImageVisible = checkBox.IsChecked;
         }
 
         private void ToolbarDropDownMenuItem_Click(object? sender, EventArgs e)
@@ -618,6 +861,14 @@ namespace MenuSample
         private bool IsBottom => isBottomCheckBox.IsChecked;
 
         private bool IsVertical => verticalCheckBox.IsChecked;
+
+        private void TextBtnStatusBarPanel_ControlClicked(object? sender, EventArgs e)
+        {
+            if(sender is not BarPanel panel)
+                return;
+
+            App.Log($"TextBtnStatusBarPanel clicked. {panel.Kind}");
+        }
 
         private void IsBottomCheckBox_Changed(object? sender, EventArgs e)
         {

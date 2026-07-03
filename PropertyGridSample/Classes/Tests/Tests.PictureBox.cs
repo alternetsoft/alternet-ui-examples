@@ -13,16 +13,63 @@ using SkiaSharp;
 
 namespace PropertyGridSample
 {
-    public partial class MainWindow
+    public partial class MainControl
     {
+        public static TemplateControls.BoldText<Label> CreateTemplateWithBoldText()
+        {
+            var controlTemplate = TemplateUtils.CreateTemplateWithBoldText(
+                "This text has ",
+                "bold",
+                " fragment",
+                new FontAndColor(
+                    Color.Red,
+                    Color.LightGoldenrodYellow,
+                    Control.DefaultFont.Scaled(1.5f)));
+
+            return controlTemplate;
+        }
+
         void InitTestsPictureBox()
         {
+            AddControlAction<PictureBox>("Set Icon as Image", (c) =>
+            {
+                c.SetIconAsImage(KnownIcons.Default);
+            });
+
             AddControlAction<PictureBox>(
                 "Set MessageBoxIcon.Error",
                 TestPictureBoxSetMessageBoxIconError);
-            AddControlAction<PictureBox>("Set ToolTip image", TestPictureBoxSetToolTipImage);
+            AddControlAction<PictureBox>("Set image from template", TestPictureBoxSetImageFromTemplate);
 
-            AddControlAction<PictureBox>("Load ErrorPngICCP", TestPictureBoxErrorPngICCP);            
+            AddControlAction<PictureBox>("Set image to bold text part", TestPictureBoxSetImageFromTemplateBoldText);
+
+            AddControlAction<PictureBox>("Load ErrorPngICCP", TestPictureBoxErrorPngICCP);
+
+            AddControlAction<PictureBox>("Set border and parent background", TestPictureBoxSetBorderAndParentBack);
+
+            AddControlAction<PictureBox>("Set image from tooltip", TestPictureBoxSetImageFromToolTip);
+        }
+
+        void TestPictureBoxSetBorderAndParentBack(PictureBox control)
+        {
+            control.BorderWidth = 3;
+            control.UniformBorderCornerRadius = 10;
+            control.UniformBorderRadiusIsPercent = true;
+            control.HasBorder = true;
+
+            var parent = control.Parent;
+            if (parent == null)
+                return;
+            parent.UserPaint = true;
+            parent.Paint -= ParentPaint;
+            parent.Paint += ParentPaint;
+            parent.Refresh();
+
+            void ParentPaint(object? sender, PaintEventArgs e)
+            {
+                e.Graphics.FillRectangle(Color.SandyBrown.AsBrush, e.ClipRectangle);
+                FancyBackgroundDrawer.DrawFancyBackground(e.Graphics, e.ClipRectangle);
+            }
         }
 
         void TestPictureBoxErrorPngICCP(PictureBox control)
@@ -37,45 +84,42 @@ namespace PropertyGridSample
             control.ImageSet = image;
         }
 
-        void TestPictureBoxSetToolTipImage(PictureBox control)
+        void TestPictureBoxSetImageFromToolTip(PictureBox control)
+        {
+            RichToolTipParams prm = new();
+            prm.Title = "Tooltip title";
+            prm.Text = ObjectInit.LoremIpsumVerySmall;
+            prm.Image = ObjectInit.DefaultImageSet;
+            control.SetImageFrom(prm);
+        }
+
+        void TestPictureBoxSetImageFromTemplateBoldText(PictureBox control)
+        {
+            var template = CreateTemplateWithBoldText();
+            control.SetImageFrom(template);
+        }
+
+        void TestPictureBoxSetImageFromTemplate(PictureBox control)
         {
             var template = new TemplateControls.RichToolTipTemplate();
 
-            template.DoInsideLayout(() =>
-            {
-                template.Parent = control;
+            template.BackgroundColor = RichToolTip.DefaultToolTipBackgroundColor;
+            template.ForegroundColor = RichToolTip.DefaultToolTipForegroundColor;
 
-                try
-                {
-                    template.BackgroundColor = RichToolTip.DefaultToolTipBackgroundColor;
-                    template.ForegroundColor = RichToolTip.DefaultToolTipForegroundColor;
+            template.TitleLabel.Text = "This is title";
+            template.TitleLabel.ParentForeColor = false;
+            template.TitleLabel.ParentFont = false;
+            template.TitleLabel.Font = template.RealFont.Scaled(1.5f);
+            template.TitleLabel.ForegroundColor = RichToolTip.DefaultToolTipTitleForegroundColor;
 
-                    template.TitleLabel.Text = "This is title";
-                    template.TitleLabel.ParentForeColor = false;
-                    template.TitleLabel.ParentFont = false;
-                    template.TitleLabel.Font = template.RealFont.Scaled(1.5f);
-                    template.TitleLabel.ForegroundColor = RichToolTip.DefaultToolTipTitleForegroundColor;
+            template.MessageLabel.Text = "This is message text";
 
-                    template.MessageLabel.Text = "This is message text";
+            var sizeInPixels
+            = GraphicsFactory.PixelFromDip(RichToolTip.DefaultMinImageSize, control.ScaleFactor);
 
-                    var sizeInPixels
-                    = GraphicsFactory.PixelFromDip(RichToolTip.DefaultMinImageSize, control.ScaleFactor);
+            template.PictureBox.SetIcon(MessageBoxIcon.Warning, sizeInPixels);
 
-                    template.PictureBox
-                    .SetIcon(MessageBoxIcon.Warning, sizeInPixels);
-
-                    var image = TemplateUtils.GetTemplateAsImage(template);
-                    control.ImageSet = null;
-                    control.Image = image;
-
-                    control.SuggestedSize = image.Size.PixelToDip(control.ScaleFactor);
-                }
-                finally
-                {
-                    template.Parent = null;
-                }
-            });
-
+            control.SetImageFrom(template);
         }
 
         void TestPictureBoxSetMessageBoxIconError(PictureBox control)

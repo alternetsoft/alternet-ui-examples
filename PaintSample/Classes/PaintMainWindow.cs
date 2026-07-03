@@ -39,7 +39,11 @@ namespace PaintSample
         private readonly MenuItem saveAsMenuItem;
         private readonly MenuItem exitMenuItem;
         private readonly MenuItem testMenu;
-        private readonly HorizontalStackPanel optionsPlaceholder = new ();
+
+        private readonly Panel optionsPlaceholder = new()
+        {
+            Layout = LayoutStyle.Horizontal,
+        };
 
         private readonly string? baseTitle;
 
@@ -101,13 +105,6 @@ namespace PaintSample
             testMenu.Add("Load Toucan image on background", DoLoadToucanOnBackground);
             testMenu.Add("Convert To Disabled", DoConvertToDisabled);
             testMenu.Add("Convert To Disabled (Skia)", DoConvertToDisabledSkia);
-
-            /*
-            if (!App.IsLinuxOS)
-                testMenu.Add("Sample draw", DoDrawOnBitmap);
-            */
-
-            testMenu.Add("Rotate", DoRotate);
 
             helpMainMenu = new("_Help");
             menu.Add(helpMainMenu);
@@ -533,7 +530,7 @@ namespace PaintSample
         public void DoConvertToDisabledSkia()
         {
             var result = SkiaHelper.ConvertToGrayscale((SKBitmap)Document.Bitmap);
-            Document.Bitmap = (Bitmap)result;
+            Document.Bitmap = (Image)result;
         }
 
         public void DoConvertToDisabled()
@@ -554,7 +551,7 @@ namespace PaintSample
                 var height = 600;
                 var width = 600;
 
-                var pixels = GenericImage.CreatePixels(width, height, Color.Green.WithAlpha(alpha));
+                var pixels = DrawingUtils.CreatePixels(width, height, Color.Green.WithAlpha(alpha));
                 Document.Bitmap = Bitmap.Create(width, height, pixels);
             }, 100);
         }
@@ -584,30 +581,22 @@ namespace PaintSample
                 string ext = Path.GetExtension(dialog.FileName);
                 var bm = new Bitmap();
                 bm.Load(dialog.FileName, BitmapType.Any);
-                var image = (GenericImage)bm;
-                image.ChangeToGrayScale();
-                var greyBm = (Bitmap)image;
+                var image = (SKBitmap)bm;
+                SkiaUtils.ChangeToGrayScale(image);
+                var greyBm = (Image)image;
                 greyBm.Save(dialog.FileName.Replace(ext, "_Gray" + ext));
                 Document.Bitmap = greyBm;
             });
         }
 
-        public void DoRotate()
-        {
-            var bitmap = Document.Bitmap;
-            GenericImage image = (GenericImage)bitmap;
-            var newImage = image.Rotate90(); 
-            Document.Bitmap = (Bitmap)newImage;
-        }
-
         public unsafe void DoGenImageUseGetData()
         {
-            App.Log($"Generate sample image using GenericImage.GetData");
+            App.Log($"Generate sample image using pixels");
             var bitmap = Document.Bitmap;
 
             var width = bitmap.Width;
             var height = bitmap.Height;
-            var pixels = GenericImage.CreatePixels(width, height);
+            var pixels = DrawingUtils.CreatePixels(width, height);
 
             fixed(SKColor* ptr = pixels)
             {
@@ -652,60 +641,11 @@ namespace PaintSample
 
             var background = Image.Create(backgroundSize.Width, backgroundSize.Height, Color.LightGreen);
 
-            background.Canvas.DrawImage(toucan, (50, 50));
+            using var canvas = background.Canvas;
+
+            canvas.DrawImage(toucan, (50, 50));
 
             Document.Bitmap = background;
         }
-
-        /*
-        public void DoDrawOnBitmap()
-        {
-            CreateNewDocument();
-            var bitmap = new Bitmap(1000, 800);
-            bitmap.ScaleFactor = this.ScaleFactor;
-            var dc = bitmap.Canvas;
-
-            DrawSample(dc, (15, 15), bitmap.Bounds);
-
-            Document.Bitmap = bitmap;
-        }
-        */
-
-        /*
-        public void DrawSample(Graphics dc, PointD location, RectD rect)
-        {
-            dc.FillRectangle(Color.WhiteSmoke.AsBrush, rect);
-
-            App.LogNameValue("dc.DPI", dc.GetDPI());
-            App.LogNameValue("window.DPI", GetDPI());
-
-            var s = "Hello text";
-
-            var font = AbstractControl.DefaultFont.Scaled(5);
-            var measure = dc.MeasureText(s, font);
-
-            var size = dc.GetTextExtent(s, font);
-
-            App.Log($"GetTextExtent: {measure}, {size}");
-
-            RectD r1 = (location.X, location.Y, measure.Width, measure.Height);
-            RectD r2 = (location.X, location.Y, size.Width, size.Height);
-
-            DrawingUtils.DrawBorderWithBrush(dc, Color.DarkRed.AsBrush, r1, 1);
-
-            DrawingUtils.DrawBorderWithBrush(dc, Color.Red.AsBrush, r2, 1);
-
-            dc.DrawWave((location.X, location.Y, size.Width, size.Height), Color.Green);
-
-            dc.DestroyClippingRegion();
-            dc.SetClippingRegion((location.X + size.Width / 2, location.Y, size.Width, size.Height));
-            dc.DrawText(s, location, font, Color.Black, Color.Empty);
-
-            dc.DestroyClippingRegion();
-            dc.SetClippingRegion((location.X, location.Y, size.Width / 2, size.Height));
-            dc.DrawText(s, location, font, Color.Green, Color.Empty);
-            dc.DestroyClippingRegion();
-        }
-        */
     }
 }

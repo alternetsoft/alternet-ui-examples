@@ -1,7 +1,9 @@
 using System;
 using System.ComponentModel;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+
 using Alternet.Drawing;
 using Alternet.UI;
 using Alternet.Base.Collections;
@@ -10,6 +12,22 @@ namespace EmployeeFormSample
 {
     public partial class EmployeeWindow : Window
     {
+        public class EmployeeEvaluation
+        {
+            public DateTime Date { get; set; }
+
+            public string? Manager { get; set; }
+
+            public string? Info { get; set; }
+
+            public EmployeeEvaluation(DateTime date, string? manager, string? info)
+            {
+                Date = date;
+                Manager = manager;
+                Info = info;
+            }
+        }
+
         public EmployeeWindow()
         {
             Icon = App.DefaultIcon;
@@ -46,24 +64,64 @@ namespace EmployeeFormSample
 
             DataContext = employee;
 
-            evaluationsListView.Items.Add(new ListViewItem(new[] {
-                new DateTime(2018,12,21).ToShortDateString(),
-                "2018 Employee Review", "James Smith" }));
-            evaluationsListView.Items.Add(new ListViewItem(new[] {
-                new DateTime(2019,12,10).ToShortDateString(),
-                "2019 Employee Review", "James Smith" }));
-            evaluationsListView.Items.Add(new ListViewItem(new[] {
-                new DateTime(2020,12,13).ToShortDateString(),
-                "2020 Employee Review", "James Smith" }));
-            evaluationsListView.Items.Add(new ListViewItem(new[] {
-                new DateTime(2021,12,20).ToShortDateString(),
-                "2021 Employee Review", "James Smith" }));
-            evaluationsListView.Items.Add(new ListViewItem(new[] {
-                new DateTime(2022,12,15).ToShortDateString(),
-                "2022 Employee Review", "James Smith" }));
-            evaluationsListView.Columns[0].WidthMode = ListViewColumnWidthMode.AutoSize;
-            evaluationsListView.Columns[1].WidthMode = ListViewColumnWidthMode.AutoSize;
-            evaluationsListView.Columns[2].WidthMode = ListViewColumnWidthMode.AutoSize;
+            evaluationsListView.TreeButtons = TreeViewButtonsKind.Null;
+            evaluationsListView.IsHeaderVisible = true;
+            evaluationsListView.ListBox.SetSelectionAndCurrentItemRoundBorders(true);
+            var dateColumn = evaluationsListView.AddColumn("Date", 100);
+            var infoColumn = evaluationsListView.AddColumn("Info", 100);
+            var managerColumn = evaluationsListView.AddColumn("Manager", 100);
+
+            var dateColumnControl = evaluationsListView.GetTitleControl(dateColumn);
+            var infoColumnControl = evaluationsListView.GetTitleControl(infoColumn);
+            var managerColumnControl = evaluationsListView.GetTitleControl(managerColumn);
+
+            EmployeeEvaluation evaluation1 = new (
+                new DateTime(2022, 12, 21),
+                "James Smith", "2022 Employee Review");
+            EmployeeEvaluation evaluation2 = new (
+                new DateTime(2023, 12, 10),
+                "James Smith", "2023 Employee Review");
+            EmployeeEvaluation evaluation3 = new (
+                new DateTime(2024, 12, 13),
+                "James Smith", "2024 Employee Review");
+            EmployeeEvaluation evaluation4 = new (
+                new DateTime(2025, 12, 20),
+                "James Smith", "2025 Employee Review");
+            EmployeeEvaluation evaluation5 = new (
+                new DateTime(2026, 12, 15),
+                "James Smith", "2026 Employee Review");
+
+            var evaluations = new List<EmployeeEvaluation>
+            {
+                evaluation1,
+                evaluation2,
+                evaluation3,
+                evaluation4,
+                evaluation5,
+            };
+
+            var items = new List<TreeViewItem>();
+
+            void AddEvaluation(EmployeeEvaluation evaluation)
+            {
+                TreeViewItem item = new();
+
+                item.SetText(dateColumn, evaluation.Date.ToShortDateString());
+                item.SetText(infoColumn, evaluation.Info);
+                item.SetText(managerColumn, evaluation.Manager);
+
+                items.Add(item);
+            }
+
+            foreach (var evaluation in evaluations)
+            {
+                AddEvaluation(evaluation);
+            }
+
+            evaluationsListView.RootItem.AddRange(items);
+            evaluationsListView.ListBox.VertGridLines = true;
+
+            evaluationsListView.SetPreferredColumnWidth();
 
             stateComboBox.PopupKind = PickerPopupKind.ListBox;
 
@@ -88,8 +146,7 @@ namespace EmployeeFormSample
             statusTextBox.Text = employee.Status.ToString();
             statusTextBox.TextChanged += (s, e) =>
             {
-                employee.Status
-                = (Employee.EmployeeStatus)Enum.Parse(typeof(Employee.EmployeeStatus), statusTextBox.Text);
+                employee.Status = Enum.Parse<Employee.EmployeeStatus>(statusTextBox.Text);
             };
 
             emailTextBox.Text = employee.Email;
@@ -173,7 +230,7 @@ namespace EmployeeFormSample
             this.SetSizeToContent();
         }
 
-       internal class Employee
+        internal class Employee
         {
             private string? firstName;
             private string? lastName;

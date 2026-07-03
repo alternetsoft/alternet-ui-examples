@@ -2,13 +2,14 @@
 using System.Globalization;
 using System.Collections.Generic;
 using System.Linq;
+
 using Alternet.Drawing;
 using Alternet.UI;
 
 namespace ControlsSample
 {
     [IsCsLocalized(true)]
-    internal partial class ButtonPage : Panel
+    public partial class ButtonPage : Panel
     {
         private readonly Label labelBackColor = new(GenericStrings.BackColor)
         {
@@ -40,18 +41,28 @@ namespace ControlsSample
             RowIndex = 2,
         };
 
-        private int imageMargins = 5;
+        private int imageMargins;
 
-        private ControlStateImages? buttonImages;
+        private ControlStateSvgImages? buttonImages;
 
         static ButtonPage()
         {
-            Button.ImagesEnabled = true;
         }
 
         public ButtonPage()
         {
             InitializeComponent();
+
+            debugCornersCheckBox.Visible = DebugUtils.IsDebugDefinedAndAttached;
+
+            debugCornersCheckBox.CheckedChanged += (s, e) =>
+            {
+                Graphics.DrawDebugCorners = debugCornersCheckBox.IsChecked;
+                button.Refresh();
+            };
+
+            exactFitCheckBox.Checked = button.ExactFit;
+            imageMargins = (int)button.Item.ImageMargin.Left;
 
             DoInsideLayout(Fn);
 
@@ -63,23 +74,13 @@ namespace ControlsSample
                 labelTextColor.Parent = propsContainer2;
                 comboBoxTextColor.Parent = propsContainer2;
 
-                imageMarginsButton.Enabled = App.IsWindowsOS;
                 imageMarginsButton.Click += ImageMarginsButton_Click;
-
-                button.Padding = 5;
 
                 textAlignComboBox.EnumType = typeof(ElementContentAlign);
                 textAlignComboBox.Value = ElementContentAlign.Default;
 
                 imageAlignComboBox.EnumType = typeof(ElementContentAlign);
                 imageAlignComboBox.Value = ElementContentAlign.Default;
-
-                if (!Button.ImagesEnabled)
-                {
-                    imageAlignComboBox.Enabled = false;
-                    imageCheckBox.Enabled = false;
-                    showTextCheckBox.Enabled = false;
-                }
 
                 comboBoxTextColor.Select(Color.Empty, GenericStrings.Default);
                 comboBoxBackColor.Select(Color.Empty, GenericStrings.Default);
@@ -96,6 +97,8 @@ namespace ControlsSample
             }
 
             ApplyAll();
+
+            comboBoxFontName.SetValue(button.RealFont);
 
             comboBoxFontName.ValueChanged += Button_Changed;
             comboBoxFontSize.ValueChanged += Button_Changed;
@@ -114,6 +117,82 @@ namespace ControlsSample
 
             button.PreviewKeyDown += Button_PreviewKeyDown;
             button.KeyDown += Button_KeyDown;
+
+            button.GotFocus += (s, e) => App.Log("Button: GotFocus");
+            button.LostFocus += (s, e) => App.Log("Button: LostFocus");
+
+            button.Parent?.ContextMenuStrip.Add("Toggle inner border", () =>
+            {
+                if (button.Borders?.Normal?.HasInnerBorders ?? false)
+                {
+                    button.Borders?.Normal?.InnerBorders.Clear();
+                }
+                else
+                {
+                    var innerBorder = button.Borders?.Normal?.Clone();
+                    innerBorder?.SetColor(LightDarkColors.Red);
+
+                    if (innerBorder is not null)
+                    {
+                        button.Borders?.Normal?.InnerBorders.Add(innerBorder);
+                        button.Borders?.Normal?.SetInnerBorderVisible(true);
+                    }
+                }
+
+                button.Invalidate();
+            });
+
+            button.Parent?.ContextMenuStrip.Add("Set custom border pen", () =>
+            {
+
+                var leftSide = button.Borders?.Normal?.Left;
+
+                if (leftSide is not null)
+                {
+                    leftSide.Pen = new Pen(Color.Red, 1, DashStyle.Dash);
+                    button.Invalidate();
+                }
+            });
+
+            button.Parent?.ContextMenuStrip.Add("Inc min button size", () =>
+            {
+                button.MinimumSize += new SizeD(10, 10);
+            });
+
+            button.Parent?.ContextMenuStrip.Add("Inc svg size", () =>
+            {
+                button.SvgSize = button.GetEffectiveSvgSize() + 10;
+            });
+
+            var template = ToolTipPage.CreateTemplateWithBoldText(this);
+            var imageWithBoldText = TemplateUtils.GetTemplateAsImage(template);
+
+            button.Parent?.ContextMenuStrip.Add("Set tooltip with bold text", () => { button.ToolTipObject = imageWithBoldText; });
+            button.Parent?.ContextMenuStrip.Add("Set rich tooltip", () => ButtonPage.SetRichToolTip(button));
+
+            ButtonPage.SetRichToolTip(button);
+
+            button2.ToolTipObject = ToolTipPage.LargeImageSet;
+        }
+
+        public static RichToolTipParams CreateRichToolTipParams()
+        {
+            bool testSingleLine = true;
+
+            RichToolTipParams prm = new();
+            prm.Title = "Tooltip title";
+            prm.Text = testSingleLine ? TextMemoPage.LoremIpsumSmallSingleLine : TextMemoPage.LoremIpsumSmallThreeLines;
+            prm.Image = ToolTipPage.LargeImageSet;
+            prm.MaxWidth = 300;
+            return prm;
+        }
+
+        public static void SetRichToolTip(AbstractControl? control)
+        {
+            if (control == null)
+                return;
+            RichToolTipParams prm = CreateRichToolTipParams();
+            control.ToolTipObject = prm;
         }
 
         private void Button_KeyDown(object? sender, KeyEventArgs e)
@@ -205,25 +284,33 @@ namespace ControlsSample
 
             DoInside(() =>
             {
-                if(App.IsLinuxOS)
-                    button.RecreateWindow();
                 button.TextVisible = showTextCheckBox.IsChecked;
                 button.ExactFit = exactFitCheckBox.IsChecked;
                 button.HasBorder = hasBorderCheckBox.IsChecked;
                 ApplyTextAlign();
                 button.TabStop = tabStopCheckBox.IsChecked;
+                button.IsDefault = false;
                 button.IsDefault = defaultCheckBox.IsChecked;
                 button.Text = textTextBox.Text;
                 ApplyFont();
+
                 var color = GetColor(comboBoxTextColor);
-                button.ForegroundColor = color;
-                color = GetColor(comboBoxBackColor);
-                button.BackgroundColor = color;
+                var backColor = GetColor(comboBoxBackColor);
+
+                if (!button.IsDefault)
+                {
+                    button.ForegroundColor = color;
+                    button.BackgroundColor = backColor;
+
+                    button.UseVisualStyleBackColor = backColor is null;
+                }
+
                 button.StateImages.Assign(null);
+                button.StateSvgImages.Assign(null);
                 if (imageCheckBox.IsChecked)
                 {
-                    buttonImages ??= DemoResourceLoader.LoadButtonImages(button);
-                    button.StateImages = buttonImages;
+                    buttonImages ??= DemoResourceLoader.LoadButtonSvgImages();
+                    button.StateSvgImages = buttonImages;
                 }
 
                 ApplyImageAlign();
@@ -264,8 +351,6 @@ namespace ControlsSample
 
         private void Back_Changed(object? sender, EventArgs e)
         {
-            buttonImages = null;
-
             ApplyAll();
         }
 

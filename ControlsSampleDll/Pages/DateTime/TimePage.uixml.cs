@@ -7,6 +7,17 @@ namespace ControlsSample
 {
     internal partial class TimePage : Panel
     {
+        static TimePage()
+        {
+            var setAmPmDesignators = false;
+
+            if (setAmPmDesignators)
+            {
+                DateUtils.AmDesignatorOverride = "AM";
+                DateUtils.PmDesignatorOverride = "PM";
+            }
+        }
+
         public TimePage()
         {
             InitializeComponent();
@@ -31,7 +42,7 @@ namespace ControlsSample
         private void TimePicker_Changed(object? sender, EventArgs e)
         {
             var v = timePicker.Value;
-            var s = v.ToLongTimeString();
+            var s = v.ToLongTimeString().NormalizeForDrawText();
             timeLabel.Text = $"Selected: {s}";
         }
 

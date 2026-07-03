@@ -19,7 +19,16 @@ namespace ControlsSample
             findText.TextChanged += FindText_TextChanged;
             AddDefaultItems(listBox);
             listBox.Search.UseContains = true;
-            listBox.HasBorder = VirtualListBox.DefaultUseInternalScrollBars;
+
+            listBox.BindItemEditorToEvents(
+                bind: true,
+                textEdited: (s, e) =>
+                {
+                    if (e.Item is not null)
+                    {
+                        e.Item.Text = e.NewTextOrDefault;
+                    }
+                });
         }
 
         private void FindText_TextChanged(object? sender, EventArgs e)

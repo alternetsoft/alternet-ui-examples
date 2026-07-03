@@ -19,6 +19,12 @@ namespace Alternet.UI
         private readonly Panel panel;
         private readonly Splitter splitter = new();
 
+        private readonly TabControl tabControl = new()
+        {
+            HasInteriorBorder = false,
+            TabTheme = SpeedButton.KnownTheme.RoundBorder,
+        };
+
         static CustomDemoWindow()
         {
             UixmlLoader.LoadFromStream = FormLoadFromStream;
@@ -52,6 +58,11 @@ namespace Alternet.UI
 
             SuppressEsc = true;
 
+            tabControl.ApplyThemeToHeader(CardPanelHeader.KnownTheme.SpeedButton);
+            tabControl.HeaderControl.Margin = (0, 0, 0, 5);
+            tabControl.HeaderControl.UseTabBold = true;
+            tabControl.HeaderControl.TabMargin = (0, 1, 10, 1);
+
             if (UseLogListBox)
             {
                 eventsControl = new()
@@ -68,7 +79,6 @@ namespace Alternet.UI
 
             panel = new()
             {
-                Padding = 5,
             };
 
             if(eventsControl is not null)
@@ -90,7 +100,7 @@ namespace Alternet.UI
                 LogUtils.LogToFile("CustomDemoWindow constructor done");
             }
 
-            MinimumSize = (800, 600);
+            MinimumSize = (800, 700);
 
             StartLocation = WindowStartLocation.CenterScreen;
 
@@ -99,6 +109,8 @@ namespace Alternet.UI
                 pageContainer!.SelectedIndex = 0;
             });
         }
+
+        public TabControl MainTabControl => tabControl;
 
         public static bool FormLoadFromStream(
             Stream stream,
@@ -123,8 +135,11 @@ namespace Alternet.UI
             pageContainer?.SetDebugColors();
         }
 
-        public void AddPage(string title, Func<AbstractControl> action)
+        public void AddPage(string title, Func<AbstractControl>? action)
         {
+            if (action is null)
+                return;
+
             if (DebugUtils.DebugLoading)
             {
                 LogUtils.LogToFile($"AddPage {title}");
@@ -146,11 +161,15 @@ namespace Alternet.UI
         public virtual void Initialize()
         {
             pageContainer = new(SplittedTreeAndCards.TreeKind.ListBox);
-            panel.Parent = this;
+
+            tabControl.Parent = this;
+            tabControl.Margin = 5;
+
+            tabControl.Add("Pages", () => panel);
 
             UpdateTitle();
 
-            Size = (900, 700);
+            Size = (950, 800);
             StartLocation = WindowStartLocation.CenterScreen;
 
             Icon = IconSet.FromUrlOrDefault("embres:ControlsSampleDll.Sample.ico", App.DefaultIcon);

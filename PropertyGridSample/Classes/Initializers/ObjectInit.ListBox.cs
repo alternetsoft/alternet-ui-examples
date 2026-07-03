@@ -9,13 +9,81 @@ namespace PropertyGridSample
 {
     public partial class ObjectInit
     {
-        public static void SetDefaultOwnerDrawItems(
+        public static string ResPrefix2 = $"{UrlResPrefix}ToolBarPng.Large.";
+        public static string CalendarUrl = $"{ResPrefix2}Calendar32.png";
+        public static string PencilUrl = $"{ResPrefix2}Pencil32.png";
+        public static string PhotoUrl = $"{ResPrefix2}Photo32.png";
+
+        public static void InitShapeControl(ShapeControl control)
+        {
+            control.SuggestedSize = new (400, 400);
+
+            var innerShape1 = new ShapeControl
+            {
+                Stroke = new Pen(Color.Red, 2),
+                Fill = new SolidBrush(Color.FromArgb(128, Color.Red)),
+                IgnoreLayout = true,
+                Location = new (50, 50),
+                Size = new (300, 300),
+            };
+
+            var innerShape2 = new ShapeControl
+            {
+                Stroke = new Pen(Color.Green, 2),
+                Fill = new SolidBrush(Color.FromArgb(128, Color.Green)),
+                ShapeType = DrawingShapeType.Ellipse,
+                IgnoreLayout = true,
+                Location = new(100, 100),
+                Size = new(300, 300),
+            };
+
+            innerShape1.Parent = control;
+            innerShape2.Parent = control;
+        }
+
+        public static void InitGenericListItemControl(GenericItemControl control)
+        {
+            ListControlItem item = new();
+
+            item.Alignment = HVAlignment.Center;
+            item.Image = Image.FromUrlCached(CalendarUrl);
+            item.CheckState = CheckState.Checked;
+            item.DisabledImage = item.Image?.ToGrayScale();
+            item.ForegroundColor = Color.Black;
+            item.BackgroundColor = Color.BlanchedAlmond;
+            item.Text = "Sample <b>item</b> at center";
+            item.LabelFlags = DrawLabelFlags.TextHasBold;
+
+            control.ItemDefaults.CheckBoxVisible = true;
+            control.Item = item;
+        }
+
+        public static TreeViewItem CreateGreenBoldItem()
+        {
+            TreeViewItem item = new();
+            InitGreenBoldItem(item);
+            return item;
+        }
+
+        public static void InitGreenBoldItem(ListControlItem item)
+        {
+            item.Alignment = HVAlignment.Center;
+            item.Image = Image.FromUrlCached(CalendarUrl);
+            item.CheckState = CheckState.Indeterminate;
+            item.DisabledImage = item.Image?.ToGrayScale();
+            item.ForegroundColor = Color.White;
+            item.BackgroundColor = Color.ForestGreen;
+            item.Text = "Green <b>item</b> at center";
+            item.LabelFlags = DrawLabelFlags.TextHasBold;
+        }
+
+        public static void SetDefaultOwnerDrawItemsForListBox(
             VirtualListBox control,
             bool addLong = true)
         {
-            NotNullCollection<ListControlItem> items = new();
+            ListSource items = new();
 
-            AddDefaultOwnerDrawItems(
+            AddDefaultOwnerDrawItemsForListBox(
                 control,
                 (item) =>
                 {
@@ -26,21 +94,17 @@ namespace PropertyGridSample
             control.SetItemsFast(items, VirtualListBox.SetItemsKind.ChangeField);
         }
 
-        public static void AddDefaultOwnerDrawItems(
+        public static void AddDefaultOwnerDrawItemsForListBox(
             Control control,
-            Action<TreeViewItem> addAction,
+            Action<ListControlItem> addAction,
             bool addLong = true)
         {
-            string ResPrefix2 = $"{UrlResPrefix}ToolBarPng.Large.";
-            string CalendarUrl = $"{ResPrefix2}Calendar32.png";
-            string PencilUrl = $"{ResPrefix2}Pencil32.png";
-            string PhotoUrl = $"{ResPrefix2}Photo32.png";
-
             var svgImageSize = 24; /* image sizes are always in pixels */
 
-            TreeViewItem item = new();
+            ListControlItem item = new();
             item.DisplayText = "This is display text";
             item.Text = "This is some text";
+            item.CheckBoxVisible = true;
             item.Image = Image.FromUrlCached(PhotoUrl);
             addAction(item);
 
@@ -53,16 +117,86 @@ namespace PropertyGridSample
             item.SvgImageSize = svgImageSize;
             addAction(item);
 
+            addAction(CreateGreenBoldItem());
+
             item = new();
-            item.Alignment = HVAlignment.Center;
-            item.Image = Image.FromUrlCached(CalendarUrl);
-            item.CheckState = CheckState.Indeterminate;
+            item.Text = "H = 60 (bottom, center)";
+            item.CheckBoxVisible = false;
+            item.MinHeight = 60;
+            item.Alignment = (HorizontalAlignment.Center, VerticalAlignment.Bottom);
+            item.Image = Image.FromUrlCached(PencilUrl);
             item.DisabledImage = item.Image?.ToGrayScale();
-            item.ForegroundColor = Color.White;
-            item.BackgroundColor = Color.ForestGreen;
-            item.Text = "Green <b>item</b> at center";
-            item.LabelFlags = DrawLabelFlags.TextHasBold;
+            item.ForegroundColor = Color.Indigo;
+            item.BackgroundColor = Color.LightSkyBlue;
             addAction(item);
+
+            item = new();
+            item.FontStyle = FontStyle.Underline;
+            item.CheckState = CheckState.Checked;
+            item.Text = "Underlined item";
+            item.ToolTip = "Custom tooltip for item";
+            item.IsToolTipVisible = true;
+            addAction(item);
+
+            item = new();
+            item.Font = Control.DefaultFont.Scaled(1.5f);
+            item.Text = "Custom Font";
+            addAction(item);
+
+            item = new();
+            item.Text = "Custom border";
+            item.Alignment = HVAlignment.Center;
+            item.CheckBoxVisible = false;
+            item.Border = new();
+            item.Border.Color = LightDarkColors.Red;
+            item.Border.UniformCornerRadius = 25;
+            item.Border.UniformRadiusIsPercent = true;
+            addAction(item);
+
+            if (addLong)
+            {
+                item = new();
+                item.Text = LoremIpsumSmall;
+                addAction(item);
+            }
+
+            addAction(new ListControlSeparatorItem());
+
+            for (int i = 0; i < 150; i++)
+            {
+                ListControlItem newItem = new($"Item {i}");
+
+                if (i == 128)
+                    newItem.DisplayText = newItem.Text + ": dd";
+
+                addAction(newItem);
+            }
+        }
+
+        public static void AddDefaultOwnerDrawItemsForTreeView(
+            Control control,
+            Action<TreeViewItem> addAction,
+            bool addLong = true)
+        {
+            var svgImageSize = 24; /* image sizes are always in pixels */
+
+            TreeViewItem item = new();
+            item.DisplayText = "This is display text";
+            item.Text = "This is some text";
+            item.CheckBoxVisible = true;
+            item.Image = Image.FromUrlCached(PhotoUrl);
+            addAction(item);
+
+            item = new();
+            item.Text = "Bold item (right, vert center)";
+            item.Alignment = (HorizontalAlignment.Right, VerticalAlignment.Center);
+            item.FontStyle = FontStyle.Bold;
+            item.MinHeight = control.PixelToDip(svgImageSize) * 3;
+            item.SvgImage = KnownSvgImages.ImgBold;
+            item.SvgImageSize = svgImageSize;
+            addAction(item);
+
+            addAction(CreateGreenBoldItem());
 
             item = new();
             item.Text = "H = 60 (bottom, center)";
@@ -118,25 +252,12 @@ namespace PropertyGridSample
             }
         }
 
-        public static void AddManyItems(ListBox listBox, int numItems)
-        {
-            listBox.DoInsideUpdate(() =>
-            {
-                for (int i = 0; i < numItems; i++)
-                    listBox.Items.Add($"Item #{LogUtils.GenNewId()}");
-
-                App.Log($"Added {numItems} items");
-            });
-
-            listBox.SelectLastItem();
-        }
-
         public static void AddManyItems(VirtualListBox listBox)
         {
             listBox.DoInsideUpdate(() =>
             {
                 for(int i = 0; i < 5000; i++)
-                    listBox.Items.Add(new($"Item #{LogUtils.GenNewId()}"));
+                    listBox.Add(new($"Item #{LogUtils.GenNewId()}"));
 
                 App.Log("Added 5000 items");
             });
@@ -148,19 +269,20 @@ namespace PropertyGridSample
         {
             if (control is not FileListBox listBox)
                 return;
-            listBox.SuggestedSize = defaultListSize;
+            listBox.SuggestedSize = DefaultListSize;
             listBox.SelectInitialFolder();
         }
 
-        public static void InitVListBox(object control)
+        public static void InitListBoxItems(object control)
         {
             if (control is not VirtualListBox listBox)
                 return;
 
-            SetDefaultOwnerDrawItems(listBox);
+            SetDefaultOwnerDrawItemsForListBox(listBox);
 
             listBox.HorizontalScrollbar = true;
             listBox.Count = 200;
+            listBox.SuggestedSize = DefaultListSize;
             listBox.CustomItemText += ListBox_CustomItemText;
 
             static void ListBox_CustomItemText(object? sender, GetItemTextEventArgs e)
@@ -171,17 +293,6 @@ namespace PropertyGridSample
                     e.Handled = true;
                 }
             }
-        }
-
-        public static void InitCheckedListBox(object control)
-        {
-            InitListBox(control);
-            if (control is not CheckedListBox listBox)
-                return;
-            listBox.CheckedItemsChanged += (s, e) =>
-            {
-                LogItems("ListBox CheckedItemsChanged", listBox.CheckedItems);
-            };
         }
 
         public static void LogItems(string prefix, IReadOnlyList<object?> items)
@@ -196,23 +307,11 @@ namespace PropertyGridSample
             }
         }
 
-        public static void InitListBox(object control)
-        {
-            if (control is not ListBox listBox)
-                return;
-            listBox.SuggestedSize = defaultListSize;
-
-            foreach (var item in GetTenItems())
-                listBox.Items.Add(item);
-
-            listBox.SelectedIndexChanged += (s, e) => LogItems("ListBox SelectedIndexChanged", listBox.SelectedItems);
-        }
-
         public static void InitStdListBox(object control)
         {
             if (control is not StdListBox listBox)
                 return;
-            listBox.SuggestedSize = defaultListSize;
+            listBox.SuggestedSize = DefaultListSize;
             listBox.Items.AddRange(GetTenItems());
         }
 
@@ -232,15 +331,6 @@ namespace PropertyGridSample
             comboBox.AddRange(items);
             comboBox.HorizontalAlignment = HorizontalAlignment.Left;
             comboBox.IsEditable = false;
-            comboBox.SuggestedWidth = 200;
-        }
-
-        public static void InitComboBox(object control)
-        {
-            if (control is not ComboBox comboBox)
-                return;
-            comboBox.Items.AddRange(GetTenItems());
-            comboBox.HorizontalAlignment = HorizontalAlignment.Left;
             comboBox.SuggestedWidth = 200;
         }
     }

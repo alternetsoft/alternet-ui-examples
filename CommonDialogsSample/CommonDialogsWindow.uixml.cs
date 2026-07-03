@@ -94,6 +94,8 @@ Environment.NewLine + Environment.NewLine +
 
             showMessageBoxButton.ContextMenuStrip.Add("Toggle message box text",
                 () => ToggleText(ref messageBoxText, "Message Box Text"));
+
+            Group(showSaveFileDialogButton, showSelectDirectoryDialogButton).MinWidthToMaxPreferred();
         }
 
         private void ToggleText(ref string toggledText, string text)
@@ -247,6 +249,7 @@ Environment.NewLine + Environment.NewLine +
             {
                 FontInfo = fontInfo,
                 ShowHelp = false,
+                Color = sampleLabel.ForeColor ?? sampleLabel.RealForegroundColor,
             };
 
             if (setCustomTitleCheckBox.IsChecked)
@@ -256,6 +259,9 @@ Environment.NewLine + Environment.NewLine +
             {
                 if (result)
                 {
+                    sampleLabel.ParentForeColor = false;
+                    sampleLabel.ForeColor = dialog.Color;
+
                     fontInfo = dialog.FontInfo;
                     sampleLabel.Font = fontInfo;
                     LogResult(
@@ -263,7 +269,9 @@ Environment.NewLine + Environment.NewLine +
                         dialog.FontInfo.ToString() + ", Color = " + dialog.Color);
                 }
                 else
+                {
                     LogResult("Font Dialog Result: " + result.ToString());
+                }
             });
         }
 
@@ -278,7 +286,7 @@ Environment.NewLine + Environment.NewLine +
         {
             var dialog = new ColorDialog
             {
-                Color = sampleLabel.RealBackgroundColor,
+                Color = sampleLabel.BackgroundColor ?? sampleLabel.RealBackgroundColor,
             };
 
             if (setCustomTitleCheckBox.IsChecked)
@@ -288,6 +296,7 @@ Environment.NewLine + Environment.NewLine +
             {
                 sampleLabel.ParentBackColor = false;
                 sampleLabel.ParentForeColor = false;
+                sampleLabel.IsTransparent = false;
 
                 if (result)
                 {

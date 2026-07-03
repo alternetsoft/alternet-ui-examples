@@ -13,57 +13,58 @@
 
       <StackPanel Orientation="Horizontal">
 
-        <StackPanel Orientation="Vertical" Margin="5" MinChildMargin="5" HasBorder="true">
-          <Label Text="Clipboard" />
-          <Button Text="Copy" Name="copyButton1" Click="CopyButton_Click" IsTextLocalized="true" />
-          <Button Text="Paste" Name="pasteButton"
+        <StackPanel Orientation="Vertical" Margin="5" MinChildMargin="5">
+          <ShapeControl Dock="Fill" ShapeType="RoundedRectangle" CornerRadius="5" InputTransparent="true"/>
+          <Label Text="Clipboard"  IsBold="true" HorizontalAlignment="Center" Margin="5"/>
+          <StdButton Text="Copy" Name="copyButton1" Click="CopyButton_Click" IsTextLocalized="true" Margin="5"/>
+          <StdButton Text="Paste" Name="pasteButton" Margin="5"
                   Click="PasteButton_Click" IsTextLocalized="true" />
         </StackPanel>
 
-        <Border Margin="5" >
-          <Panel SuggestedWidth="120" VerticalAlignment="Stretch" Padding="2"
-                  Name="dragSource"
+          <Panel SuggestedWidth="120" VerticalAlignment="Stretch"
+                  Name="dragSource" MinChildMargin="5" Margin="5"
                   MouseDown="DragSource_MouseDown"
                   MouseMove="DragSource_MouseMove"
                   MouseUp="DragSource_MouseUp">
+            <ShapeControl Dock="Fill" ShapeType="RoundedRectangle" CornerRadius="5" InputTransparent="true"/>
             <Label Text="Drag Me" VerticalAlignment="Center" IsTextLocalized="true"
                    HorizontalAlignment="Center" InputTransparent="true"/>
           </Panel>
-        </Border>
 
-        <Border Margin="5" >
-          <Panel SuggestedWidth="120" VerticalAlignment="Stretch" Padding="2"
-                AllowDrop="True" Name="dropTarget"
+          <Panel SuggestedWidth="120" VerticalAlignment="Stretch" Margin="5" HasBorder="false"
+                AllowDrop="True" Name="dropTarget" MinChildMargin="5"
                 DragDrop="DropTarget_DragDrop"
                 DragOver="DropTarget_DragOver"
                 DragEnter="DropTarget_DragEnter"
                 DragLeave="DropTarget_DragLeave">
+            <ShapeControl Dock="Fill" ShapeType="RoundedRectangle" CornerRadius="5" InputTransparent="true"/>
             <Label Text="Drop Here" VerticalAlignment="Center" IsTextLocalized="true"
                    HorizontalAlignment="Center" InputTransparent="true"/>
           </Panel>
-        </Border>
 
         <StackPanel Orientation="Vertical" Margin="5"
-                    MinWidth="100" MinChildMargin="5" HasBorder="true">
-          <Label Text="Drop Effects:"/>
-          <CheckBox Text="Move" Name="moveDropEffectCheckBox" IsTextLocalized="true"
+                    MinWidth="100" MinChildMargin="5" HasBorder="false">
+          <ShapeControl Dock="Fill" ShapeType="RoundedRectangle" CornerRadius="5" />
+          <Label Text="Drop Effects" IsBold="true" HorizontalAlignment="Center"/>
+          <StdCheckBox Text="Move" Name="moveDropEffectCheckBox" IsTextLocalized="true"
                     IsChecked="true" Margin="0,0,0,5"/>
-          <CheckBox Text="Copy" Name="copyDropEffectCheckBox" IsTextLocalized="true"
+          <StdCheckBox Text="Copy" Name="copyDropEffectCheckBox" IsTextLocalized="true"
                     IsChecked="true" Margin="0,0,0,5"/>
-          <CheckBox Text="Link" Name="linkDropEffectCheckBox" IsTextLocalized="true"
+          <StdCheckBox Text="Link" Name="linkDropEffectCheckBox" IsTextLocalized="true"
                     IsChecked="true" Margin="0,0,0,5"/>
         </StackPanel>
 
         <StackPanel Orientation="Vertical" Margin="5" MinWidth="200"
-                    HasBorder="true" MinChildMargin="5">
-          <Label Text="Include Formats:"/>
-          <CheckBox Text="Text" Name="textFormatCheckBox" IsTextLocalized="true"
+                    HasBorder="false" MinChildMargin="5">
+          <ShapeControl Dock="Fill" ShapeType="RoundedRectangle" CornerRadius="5" />
+          <Label Text="Include Formats"  IsBold="true" HorizontalAlignment="Center"/>
+          <StdCheckBox Text="Text" Name="textFormatCheckBox" IsTextLocalized="true"
                     IsChecked="true" Margin="0,0,0,5"/>
-          <CheckBox Text="Files" Name="filesFormatCheckBox" IsTextLocalized="true"
+          <StdCheckBox Text="Files" Name="filesFormatCheckBox" IsTextLocalized="true"
                     IsChecked="true" Margin="0,0,0,5"/>
-          <CheckBox Text="Bitmap" Name="bitmapFormatCheckBox" IsTextLocalized="true"
+          <StdCheckBox Text="Bitmap" Name="bitmapFormatCheckBox" IsTextLocalized="true"
                     IsChecked="true" Margin="0,0,0,5"/>
-          <CheckBox Text="Serializable" Name="serializableFormatCheckBox" IsTextLocalized="true"
+          <StdCheckBox Text="Serializable" Name="serializableFormatCheckBox" IsTextLocalized="true"
                     IsChecked="true" Margin="0,0,0,5"/>
         </StackPanel>
 

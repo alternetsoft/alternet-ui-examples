@@ -22,6 +22,8 @@ namespace PropertyGridSample
 "Each step made a peculiar sound—like libraries whispering to mushrooms. " +
 "Trees bent inward to eavesdrop, their leaves rustling riddles only crickets could decipher.";
 
+        public static string LoremIpsumVerySmall = "I see a sky with clouds.";
+
         public static string LoremIpsum = LoremIpsumSmall +
 Environment.NewLine + Environment.NewLine +
 "The map she carried was drawn entirely in nonsense, but somehow it felt correct. " +
@@ -34,20 +36,26 @@ Environment.NewLine + Environment.NewLine +
 "melted politely and hats outgrew heads.";
 
         private static ImageLists? imageLists;
-        private static SizeD defaultListSize = new(defaultListHeight, defaultListHeight);
+        
+        public static SizeD DefaultListSize = new(defaultListHeight, defaultListHeight);
 
         static ObjectInit()
         {
+            AddAction<ShapeControl>(InitShapeControl);
+            AddAction<GenericItemControl>(InitGenericListItemControl);
             AddAction<CardPanelHeader>(InitCardPanelHeader);
             AddAction<RichToolTip>(InitRichToolTip);
             AddAction<DatePicker>(InitDatePicker);
             AddAction<TimePicker>(InitTimePicker);
             AddAction<ListPicker>(InitListPicker);
+            AddAction<EditableListPicker>(InitListPicker);            
             AddAction<EnumPicker>(InitEnumPicker);
             AddAction<ColorPicker>(InitColorPicker);
             AddAction<FontNamePicker>(InitFontNamePicker);
             AddAction<TextBoxWithListPopup>(InitTextBoxWithListPopup);
             AddAction<StdSlider>(InitGenericSlider);
+            AddAction<StdCheckBox>(InitStdCheckBox);
+            AddAction<StdRadioButton>(InitStdRadioButton);
 
             Actions.Add(typeof(PageSetupDialog), InitPageSetupDialog);
             Actions.Add(typeof(PrintPreviewDialog), InitPrintPreviewDialog);
@@ -68,26 +76,21 @@ Environment.NewLine + Environment.NewLine +
             Actions.Add(typeof(TextBox), InitTextBox);
             Actions.Add(typeof(TextBoxAndLabel), InitTextBoxAndLabel);
             Actions.Add(typeof(TextBoxAndButton), InitTextBoxAndButton);
-            Actions.Add(typeof(RichTextBox), InitRichTextBox);
-            Actions.Add(typeof(ComboBoxAndLabel), InitComboBoxAndLabel);
             Actions.Add(typeof(MultilineTextBox), InitMultilineTextBox);
             Actions.Add(typeof(Label), InitGenericLabel);
             Actions.Add(typeof(LabelAndButton), InitLabelAndButton);
             Actions.Add(typeof(GenericWrappedTextControl), InitGenericWrappedTextControl);
             Actions.Add(typeof(LinkLabel), InitLinkLabel);
-            Actions.Add(typeof(Button), InitButton);
+            Actions.Add(typeof(StdButton), InitStdButton);
             Actions.Add(typeof(SpeedTextButton), InitSpeedTextButton);
             Actions.Add(typeof(SpeedColorButton), InitSpeedColorButton);
             Actions.Add(typeof(SideBarPanel), InitSideBarPanel);
             Actions.Add(typeof(TabControl), InitGenericTabControl);
-            Actions.Add(typeof(VirtualListBox), InitVListBox);
+            Actions.Add(typeof(VirtualListBox), InitListBoxItems);
             Actions.Add(typeof(FileListBox), InitFileListBox);
             Actions.Add(typeof(StdListBox), InitStdListBox);
-            Actions.Add(typeof(ListBox), InitListBox);
-            Actions.Add(typeof(ComboBox), InitComboBox);
             Actions.Add(typeof(StdComboBox), InitStdComboBox);
             Actions.Add(typeof(StdCheckListBox), InitCheckListBox);
-            Actions.Add(typeof(CheckedListBox), InitCheckedListBox);
 
             Actions.Add(typeof(UserControl), (c) =>
             {
@@ -125,11 +128,11 @@ Environment.NewLine + Environment.NewLine +
                 var border = (c as Border)!;
                 border.ParentBackColor = false;
                 border.ParentForeColor = false;
-                border.SuggestedSize = defaultListSize;
+                border.SuggestedSize = DefaultListSize;
                 SetBackgrounds(border);
 
                 border.Layout = LayoutStyle.Vertical;
-                Button button = new();
+                StdButton button = new();
                 button.Text = "Click me";
                 button.Parent = border;
                 button.Click += Button_Click;
@@ -153,54 +156,41 @@ Environment.NewLine + Environment.NewLine +
                 (c as StatusBar)!.Panels.Add(new("text2"));
             });
 
-            Actions.Add(typeof(CheckBox), (c) =>
-            {
-                (c as CheckBox)!.Text = "CheckBox";
-            });
-
-            Actions.Add(typeof(RadioButton), (c) =>
-            {
-                (c as RadioButton)!.Text = "RadioButton";
-            });
-
             Actions.Add(typeof(StdTreeView), (c) =>
             {
                 StdTreeView treeView = (c as StdTreeView)!;
-                treeView.SuggestedSize = defaultListSize;
+                treeView.SuggestedSize = DefaultListSize;
                 InitVirtualTreeControl(treeView);
-            });
-
-            Actions.Add(typeof(TreeView), (c) =>
-            {
-                TreeView treeView = (c as TreeView)!;
-                treeView.SuggestedSize = defaultListSize;
-                InitVirtualTreeControl(treeView);
-            });
-
-            Actions.Add(typeof(ListView), (c) =>
-            {
-                ListView listView = (c as ListView)!;
-                listView.SuggestedSize = defaultListSize;
-                InitListView(listView);
-            });
-
-            Actions.Add(typeof(GroupBox), (c) =>
-            {
-                GroupBox groupBox = (c as GroupBox)!;
-                groupBox.Title = "GroupBox";
-                groupBox.SuggestedSize = 150;
-                groupBox.MinChildMargin = 10;
-
-                groupBox.Layout = LayoutStyle.Vertical;
-
-                Label label = new("Label 1");
-                label.Parent = groupBox;
-
-                CheckBox checkBox = new("CheckBox 1");
-                checkBox.Parent = groupBox;
             });
 
             Actions.Add(typeof(Panel), InitPanel);
+
+            Actions.Add(typeof(ResizableWindowBorder), (c) =>
+            {
+                ResizableWindowBorder control = (c as ResizableWindowBorder)!;
+                control.IgnoreLayout = true;
+                control.Size = 300;
+                control.Location = (10, 10);
+                control.Title = "This is title";
+
+                control.MinimizeEnabled = true;
+                control.MaximizeEnabled = true;
+                control.HasSystemMenu = true;
+                control.MinimizeButtonClick += (s, e) => App.Log("Minimize button clicked");
+                control.MaximizeButtonClick += (s, e) => App.Log("Maximize button clicked");
+                control.CloseButtonClick += (s, e) => App.Log("Close button clicked");
+                control.IconClick += (s, e) => App.Log("Icon clicked");
+            });
+
+            Actions.Add(typeof(ResizableBorder), (c) =>
+            {
+                ResizableBorder control = (c as ResizableBorder)!;
+
+                control.HasBorder = true;
+                control.IgnoreLayout = true;
+                control.Size = 300;
+                control.Location = (10, 10);
+            });
 
             Actions.Add(typeof(AbstractControl), (c) =>
             {
@@ -208,22 +198,21 @@ Environment.NewLine + Environment.NewLine +
                 control.SuggestedSize = defaultListHeight;
             });
 
-            Actions.Add(typeof(ProgressBar), (c) =>
+            Actions.Add(typeof(StdProgressBar), (c) =>
             {
-                ProgressBar control = (c as ProgressBar)!;
+                StdProgressBar control = (c as StdProgressBar)!;
                 control.OrientationChanged += OrientationChanged;
                 control.Value = 50;
-                control.SuggestedWidth = 200;
+                control.SuggestedWidth = 250;
 
                 static void OrientationChanged(object? sender, EventArgs e)
                 {
-                    if (sender is not ProgressBar control)
+                    if (sender is not StdProgressBar control)
                         return;
-                    if (control.Orientation == ProgressBarOrientation.Vertical)
+                    if (control.IsVertical)
                         control.SuggestedSize = (Coord.NaN, 250);
                     else
                         control.SuggestedSize = (250, Coord.NaN);
-                    control.PerformLayout();
                 }
 
             });
@@ -233,6 +222,16 @@ Environment.NewLine + Environment.NewLine +
                 PanelOkCancelButtons control = (c as PanelOkCancelButtons)!;
                 control.HasBorder = true;
             });
+        }
+
+        public static void InitStdCheckBox(StdCheckBox control)
+        {
+            control.Text = "StdCheckBox";
+        }
+
+        public static void InitStdRadioButton(StdRadioButton control)
+        {
+            control.Text = "StdRadioButton";
         }
 
         public static ImageLists LoadImageLists()
@@ -250,7 +249,9 @@ Environment.NewLine + Environment.NewLine +
             = AssemblyUtils.GetImageUrlInAssembly(typeof(ObjectInit).Assembly, "Resources.");
         internal static string ResPrefixImage = $"{UrlResPrefix}logo128x128.png";
 
-        internal static readonly Image DefaultImage = Image.FromUrl(ResPrefixImage);
+        public static Image DefaultImage { get; } = Image.FromUrl(ResPrefixImage);
+
+        public static ImageSet DefaultImageSet { get; } = ImageSet.FromUrl(ResPrefixImage);
 
         private static int newItemIndex = 0;
 
@@ -379,6 +380,21 @@ Environment.NewLine + Environment.NewLine +
 
         public static void InitGenericSlider(StdSlider control)
         {
+            control.Value = 4;
+            control.SuggestedWidth = 250;
+            control.OrientationChanged += OrientationChanged;
+
+            static void OrientationChanged(object? sender, EventArgs e)
+            {
+                if (sender is not StdSlider control)
+                    return;
+                if (control.IsVertical)
+                    control.SuggestedSize = (Coord.NaN, 250);
+                else
+                    control.SuggestedSize = (250, Coord.NaN);
+                control.PerformLayout();
+            }
+
             control.ValueChanged += (s,e) =>
             {
                 App.Invoke(() =>
@@ -420,6 +436,7 @@ Environment.NewLine + Environment.NewLine +
         {
             control.HorizontalAlignment = HorizontalAlignment.Stretch;
             control.MaxWidth = 450;
+            control.MinHeight = 300;
 
             control.ShowToolTip(
                 "This is title",
@@ -475,7 +492,7 @@ Environment.NewLine + Environment.NewLine +
 
             for (int i = 1; i < 4; i++)
             {
-                var button = new Button()
+                var button = new StdButton()
                 {
                     Text = s + " Button " + i.ToString(),
                     Margin = 5,
@@ -488,11 +505,11 @@ Environment.NewLine + Environment.NewLine +
 
             static void Button_Click(object? sender, EventArgs e)
             {
-                App.Log($"Button '{(sender as Button)?.Text}' Click");
+                App.Log($"Button '{(sender as StdButton)?.Text}' Click");
             }
         }
 
-        internal static IEnumerable<object> GetTenItems()
+        public static IEnumerable<object> GetTenItems()
         {
             var items = new List<string>();
 
@@ -528,7 +545,7 @@ Environment.NewLine + Environment.NewLine +
             panel.HasBorder = true;
 
 #pragma warning disable
-            Button OkButton = new()
+            StdButton OkButton = new()
             {
                 Text = "1",
                 Margin = PanelOkCancelButtons.DefaultButtonMargin,
@@ -538,7 +555,7 @@ Environment.NewLine + Environment.NewLine +
                 Parent = panel,
             };
 
-            Button CancelButton = new()
+            StdButton CancelButton = new()
             {
                 Text = "2",
                 Margin = PanelOkCancelButtons.DefaultButtonMargin,
@@ -548,7 +565,7 @@ Environment.NewLine + Environment.NewLine +
                 Parent = panel,
             };
 
-            Button ApplyButton = new()
+            StdButton ApplyButton = new()
             {
                 Margin = PanelOkCancelButtons.DefaultButtonMargin,
                 Text = "3",
@@ -580,68 +597,6 @@ Environment.NewLine + Environment.NewLine +
             contextMenu.Items.Add(menuItem2);
         }
 
-        public static void InitListView(ListView listView)
-        {
-            var imageLists = LoadImageLists();
-            listView.HorizontalAlignment = HorizontalAlignment.Stretch;
-            listView.SmallImageList = imageLists.Small;
-            listView.LargeImageList = imageLists.Large;
-
-            AddDefaultItems();
-
-            void InitializeColumns()
-            {
-                listView?.Columns.Add(new ListViewColumn("Column One"));
-                listView?.Columns.Add(new ListViewColumn("Column Two"));
-            }
-
-            void AddDefaultItems()
-            {
-                listView.View = ListViewView.Details;
-                InitializeColumns();
-                AddItems(50);
-                foreach (var column in listView!.Columns)
-                    column.WidthMode = ListViewColumnWidthMode.AutoSize;
-            }
-
-            void AddItems(int count)
-            {
-                if (listView == null)
-                    return;
-
-                listView.BeginUpdate();
-                try
-                {
-                    for (int i = 0; i < count; i++)
-                    {
-                        var ix = GenItemIndex();
-                        listView.Items.Add(
-                            new ListViewItem(new[] {
-                            "Item " + ix,
-                            "Some Info " + ix
-                            }, i % 4));
-                    }
-                }
-                finally
-                {
-                    listView.EndUpdate();
-                }
-            }
-
-
-        }
-
-        public static void InitVirtualTreeControl(TreeView control)
-        {
-            if (App.SafeWindow.UseSmallImages)
-                control.ImageList = LoadImageLists().Small;
-            else
-                control.ImageList = LoadImageLists().Large;
-
-            control.HorizontalAlignment = HorizontalAlignment.Stretch;
-            AddItems(control, 10);
-        }
-
         public static void InitVirtualTreeControl(StdTreeView control)
         {
             if (App.SafeWindow.UseSmallImages)
@@ -671,45 +626,6 @@ Environment.NewLine + Environment.NewLine +
         }
 
         public static void AddItems(StdTreeView treeView, int count)
-        {
-            treeView.BeginUpdate();
-            try
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    int imageIndex = i % 4;
-                    var item = new TreeViewItem(
-                        "Item " + GenItemIndex(),
-                        imageIndex);
-                    for (int j = 0; j < 3; j++)
-                    {
-                        var childItem = new TreeViewItem(
-                            item.Text + "." + j,
-                            imageIndex);
-                        item.Add(childItem);
-
-                        if (i < 5)
-                        {
-                            for (int k = 0; k < 2; k++)
-                            {
-                                childItem.Add(
-                                    new TreeViewItem(
-                                        item.Text + "." + k,
-                                        imageIndex));
-                            }
-                        }
-                    }
-
-                    treeView.Add(item);
-                }
-            }
-            finally
-            {
-                treeView.EndUpdate();
-            }
-        }
-
-        public static void AddItems(TreeView treeView, int count)
         {
             treeView.BeginUpdate();
             try

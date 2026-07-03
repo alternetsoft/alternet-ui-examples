@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -22,7 +23,8 @@ namespace ControlsSample
 
         public static void InitSamples()
         {
-            PropertyGridSample.MainWindow.LimitedTypesStatic.Add(
+            /*
+            PropertyGridSample.MainControl.LimitedTypesStatic.Add(
                 typeof(PropertyGridSample.ControlPainterPreview));
 
             PropertyGridSample.ObjectInit.Actions.Add(
@@ -32,6 +34,7 @@ namespace ControlsSample
                     var control = (c as PropertyGridSample.ControlPainterPreview)!;
                     control.SuggestedSize = 200;
                 });
+            */
         }
 
         public static void LogToFileSimple(object? obj = null)
@@ -71,8 +74,6 @@ namespace ControlsSample
         {
             if (DebugUtils.IsDebugDefined)
             {
-                AbstractControl.UseLayoutMethod = AbstractControl.DefaultLayoutMethod.New;
-
                 DebugUtils.DebugLoading = false;
             }
 
@@ -84,6 +85,11 @@ namespace ControlsSample
             var testBadFont = false;
 
             var isDark = CommandLineArgs.ParseAndGetIsDarkOrNull();
+            var useLegacyPaint = CommandLineArgs.ParseAndGetBoolOrNull("-UseLegacyPaint");
+
+            if (useLegacyPaint.HasValue)
+            {
+            }
 
             if (isDark.HasValue)
             {
@@ -91,7 +97,7 @@ namespace ControlsSample
             }
             else
             {
-                AppUtils.SetSystemAppearanceIfDebug();
+                AppUtils.SetSystemAppearance();
             }
 
             var application = new Application();
@@ -108,7 +114,7 @@ namespace ControlsSample
                 {
                     if (uiLanguage == "ru")
                     {
-                        PropertyGridSample.MainWindow.DoSampleLocalization = false;
+                        PropertyGridSample.MainControl.DoSampleLocalization = false;
                         LocalizationManagerRu.Initialize();
                     }
                 }
@@ -119,20 +125,35 @@ namespace ControlsSample
 
             InitSamples();
 
+            if (DebugUtils.IsDebugDefined)
+            {
+                NativeControlsRegistration.InitActions();
+            }
+
             LogSimple("InitSamples Done.");
 
             if (testBadFont)
                 AbstractControl.DefaultFont = new Font("PineApple", 12);
 
+            var testErrorInXmlBeforeWindowCreation = false;
+
+            if (testErrorInXmlBeforeWindowCreation)
+            {
+                var windowWithError = new WindowWithError();
+            }
+
             var window = new MainWindow();
+
+            window.AddPage("WebBrowser", () => new WebBrowserPage());
+            window.AddPage("RichTextBox", () => new TextRichPage());
 
             LogSimple("Main window created.");
 
             application.Run(window);
 
             LogSimple("After Application.Run.");
-
             window.Dispose();
+
             application.Dispose();
         }
     }

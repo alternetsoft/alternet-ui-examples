@@ -6,7 +6,7 @@ using Alternet.UI;
 
 namespace ControlsSample
 {
-    internal class PopupToolBarPage : Panel
+    public class PopupToolBarPage : Panel
     {
         public DropDownAlignment? DropDownVerticalAlignment = DropDownAlignment.AfterEnd;
         public DropDownAlignment? DropDownHorizontalAlignment = DropDownAlignment.AfterStart;
@@ -26,19 +26,19 @@ namespace ControlsSample
 
             Layout = LayoutStyle.Vertical;
 
-            var button = new Button
+            var showPopupToolBarBtn = new StdButton
             {
                 Text = "Show Popup ToolBar",
                 Margin = 10,
                 Parent = this,
             };
 
-            button.Click += (s, e) =>
+            showPopupToolBarBtn.Click += (s, e) =>
             {
-                popupToolBar.ShowPopup(button);
+                popupToolBar.ShowPopup(showPopupToolBarBtn);
             };
 
-            var button2 = new Button
+            var button2 = new StdButton
             {
                 Text = "Show Context Menu",
                 Margin = 10,
@@ -46,14 +46,14 @@ namespace ControlsSample
                 DropDownMenu = contextMenu,
             };
 
-            var button3 = new Button
+            var showMenuPopupToolBarBtn = new StdButton
             {
                 Text = "Show Context Menu in Popup ToolBar",
                 Margin = 10,
                 Parent = this,
             };
 
-            button3.Click += (s, e) =>
+            showMenuPopupToolBarBtn.Click += (s, e) =>
             {
                 syncedPopupToolBar.MainControl.DataContext = contextMenu;
                 syncedPopupToolBar.MainControl.ConfigureAsContextMenu();
@@ -62,7 +62,7 @@ namespace ControlsSample
                     DropDownHorizontalAlignment ?? DropDownAlignment.BeforeStart,
                     DropDownVerticalAlignment ?? DropDownAlignment.AfterEnd);
 
-                syncedPopupToolBar.ShowPopup(button3, position);
+                syncedPopupToolBar.ShowPopup(showMenuPopupToolBarBtn, position);
             };
 
             Label label1 = new()
@@ -148,7 +148,7 @@ namespace ControlsSample
 
             if (!onlyButtons)
             {
-                var textBox = new TextBox();
+                var textBox = new TextPicker();
                 textBox.VerticalAlignment = VerticalAlignment.Center;
                 textBox.Text = "text1";
                 textBox.MinWidth = 100;

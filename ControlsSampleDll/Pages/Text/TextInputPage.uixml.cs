@@ -18,7 +18,8 @@ namespace ControlsSample
         public static string TextBoxEmptyTextHint = "Sample Hint";
         public static string TextBoxSampleText = "Sample Text";
 
-        private Timer timer = new(100);
+        private readonly Timer timer = new(100);
+
         private PopupPropertyGrid? popup;
 
         static TextInputPage()
@@ -28,6 +29,8 @@ namespace ControlsSample
         public TextInputPage()
         {
             InitializeComponent();
+
+            scrollViewer.ContentSizeScale = 1.5f;
 
             textBox.EmptyTextHint = TextBoxEmptyTextHint;
             textBox.Text = TextBoxSampleText;
@@ -69,8 +72,12 @@ namespace ControlsSample
                 });
             };
 
+            panelSettings.HasBorder = false;
+
             panelSettings.DoInsideLayout(() =>
             {
+                App.DebugLogIf("Adding TextBox settings inputs...", false);
+
                 panelSettings.AddInput("ReadOnly", textBox, nameof(TextBox.ReadOnly));
                 panelSettings.AddInput("Password", textBox, nameof(TextBox.IsPassword));
                 panelSettings.AddInput("Has Border", textBox, nameof(TextBox.HasBorder));
@@ -120,6 +127,8 @@ namespace ControlsSample
                 panelSettings.AddInput("Log Selection", this, nameof(LogSelection));
 
                 panelSettings.AddHorizontalLine();
+
+                App.DebugLogIf("Done adding TextBox settings inputs...", false);
             });
         }
 
@@ -247,8 +256,15 @@ namespace ControlsSample
 
         private void TextBox_CurrentPositionChanged(object? sender, EventArgs e)
         {
-            if (LogPosition)
-                TextBoxUtils.LogPosition(sender);
+            if (!TextInputPage.LogPosition)
+                return;
+
+            var currentPos = textBox.CurrentPosition;
+            if (currentPos is null)
+                return;
+            var name = textBox.Name ?? textBox.GetType().Name;
+            var prefix = $"{name}.CurrentPos:";
+            App.LogReplace($"{prefix} {currentPos.Value + 1}", prefix);
         }
 
         private void TextBox_TextMaxLength(object? sender, EventArgs e)

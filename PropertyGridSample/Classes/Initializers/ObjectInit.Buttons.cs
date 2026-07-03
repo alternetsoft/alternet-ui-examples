@@ -13,23 +13,41 @@ namespace PropertyGridSample
         public static void LogClick(object? sender, EventArgs e)
         {
             var s = $"{sender?.GetType()} Click";
-            App.LogReplace(s, s);
+            App.Log(s);
         }
 
-        public static void InitButton(object control)
+        public static void InitStdButton(object control)
         {
-            if (control is not Button button)
+            if (control is not StdButton button)
                 return;
-            button.Text = "Butt&on";
+            button.Text = "StdButton";
             button.Click += LogClick;
             button.StateImages = GetButtonImages(button);
             button.SetImageMargins(5);
-            button.SuggestedHeight = 100;
             button.HorizontalAlignment = HorizontalAlignment.Left;
             button.MouseWheel += Button_MouseWheel;
+
+            var logMouseOver = false;
+            var logVisualState = false;
+
+            if (logMouseOver)
+            {
+                button.IsMouseOverChanged += (s, e) =>
+                {
+                    App.Log($"StdButton.IsMouseOver changed to [{button.IsMouseOver}]");
+                };
+            }
+
+            if (logVisualState)
+            {
+                button.VisualStateChanged += (s, e) =>
+                {
+                    App.Log($"StdButton.VisualState changed to [{button.VisualState}]");
+                };
+            }
         }
 
-        private static void Button_MouseWheel(object sender, MouseEventArgs e)
+        public static void Button_MouseWheel(object sender, MouseEventArgs e)
         {
             App.Log($"Button MouseWheel: {e.Delta}, {e.Timestamp}");
         }
@@ -38,7 +56,8 @@ namespace PropertyGridSample
         {
             if (control is not SpeedTextButton button)
                 return;
-            button.Text = "Sample Text";
+            button.Text = "SpeedTextButton";
+            button.ToolTip = "Sample ToolTip";
             button.UseTheme = SpeedButton.KnownTheme.StaticBorder;
             button.Click += LogClick;
         }
@@ -56,15 +75,21 @@ namespace PropertyGridSample
         {
             if (control is not SpeedButton button)
                 return;
-            button.Text = "speedButton";
+            button.Text = "SpeedButton";
+            button.ToolTip = "Sample ToolTip";
             button.TextVisible = true;
             button.Click += LogClick;
+
+            button.ContextMenuStrip.Add("Menu Item 1", () => App.Log("Menu Item 1 Click"));
+            button.ContextMenuStrip.Add("Menu Item 2", () => App.Log("Menu Item 2 Click"));
+
             button.LoadSvg(KnownSvgUrls.UrlImageOk, 32);
 
             button.StickyChanged += (s, e) =>
             {
+                var stickyValue = button.Sticky;
                 App.LogReplace(
-                    $"SpeedButton.Sticky changed to [{button.Sticky}]",
+                    $"SpeedButton.Sticky changed to [{stickyValue}]",
                     $"SpeedButton.Sticky");
             };
         }

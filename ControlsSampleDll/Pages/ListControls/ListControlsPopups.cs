@@ -18,25 +18,25 @@ namespace ControlsSample
             Padding = 10,
         };
 
-        private readonly Button showPopupListBoxButton = new()
+        private readonly StdButton showPopupListBoxButton = new()
         {
             Text = $"{GenericStrings.ShowPopupWith} ListBox",
             HorizontalAlignment = HorizontalAlignment.Left,
         };
 
-        private readonly Button showPopupColorListBoxButton = new()
+        private readonly StdButton showPopupColorListBoxButton = new()
         {
             Text = $"{GenericStrings.ShowPopupWith} ColorListBox",
             HorizontalAlignment = HorizontalAlignment.Left,
         };
 
-        private readonly Button showPopupVListBoxButton = new()
+        private readonly StdButton showPopupVListBoxButton = new()
         {
             Text = $"{GenericStrings.ShowPopupWith} VirtualListBox",
             HorizontalAlignment = HorizontalAlignment.Left,
         };
 
-        private readonly Button showPopupCheckListBoxButton = new()
+        private readonly StdButton showPopupCheckListBoxButton = new()
         {
             Text = $"{GenericStrings.ShowPopupWith} CheckListBox",
             HorizontalAlignment = HorizontalAlignment.Left,
@@ -60,7 +60,7 @@ namespace ControlsSample
                 showPopupVListBoxButton,
                 showPopupListBoxButton,
                 showPopupCheckListBoxButton,
-                showPopupColorListBoxButton).Parent(panel).Margin(10).MaxWidthOnSizeChanged();
+                showPopupColorListBoxButton).Parent(panel).Margin(10).MinWidth(250);
 
             showPopupListBoxButton.Click += ShowPopupListBoxButton_Click;
             showPopupCheckListBoxButton.Click += ShowPopupCheckListBoxButton_Click;
@@ -162,7 +162,7 @@ namespace ControlsSample
 
         private void ShowPopupListBoxButton_Click(object? sender, EventArgs e)
         {
-            if (popupListBox.MainControl.Items.Count == 0)
+            if (popupListBox.MainControl.Count == 0)
             {
                 AddDefaultItems(popupListBox.MainControl);
                 popupListBox.MainControl.SelectFirstItem();
@@ -172,9 +172,9 @@ namespace ControlsSample
 
         private void ShowPopupVListBoxButton_Click(object? sender, EventArgs e)
         {
-            if (popupVListBox.MainControl.Items.Count == 0)
+            if (popupVListBox.MainControl.Count == 0)
             {
-                PropertyGridSample.ObjectInit.InitVListBox(popupVListBox.MainControl);
+                PropertyGridSample.ObjectInit.InitListBoxItems(popupVListBox.MainControl);
                 popupVListBox.MainControl.SelectFirstItem();
             }
             popupVListBox.ShowPopup(showPopupVListBoxButton);
@@ -191,7 +191,7 @@ namespace ControlsSample
         {
             var control = popupCheckListBox.MainControl;
 
-            if (control.Items.Count == 0)
+            if (control.Count == 0)
             {
                 AddDefaultItems(control);
                 control.SelectFirstItem();

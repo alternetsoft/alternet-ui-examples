@@ -8,7 +8,7 @@ using Alternet.UI;
 
 namespace ControlsSample
 {
-    internal class TextMemoPage : Panel
+    public class TextMemoPage : Panel
     {
         public static string LoremIpsum =
 "Beneath a sky stitched with teacup clouds, the girl tiptoed across checkerboard moss. " +
@@ -29,13 +29,23 @@ Environment.NewLine + Environment.NewLine +
             "Suspendisse tincidunt orci vitae arcu congue commodo. " +
             "Proin fermentum rhoncus dictum.\n";
 
+        public const string LoremIpsumSmallSingleLine =
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
+            "Suspendisse tincidunt orci vitae arcu congue commodo. " +
+            "Proin fermentum rhoncus dictum.";
+
+        public const string LoremIpsumSmallThreeLines =
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
+            "Suspendisse tincidunt orci vitae arcu congue commodo.\n" +
+            "Proin fermentum rhoncus dictum.";
+
         private readonly PanelMultilineTextBox memoPanel = new();
         private Timer timer = new(100);
 
         public TextMemoPage()
         {
             memoPanel.TextBox.KeyDown += TextBox_KeyDown;
-            memoPanel.TextBox.TextUrl += MultiLineTextBox_TextUrl;
+            memoPanel.TextBox.TextUrl += OnMultiLineTextBoxTextUrl;
             //memoPanel.FileNewClick += MemoPanel_FileNewClick;
             //memoPanel.FileOpenClick += MemoPanel_FileOpenClick;
             //memoPanel.FileSaveClick += MemoPanel_FileSaveClick;
@@ -81,11 +91,18 @@ Environment.NewLine + Environment.NewLine +
 
         private void TextBox_CurrentPositionChanged(object? sender, EventArgs e)
         {
-            if (TextInputPage.LogPosition)
-                TextBoxUtils.LogPosition(sender);
+            if (!TextInputPage.LogPosition)
+                return;
+
+            var currentPos = memoPanel.TextBox.CurrentPosition;
+            if (currentPos is null)
+                return;
+            var name = memoPanel.TextBox.Name ?? memoPanel.TextBox.GetType().Name;
+            var prefix = $"{name}.CurrentPos:";
+            App.LogReplace($"{prefix} {currentPos.Value + 1}", prefix);
         }
 
-        internal static void MultiLineTextBox_TextUrl(object? sender, UrlEventArgs e)
+        public static void OnMultiLineTextBoxTextUrl(object? sender, UrlEventArgs e)
         {
             App.Log("TextBox: Url clicked =>" + e.Url);
             var modifiers = AllPlatformDefaults.PlatformCurrent.TextBoxUrlClickModifiers;

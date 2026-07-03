@@ -12,10 +12,15 @@ using System.IO;
 
 namespace PropertyGridSample
 {
-    public partial class MainWindow
+    public partial class MainControl
     {
         void InitTestsToolBar()
         {
+            AddControlAction<ToolBar>("Add Icon item", (c) =>
+            {
+                c.AddIcon(KnownIcons.Default);
+            });
+
             PropertyGrid.AddSimpleAction<ToolBar>(
                 "Configure as ContextMenu",
                 () => {

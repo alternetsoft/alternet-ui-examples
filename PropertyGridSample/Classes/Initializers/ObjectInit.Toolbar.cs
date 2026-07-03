@@ -20,10 +20,15 @@ namespace PropertyGridSample
             findReplace.HasBorder = true;
             findReplace.ReplaceVisible = true;
             findReplace.Manager = findReplace.CreateLogger();
+            findReplace.TextToFind = "some text";
 
             findReplace.FindEdit.SimpleItems.Add("Item 1");
             findReplace.FindEdit.SimpleItems.Add("Item 2");
             findReplace.FindEdit.SimpleItems.Add("Item 3");
+
+            findReplace.ReplaceEdit.SimpleItems.Add("Item 4");
+            findReplace.ReplaceEdit.SimpleItems.Add("Item 5");
+            findReplace.ReplaceEdit.SimpleItems.Add("Item 6");
         }
 
         public static void InitGenericToolBarSet(object control)
@@ -71,13 +76,15 @@ namespace PropertyGridSample
 
             var buttonIdNew = toolbar.AddSpeedBtn(
                 CommonStrings.Default.ButtonNew,
-                KnownSvgImages.ImgFileNew);
+                KnownSvgImages.ImgFileNew,
+                toolTip: CommonStrings.Default.ButtonNew);
             toolbar.AddToolAction(buttonIdNew, ButtonClick);
             toolbar.SetToolShortcut(buttonIdNew, Keys.Control | Keys.N);
 
             var buttonIdOpen = toolbar.AddSpeedBtn(
                 CommonStrings.Default.ButtonOpen,
-                KnownSvgImages.ImgFileOpen);
+                KnownSvgImages.ImgFileOpen,
+                toolTip: CommonStrings.Default.ButtonOpen);
             toolbar.AddToolAction(buttonIdOpen, ButtonClick);
             toolbar.SetToolShortcut(buttonIdOpen, Keys.Control | Keys.O);
 
@@ -96,23 +103,22 @@ namespace PropertyGridSample
 
             var buttonIdSave = toolbar.AddSpeedBtn(
                 CommonStrings.Default.ButtonSave,
-                saveClone);
+                saveClone,
+                toolTip: CommonStrings.Default.ButtonSave);
             toolbar.AddToolAction(buttonIdSave, ButtonClick);
 
             toolbar.AddSeparator();
 
-            var idText = toolbar.AddText("text");
+            var idText = toolbar.AddText("Color");
             toolbar.AddToolAction(idText, ButtonClick);
 
             if (!onlyButtons)
             {
-                var textBox = new TextBox();
-                textBox.VerticalAlignment = VerticalAlignment.Center;
-                textBox.Text = "text1";
-                textBox.MinWidth = 100;
-                textBox.HorizontalAlignment = HorizontalAlignment.Fill;
+                var colorPicker = new ColorPicker();
+                colorPicker.VerticalAlignment = VerticalAlignment.Stretch;
+                colorPicker.MinWidth = 100;
 
-                var idEdit = toolbar.AddControl(textBox);
+                var idEdit = toolbar.AddControl(colorPicker);
             }
 
             var itemPicture = toolbar.AddPicture(

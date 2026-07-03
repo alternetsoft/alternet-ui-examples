@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using Alternet.UI;
 
 namespace ControlsSample
@@ -53,12 +54,12 @@ namespace ControlsSample
 
             var horzLine = new HorizontalLine();
             horzLine.Parent = this;
-            horzLine.Margin = (0,10,0,10);
+            horzLine.Margin = (0, 10, 0, 10);
 
             label.Parent = this;
-            
+
             RichToolTip toolTip = new();
-            toolTip.Margin = (0,10,0,10);
+            toolTip.Margin = (0, 10, 0, 10);
             toolTip.VerticalAlignment = VerticalAlignment.Fill;
             toolTip.Parent = this;
             toolTip.ParentBackColor = true;
@@ -67,6 +68,11 @@ namespace ControlsSample
 
             BackgroundColor = Color.Gainsboro;
             ForegroundColor = Color.Black;
+
+            shortEdit.InnerPicture.Click += (s, e) =>
+            {
+                App.Log("Error image clicked");
+            };
         }
 
         private void SetDoubleMinMMButton_Click(object? sender, EventArgs e)

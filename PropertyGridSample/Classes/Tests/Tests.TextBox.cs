@@ -12,7 +12,7 @@ using System.IO;
 
 namespace PropertyGridSample
 {
-    public partial class MainWindow
+    public partial class MainControl
     {
         internal void TestMemoFind()
         {
@@ -22,24 +22,6 @@ namespace PropertyGridSample
         internal void TestMemoReplace()
         {
             TestMemoFindReplace(true);
-        }
-
-        void TestRichFindReplace(bool replace)
-        {
-            var control = GetSelectedControl<RichTextBox>();
-            if (control is null)
-                return;
-
-        }
-
-        internal void TestRichFind()
-        {
-            TestRichFindReplace(false);
-        }
-
-        internal void TestRichReplace()
-        {
-            TestRichFindReplace(true);
         }
 
         void HandleTextChangedForTextAsValue(object? sender, EventArgs e)
@@ -124,6 +106,13 @@ namespace PropertyGridSample
 
         void InitTestsTextBox()
         {
+            AddControlAction<EditableListPicker>("Log sizes", (c) =>
+            {
+                App.Log($"Hidden TextBox height with border {c.ParentWindow?.GetTextBoxHeight(c.RealFont, true)}");
+                App.Log($"Hidden TextBox height {c.ParentWindow?.GetTextBoxHeight(c.RealFont, false)}");
+                App.Log($"EditableListPicker height {c.Height}");
+            });
+
             AddControlAction<TextBox>("Edit sbyte", (c) =>
             {
                 c.SetValueAndValidator((sbyte)5, true);

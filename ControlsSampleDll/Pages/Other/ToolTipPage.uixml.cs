@@ -8,29 +8,25 @@ namespace ControlsSample
 {
     internal partial class ToolTipPage : Panel
     {
+        private static ImageSet? customImage;
+        private static ImageSet? largeImage;
+
         private readonly RichToolTip toolTip = new();
 
         private Action<object?, EventArgs>? showMethod;
-        private ImageSet? customImage;
-        private ImageSet? largeImage;
         private MessageBoxIcon toolTipIcon = MessageBoxIcon.Warning;
+        private bool hasMediumImage = true;
         private readonly TemplateControl controlTemplate;
 
         public ToolTipPage()
         {
+            var logConstructor = false;
+
+            App.LogIf("Start ToolTipPage constructor", logConstructor);
+
             InitializeComponent();
 
-            controlTemplate = TemplateUtils.CreateTemplateWithBoldText(
-                "This text has ",
-                "bold",
-                " fragment",
-                new FontAndColor(
-                    Color.Red,
-                    Color.LightGoldenrodYellow,
-                    Control.DefaultFont.Scaled(1.5f)));
-
-            controlTemplate.Parent = this;
-            controlTemplate.SetSizeToContent();
+            controlTemplate = CreateTemplateWithBoldText(this);
 
             tabControl.MinSizeGrowMode = WindowSizeToContentMode.Height;
 
@@ -41,7 +37,8 @@ namespace ControlsSample
             void HandleCheckedChanged(object? sender, EventArgs e)
             {
                 toolTip.HideToolTip();
-            };
+                ShowToolTipButton_Click(this, EventArgs.Empty);
+            }
 
             Group(
                 tooltipTitleLabel,
@@ -51,7 +48,7 @@ namespace ControlsSample
 
             tooltipIconComboBox.IncludeValuePredicate = (item) =>
             {
-                if(item is MessageBoxIcon icon)
+                if (item is MessageBoxIcon icon)
                     return icon == MessageBoxIcon.None || MessageBoxSvg.GetImage(icon) is not null;
                 return false;
             };
@@ -62,6 +59,7 @@ namespace ControlsSample
             {
                 var icon = (MessageBoxIcon)tooltipIconComboBox.Value;
                 ToolTipIcon = icon;
+                ShowToolTipButton_Click(this, EventArgs.Empty);
             };
 
             showToolTipButton.Click += ShowToolTipButton_Click;
@@ -70,6 +68,12 @@ namespace ControlsSample
             showSimpleButton.Click += ShowSimpleButton_Click;
             showImageButton.Click += ShowImageButton_Click;
             resetTextButton.Click += ResetTextButton_Click;
+
+            borderCheckBox.CheckedChanged += (s, e) =>
+            {
+                toolTip.HasToolTipBorder = borderCheckBox.IsChecked;
+                ShowToolTipButton_Click(this, EventArgs.Empty);
+            };
 
             Group(
                 showToolTipButton,
@@ -142,7 +146,65 @@ namespace ControlsSample
                 });
             });
 
+            popup.Add("Set ToolTip container back to green", () =>
+            {
+                tooltipPreview.ParentBackColor = false;
+                tooltipPreview.BackColor = Color.LightGreen;
+            });
+
+            popup.Add("Set ToolTip back to red", () =>
+            {
+                toolTip.ParentBackColor = false;
+                toolTip.BackColor = Color.IndianRed;
+            });
+
             popup.Add("Next Alignment", NextAlignment);
+
+            void ToggleLargeImage()
+            {
+                if (hasMediumImage)
+                {
+                    var resFolder = "Resources.Backgrounds.";
+                    var resPrefix = AssemblyUtils.GetImageUrlInAssembly(GetType().Assembly, resFolder);
+
+                    var url = $"{resPrefix}GirlAndBoyFlower.png";
+
+                    LargeImageSet = ImageSet.FromUrl(url);
+                }
+                else
+                {
+                    LargeImageSet = null;
+                }
+
+                hasMediumImage = !hasMediumImage;
+
+                HideToolTipButton_Click(this, EventArgs.Empty);
+            }
+
+            popup.Add("Toggle Large Image", () =>
+            {
+                ToggleLargeImage();
+            });
+
+            popup.Add("Show ToolTip with Large Image", () =>
+            {
+                hasMediumImage = true;
+                ToggleLargeImage();
+
+                toolTip.BeginUpdate();
+
+                try
+                {
+                    customImageCheckBox.Checked = true;
+                    largeImageCheckBox.Checked = true;
+
+                    ShowToolTipButton_Click(this, EventArgs.Empty);
+                }
+                finally
+                {
+                    toolTip.EndUpdate();
+                }
+            });
 
             atCenterCheckBox.CheckedChanged += (s, e) =>
             {
@@ -186,13 +248,80 @@ namespace ControlsSample
             tooltipMessageTextBox.DelayedTextChanged += (s, e) =>
             {
                 if (toolTip.ToolTipVisible)
-                    RunWhenIdle(()=>ShowToolTipButton_Click(this, EventArgs.Empty));
+                    RunWhenIdle(() => ShowToolTipButton_Click(this, EventArgs.Empty));
             };
 
             tooltipPreview.Click += (s, e) =>
             {
                 ShowToolTipButton_Click(this, EventArgs.Empty);
             };
+
+            App.LogIf("End ToolTipPage constructor", logConstructor);
+        }
+
+        public static ImageSet? CustomImageSet
+        {
+            get
+            {
+                if (customImage is null)
+                    LoadImages();
+                return customImage;
+            }
+
+            set
+            {
+                customImage = value;
+            }
+        }
+
+        public static ImageSet? LargeImageSet
+        {
+            get
+            {
+                if (largeImage is null)
+                    LoadImages();
+                return largeImage;
+            }
+
+            set
+            {
+                largeImage = value;
+            }
+        }
+
+        public static void ShowWithLargeImage(IRichToolTip? toolTip)
+        {
+            if (toolTip is null)
+                return;
+            toolTip.OnlyImage(LargeImageSet).SetToolTipBackgroundColor(Color.ForestGreen).PostShowToolTip();
+        }
+
+        public static void ShowWithBoldText(IRichToolTip? toolTip, AbstractControl? templateParent)
+        {
+            if (toolTip is null)
+                return;
+
+            var template = CreateTemplateWithBoldText(templateParent);
+            toolTip.SetToolTipFromTemplate(template).PostShowToolTip();
+        }
+
+        public static TemplateControls.BoldText<Label> CreateTemplateWithBoldText(AbstractControl? parent)
+        {
+            var controlTemplate = TemplateUtils.CreateTemplateWithBoldText(
+                "This text has ",
+                "bold",
+                " fragment",
+                new FontAndColor(
+                    Color.Red,
+                    Color.LightGoldenrodYellow,
+                    Control.DefaultFont.Scaled(1.5f)));
+
+            controlTemplate.ParentBackColor = false;
+            controlTemplate.BackColor = Color.Transparent;
+            controlTemplate.Parent = parent;
+            controlTemplate.SetSizeToContent();
+
+            return controlTemplate;
         }
 
         private void ToolTipLabel_Click(object? sender, EventArgs e)
@@ -215,14 +344,17 @@ namespace ControlsSample
 
         private void ToggleText(TextBox textBox, string text)
         {
-            if (textBox.Text == string.Empty)
-                textBox.Text = text;
-            else
-            if (textBox.Text == text)
-                textBox.Text = PropertyGridSample.ObjectInit.LoremIpsum;
-            else
-                textBox.Text = string.Empty;
-            ShowToolTipButton_Click(this, EventArgs.Empty);
+            toolTip.DoInsideUpdate(() =>
+            {
+                if (textBox.Text == string.Empty)
+                    textBox.Text = text;
+                else
+                    if (textBox.Text == text)
+                        textBox.Text = PropertyGridSample.ObjectInit.LoremIpsum;
+                    else
+                        textBox.Text = string.Empty;
+                ShowToolTipButton_Click(this, EventArgs.Empty);
+            });
         }
 
         internal void NextAlignment()
@@ -233,13 +365,13 @@ namespace ControlsSample
         internal void Log()
         {
             LogUtils.LogColor("Info", SystemColors.Info);
-            
+
             LogUtils.LogColor(
                 "SystemSettings.Info",
                 new(SystemSettings.GetColor(KnownSystemColor.Info)));
 
             LogUtils.LogColor("InfoText", SystemColors.InfoText);
-            
+
             LogUtils.LogColor(
                 "SystemSettings.InfoText",
                 new(SystemSettings.GetColor(KnownSystemColor.InfoText)));
@@ -255,7 +387,7 @@ namespace ControlsSample
             toolTip.OnlyImage(largeImage).SetToolTipBackgroundColor(Color.ForestGreen).ShowToolTip();
         }
 
-        private void LoadImages()
+        private static void LoadImages()
         {
             ImageSet? GetImage(string resName, int backupColorImageSize)
             {

@@ -1,7 +1,12 @@
 using System;
+using System.IO;
+using System.Linq;
+
 using Alternet.Drawing;
 using Alternet.Drawing.Printing;
 using Alternet.UI;
+
+using SkiaSharp;
 
 namespace PrintingSample
 {
@@ -14,13 +19,18 @@ namespace PrintingSample
         {
         };
 
+        static PrintingMainWindow()
+        {
+        }
+
         public PrintingMainWindow()
         {
             toolBar.Parent = this;
             toolBar.SetVisibleBorders(false, false, false, true);
             toolBar.Padding = 10;
 
-            var buttonPrintImmediately = toolBar.AddTextBtnCore("Print Immediately", null, PrintImmediatelyMenuItem_Click);
+            var buttonPrintImmediately = toolBar.AddTextBtnCore(
+                "Print Immediately", null, PrintImmediatelyMenuItem_Click);
             toolBar.AddSpacer();
             var buttonPrint = toolBar.AddTextBtnCore("Print...", null, PrintMenuItem_Click);
             toolBar.AddSpacer();
@@ -28,7 +38,18 @@ namespace PrintingSample
             toolBar.AddSpacer();
             var buttonPrintPreview = toolBar.AddTextBtnCore("Print Preview...", null, PrintPreviewMenuItem_Click);
 
-            Group(buttonPrint, buttonPrintPreview, buttonPageSetup, buttonPrintImmediately).Enabled(PrinterUtils.HasPrinters() != false);
+            var buttonPDF = toolBar.AddTextBtnCore("Create PDF...", null, (s, e) =>
+            {
+                var fileName = PathUtils.GenTempFileName(".pdf", PathUtils.GenTempFileNameFlags.DeleteIfExists);
+                App.Log($"Creating PDF file: {fileName}");
+                CreateSamplePdf(fileName);
+                AppUtils.OpenPdf(fileName);
+            });
+
+            buttonPDF.Enabled = true;
+
+            Group(buttonPrint, buttonPrintPreview, buttonPageSetup, buttonPrintImmediately)
+                .Enabled(PrinterUtils.HasPrinters() != false);
 
             toolBar.SpeedButtons.SetUseTheme(SpeedButton.KnownTheme.RoundBorder);
 
@@ -40,6 +61,54 @@ namespace PrintingSample
             // This is important if OS style is BlackOnWhite.
             DrawingArea.BackgroundColor = Color.White;
             DrawingArea.ParentBackColor = false;
+        }
+
+        public void CreateSamplePdf(string outputPath)
+        {
+            using var stream = File.OpenWrite(outputPath);
+
+            using var document = SKDocument.CreatePdf(stream);
+
+            // A4 size in points (72 DPI) -> 595, 842
+            var dpi = SKDocument.DefaultRasterDpi;
+            var size = PrinterUtils.GetPaperSizeForSkiaDocument(PaperKind.A4, dpi);
+
+            var numPages = additionalPagesCountNumericUpDown.Value + 1;
+
+            for (int page = 1; page <= numPages; page++)
+            {
+                var bounds = new RectD(new PointD(), size);
+
+                if (originAtMarginCheckBox.IsChecked)
+                {
+                    var margins = TryGetPageMargins();
+                    if (margins != null)
+                    {
+                        bounds = bounds.DeflatedWithPadding(margins.Value);
+                    }
+                }
+
+                SKCanvas canvas = document.BeginPage(size.Width, size.Height);
+
+                var dc = SkiaUtils.CreateSkiaGraphicsOnCanvas(canvas, 1.0f);
+
+                dc.Save();
+
+                if (page <= 2)
+                {
+                    DrawFirstPage(dc, bounds, false, page);
+                }
+                else
+                {
+                    DrawAdditionalPage(dc, page, bounds);
+                }
+
+                dc.Restore();
+
+                document.EndPage();
+            }
+
+            document.Close();
         }
 
         private void DrawingArea_Paint(object? sender, PaintEventArgs e)
@@ -75,17 +144,20 @@ namespace PrintingSample
 
             var dtbWidth = drawTextBounds.Width;
 
-            var wrappedText = DrawingUtils.WrapTextToMultipleLines(
+            var wrappedText = DrawingUtils.WrapTextToList(
                 TextToDraw,
                 dtbWidth,
                 font,
-                dc);
+                dc).ToArray();
 
-            dc.DrawText(
-                wrappedText,
-                font,
-                Brushes.Black,
-                drawTextBounds.Location);
+            if (forScreen)
+            {
+            }
+            else
+            {
+            }
+
+            dc.DrawStrings(new(drawTextBounds.Location, SizeD.Empty), font, wrappedText, foreColor: Color.Black);
 
             dc.FillEllipse(Brushes.Gold, cornerRectLeft.InflatedBy(-5, -5));
             dc.FillEllipse(Brushes.Gold, cornerRectRight.InflatedBy(-5, -5));
@@ -126,13 +198,13 @@ namespace PrintingSample
         {
             var document = new PrintDocument
             {
-                OriginAtMargins = originAtMarginCheckBox.IsChecked,
+                OriginAtMargins = false,
                 DocumentName = printDocumentNameTextBox.Text,
             };
 
             document.PrinterSettings.FromPage = 1;
             document.PrinterSettings.MinimumPage = 1;
-            
+
             var maxPage = additionalPagesCountNumericUpDown.Value + 1;
             document.PrinterSettings.MaximumPage = maxPage;
             document.PrinterSettings.ToPage = maxPage;
@@ -168,7 +240,7 @@ namespace PrintingSample
             var document = CreatePrintDocument();
 
             pageSetupDialog.Document = document;
-            
+
             pageSetupDialog.AllowMargins = true;
             pageSetupDialog.AllowOrientation = true;
             pageSetupDialog.AllowPaper = true;
@@ -190,7 +262,7 @@ namespace PrintingSample
             var document = CreatePrintDocument();
 
             document.PrintPage += Document_PrintPage;
-            
+
             dialog.Document = document;
             dialog.ShowAsync();
         }
@@ -198,9 +270,20 @@ namespace PrintingSample
         private void Document_PrintPage(object? sender, PrintPageEventArgs e)
         {
             int pageNumber = e.PageNumber;
+            RectD bounds;
 
-            var bounds = new RectD(new PointD(), originAtMarginCheckBox.IsChecked
-                ? e.MarginBounds.Size : e.PrintablePageBounds.Size);
+            if (originAtMarginCheckBox.IsChecked)
+            {
+                bounds = e.MarginBounds;
+            }
+            else
+            {
+                bounds = e.PageBounds;
+            }
+
+            App.Log($"PageBounds: {e.PageBounds}");
+            App.Log($"MarginBounds: {e.MarginBounds}");
+            App.Log($"PrintablePageBounds: {e.PrintablePageBounds}");
 
             e.DrawingContext.Save();
 

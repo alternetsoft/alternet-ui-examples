@@ -13,24 +13,11 @@ namespace ControlsSample
     {
         protected override void AddDefaultItems()
         {
-            /*
-                Add("NinePatch Drawing Sample", () => new NinePatchDrawingWindow());
-            */
-
-
-            if (App.IsWindowsOS)
-            {
-                InternalSamplesPage.Add("Action Simulator Sample", () => new ActionSimulatorPage());
-            }
-
             Add("Threading Sample", () => new ThreadingSample.ThreadingMainWindow());
-            
+
             AddIfDebug("Draw Test Page: Custom", () => new CustomDrawTestPage());
             AddIfDebug("Draw Test Page: Skia", () => new SkiaDrawingWindow());
             
-            AddIfDebug("Controls Test Window", () => new ControlsTestWindow());           
-
-            Add("Documentation Samples", () => new ApiDoc.MainWindowSimple());
             Add("Preview File Sample", () => new PreviewSample.PreviewSampleWindow());
             Add("Explorer UI Sample", () => new ExplorerUISample.ExplorerMainWindow());
             Add("Printing Sample", () => new PrintingSample.PrintingMainWindow());
@@ -45,7 +32,6 @@ namespace ControlsSample
             Add("Common Dialogs", () => new CommonDialogsWindow());
             Add("Employee Form", () => new EmployeeFormSample.EmployeeWindow());
             Add("Drawing Sample", () => new DrawingSample.DrawingMainWindow());
-            Add("Property Grid", () => new PropertyGridSample.MainWindow());
         }
     }
 }

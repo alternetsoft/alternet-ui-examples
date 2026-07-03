@@ -38,20 +38,6 @@ namespace PropertyGridSample
             textBox.TextBox.SuggestedWidth = 200;
         }
 
-        public static void InitComboBoxAndLabel(object control)
-        {
-            if (control is not ComboBoxAndLabel textBox)
-                return;
-            textBox.Text = "item 1";
-            textBox.Label.Text = "Label";
-            textBox.ComboBox.SuggestedWidth = 200;
-            textBox.ComboBox.Add("item 1");
-            textBox.ComboBox.Add("item 2");
-            textBox.ComboBox.Add("item 3");
-            textBox.ComboBox.Add("item 4");
-            textBox.ComboBox.Add("item 5");
-        }
-
         public static void InitTextBox(object control)
         {
             if (control is not TextBox textBox)
@@ -104,19 +90,11 @@ namespace PropertyGridSample
             };
         }
 
-        public static void InitRichTextBox(object control)
-        {
-            if (control is not RichTextBox textBox)
-                return;
-            textBox.SuggestedSize = defaultListSize;
-            textBox.Text = LoremIpsum;
-        }
-
         public static void InitMultilineTextBox(object control)
         {
             if (control is not MultilineTextBox textBox)
                 return;
-            textBox.SuggestedSize = defaultListSize;
+            textBox.SuggestedSize = DefaultListSize;
             textBox.Text = LoremIpsum;
         }
     }

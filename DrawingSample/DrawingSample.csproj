@@ -7,8 +7,9 @@
   <ItemGroup>
     <EmbeddedResource Include="$(CommonResourcesPath)\Logo.png" Link="Resources\Logo.png" />
     <EmbeddedResource Include="$(CommonResourcesPath)\Leaves.jpg" Link="Resources\Leaves.jpg" />
+    <EmbeddedResource Include="$(CommonResourcesPath)\CarbonStack.jpg" Link="Resources\CarbonStack.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="1.0.1" />
+    <PackageReference Include="Alternet.UI" Version="1.1.0" />
   </ItemGroup>
 </Project>

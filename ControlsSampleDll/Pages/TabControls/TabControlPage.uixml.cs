@@ -79,7 +79,7 @@ namespace ControlsSample
                     item.Enabled = false;
                 }
 
-                tabControl.HeaderControl.ContextMenuStrip.Add("Toggle vertical text", () =>
+                this.ContextMenuStrip.Add("Toggle vertical text", () =>
                 {
                     if(tabControl.IsVerticalText)
                     {
@@ -93,6 +93,17 @@ namespace ControlsSample
                     }
                 });
 
+                this.ContextMenuStrip.Add("Toggle interior border", () =>
+                {
+                    tabControl.HasInteriorBorder = !tabControl.HasInteriorBorder;
+                });
+
+                this.ContextMenuStrip.Add("Toggle content visibility", () =>
+                {
+                    tabControl.ContentVisible = !tabControl.ContentVisible;
+                });
+
+                tabControl.MinHeight = 300;
                 tabControl.HasCloseButton = true;
                 tabControl.CloseButtonClick += (s, e) =>
                 {
@@ -166,7 +177,7 @@ namespace ControlsSample
 
             for (int i=1; i < 4; i++)
             {
-                var button = new Button()
+                var button = new StdButton()
                 {
                     Text = s + " Button " + i.ToString(),
                     Margin = 5,
@@ -192,6 +203,16 @@ namespace ControlsSample
         private void ClearPagesButton_Click(object? sender, EventArgs e)
         {
             tabControl.RemoveAll();
+        }
+
+        private void ToggleVerticalTextButton_Click(object? sender, EventArgs e)
+        {
+            tabControl.IsVerticalText = !tabControl.IsVerticalText;
+        }
+
+        private void ToggleCloseButton_Click(object? sender, EventArgs e)
+        {
+            tabControl.HasCloseButton = !tabControl.HasCloseButton;
         }
 
         private void TabAlignmentComboBox_SelectedItemChanged(object? sender, EventArgs e)

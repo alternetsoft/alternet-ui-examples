@@ -10,8 +10,22 @@ namespace ControlsSample
 {
     public partial class MainWindow : CustomDemoWindow
     {
+        internal static bool TestSystemColorsChanged = false;
+
+        private static readonly AbstractControl hiddenControl = new GenericControl();
+
         static MainWindow()
         {
+            SystemSettings.SystemColorsChanged += () =>
+            {
+                App.LogIf("SystemColorsChanged event from SystemSettings", TestSystemColorsChanged);
+            };
+
+            hiddenControl.SystemColorsChanged += (s, e) =>
+            {
+                App.LogIf("SystemColorsChanged event was raised in hidden control", TestSystemColorsChanged);
+            };
+
             DebugUtils.AreDeveloperToolsShown = true;
 
             DebugUtils.RegisterExceptionsLoggerIfDebug((e) =>
@@ -66,6 +80,8 @@ namespace ControlsSample
         {
             base.Initialize();
 
+            MainTabControl.Add("Controls", () => new PropertyGridSample.MainControl());
+
             var showStatusBar = false;
 
             if (showStatusBar)
@@ -88,6 +104,11 @@ namespace ControlsSample
 
                 statusBar.Parent = this;
             }
+
+            SystemColorsChanged += (s, e) =>
+            {
+                App.LogIf("SystemColorsChanged event was raised in main window", TestSystemColorsChanged);
+            };
         }
 
         protected override void OnClosing(WindowClosingEventArgs e)
@@ -103,16 +124,16 @@ namespace ControlsSample
             {
                 AddPage("Welcome", CreateWelcomePage);
                 AddPage("Text", CreateTextInputPage);
-                AddPage("ListBoxes", CreateListControlsPage);
-                AddPage("Buttons", CreateButtonsPage);
+                AddPage("ListBox", CreateListControlsPage);
+                AddPage("Button", CreateButtonsPage);
                 AddPage("TreeView", CreateTreeViewPage);
-                AddPage("ListView", CreateListViewPage);
+                AddPage("ListView",() => new ListViewPage());
                 AddPage("DateTime", CreateDateTimePage);
-                AddPage("WebBrowser", CreateWebBrowserPage);
                 AddPage("Number", CreateNumericInputPage);
                 AddPage("Slider, Progress", CreateSliderAndProgressPage);
                 AddPage("Layout", CreateLayoutPage);
-                AddPage("Notify, ToolTip", CreateNotifyIconPage);
+                AddPage("Rich ToolTip", () => new ToolTipPage());
+
                 AddPage("TabControl", CreateTabControlPage);
                 AddPage("Multimedia", CreateMultimediaPage);
                 AddPage("Samples", CreateOtherPage);
@@ -136,11 +157,12 @@ namespace ControlsSample
 
             NameValue<Func<AbstractControl>>?[] pages =
             {
-                new("List", () => new ListBoxPage()),
-                new("Checks", () => new CheckListBoxPage()),
-                new("Combo", () => new ComboBoxPage()),
                 new("Virtual", () => new VListBoxSamplePage()),
+                new("List", () => new ListBoxPage()),
+                new("Check", () => new CheckListBoxPage()),
+                new("Combo", () => new ComboBoxPage()),
                 new("Colors", () => new ColorListBoxSamplePage()),
+                new("Header", () => new ListBoxHeaderTestPage()),
                 new("Other", () => new ListControlsOtherPage()),               
 
                 popupNameValue,
@@ -153,9 +175,9 @@ namespace ControlsSample
         {
             NameValue<Func<AbstractControl>>[] pages =
             {
-                new("Button", () => new ButtonPage()),
-                new("Check", () => new CheckBoxesPage()),
-                new("Radio", () => new RadioButtonsPage()),
+                new("StdButton", () => new ButtonPage()),
+                new("StdCheckBox", () => new CheckBoxesPage()),
+                new("StdRadioButton", () => new RadioButtonsPage()),
             };
 
             return CreateCustomPage(pages);
@@ -165,8 +187,8 @@ namespace ControlsSample
         {
             NameValue<Func<AbstractControl>>[] pages =
             {
-                new("Slider", () => new SliderPage()),
-                new("Progress", () => new ProgressBarPage()),
+                new("StdSlider", () => new SliderPage()),
+                new("StdProgressBar", () => new ProgressBarPage()),
             };
 
             return CreateCustomPage(pages);
@@ -182,7 +204,6 @@ namespace ControlsSample
             NameValue<Func<AbstractControl>>[] pagesDebug =
             {
                 new("Internal", CreateInternalSamplesPage),
-                /*new("External", CreateAllSamplesPage),*/
             };
 
             NameValue<Func<AbstractControl>>[] pagesRelease =
@@ -209,11 +230,6 @@ namespace ControlsSample
                 new("Memo", () =>
                 {
                     return new TextMemoPage();
-                }),
-
-                new("Rich", () =>
-                {
-                    return new TextRichPage();
                 }),
 
                 new("Other", () =>
@@ -245,8 +261,8 @@ namespace ControlsSample
         {
             NameValue<Func<AbstractControl>>[] pages =
             {
-                new("Time", () => new TimePage()),
-                new("Date", () => new DatePage()),
+                new("TimePicker", () => new TimePage()),
+                new("DatePicker", () => new DatePage()),
                 new("Calendar", () => new CalendarPage()),
                 new("Popup", () => new DateTimePopups()),
             };
@@ -274,30 +290,9 @@ namespace ControlsSample
         }
 
         AbstractControl CreateTreeViewPage() => new TreeViewPage();
-        AbstractControl CreateListViewPage() => new ListViewPage();
         AbstractControl CreateTabControlPage() => new TabControlPage();
         AbstractControl CreateNumericInputPage() => new NumericInputPage();
         
-        AbstractControl CreateNotifyIconPage()
-        {
-            NameValue<Func<AbstractControl>>? nameValue;
-
-            if (NotifyIcon.IsAvailable)
-                nameValue = new("Notify Icon", () => new NotifyIconPage());
-            else
-                nameValue = null;
-
-            NameValue<Func<AbstractControl>>?[] pages =
-            {
-                new("Rich ToolTip", () => new ToolTipPage()),
-                nameValue,
-            };
-
-            return CreateCustomPage(pages);
-        }
-
-        AbstractControl CreateWebBrowserPage() => new WebBrowserPage();
-
         AbstractControl CreateInternalSamplesPage() => new InternalSamplesPage();
 
         AbstractControl CreateWelcomePage() => new WelcomePage();

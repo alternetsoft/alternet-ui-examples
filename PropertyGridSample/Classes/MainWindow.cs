@@ -13,7 +13,7 @@ using Alternet.UI.Extensions;
 
 namespace PropertyGridSample
 {
-    public partial class MainWindow : Window
+    public partial class MainControl : Panel
     {
         public static bool DoSampleLocalization = true;
 
@@ -22,10 +22,9 @@ namespace PropertyGridSample
         private readonly ContextMenuStrip propGridContextMenu = new();
         private MenuItem? resetMenu;
 
-        private bool useIdle = false;
         private bool showDesignCorners;
 
-        static MainWindow()
+        static MainControl()
         {
             // Registers known collection property editors.
             PropertyGrid.RegisterCollectionEditors();
@@ -86,7 +85,7 @@ namespace PropertyGridSample
 
         public AbstractControl ControlParent => panel.FillPanel;
 
-        public MainWindow()
+        public MainControl()
         {
             InitSampleLocalization();
 
@@ -99,9 +98,6 @@ namespace PropertyGridSample
                 SetBackground(SystemColors.Window);
 
                 Title = "Alternet UI PropertyGrid Sample";
-                Size = (900, 700);
-                StartLocation = WindowStartLocation.CenterScreen;
-                Padding = 5;
                 Activated += MainWindow_Activated;
                 Deactivated += MainWindow_Deactivated;
                 SizeChanged += MainWindow_SizeChanged;
@@ -119,8 +115,6 @@ namespace PropertyGridSample
                 PropGrid.Features = PropertyGridFeature.QuestionCharInNullable;
                 PropGrid.ProcessException += PropertyGrid_ProcessException;
                 InitIgnorePropNames(PropGrid.IgnorePropNames);
-
-                Icon = App.DefaultIcon;
 
                 Children.Add(panel);
 
@@ -185,10 +179,12 @@ namespace PropertyGridSample
                 ControlParent.HasBorder = true;
 
                 toolBoxFilterEdit.VerticalAlignment = VerticalAlignment.Top;
-                toolBoxFilterEdit.MarginBottom = 2;
+                toolBoxFilterEdit.MarginBottom = 5;
+                toolBoxFilterEdit.InnerOuterBorder = InnerOuterSelector.Outer;
                 panel.LeftPanel.Children.Prepend(toolBoxFilterEdit);
 
-                toolBoxFilterEdit.InitFilterEdit();
+                toolBoxFilterEdit.InitSearchEdit();
+
                 panel.LeftPanel.Layout = LayoutStyle.Vertical;
             }
 
@@ -199,7 +195,10 @@ namespace PropertyGridSample
 
             App.AddIdleTask(() =>
             {
-                ToolBox.SelectFirstItemAndScroll();
+                ToolBox.FirstItem?.Expand();
+                var itemIndex = ToolBox.ListBox.FindAndSelect("UI.StdButton", 0, true, true);
+                if(itemIndex < 0)
+                    ToolBox.SelectedItem = ToolBox.FirstItem?.FirstItem;
             });
 
             toolBoxFilterEdit.DelayedTextChanged += (s, e) =>
@@ -309,8 +308,6 @@ namespace PropertyGridSample
                     return;
                 var item = ToolBox.SelectedItem as ControlListBoxItem;
                 var type = item?.InstanceType;
-                if (type == typeof(WelcomePage))
-                    return;
                 if (item?.PropInstance == e.Instance || e.Instance is null)
                     Invoke(UpdatePropertyGrid);
                 Post(ControlParent.Refresh);
@@ -396,32 +393,19 @@ namespace PropertyGridSample
 
                 ControlParent.Refresh();
 
-                if (type == typeof(WelcomePage))
+                App.AddIdleTask(() =>
                 {
-                    if (useIdle)
-                        App.AddIdleTask(InitDefaultPropertyGrid);
-                    else
-                        InitDefaultPropertyGrid();
-                    useIdle = true;
-                    SetBackground(SystemColors.Window);
-                    panel.RemoveActions();
-                }
-                else
+                    PropGrid.SetProps(item.PropInstance, true);
+                    PropGrid.Refresh();
+                    AfterSetProps();
+                });
+
+                SetBackground(null);
+
+                App.AddIdleTask(() =>
                 {
-                    App.AddIdleTask(() =>
-                    {
-                        PropGrid.SetProps(item.PropInstance, true);
-                        PropGrid.Refresh();
-                        AfterSetProps();
-                    });
-
-                    SetBackground(null);
-
-                    App.AddIdleTask(() =>
-                    {
-                        panel.SetMethodsAndActions(type, GetSelectedControl<Control>());
-                    });
-                }
+                    panel.SetMethodsAndActions(type, GetSelectedControl<Control>());
+                });
 
                 App.AddIdleTask(() =>
                 {

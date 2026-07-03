@@ -16,7 +16,7 @@ namespace ControlsSample
         private static int globalCounter;
 
         private readonly int counter;
-        private readonly AbstractControl? statusPanel;
+        private readonly GenericControl? statusPanel;
 
         private readonly StdTreeView treeView = new()
         {
@@ -56,6 +56,13 @@ namespace ControlsSample
             
             treeView.ContextMenu.Add("Add many items", () =>
             {
+                if (treeView.HasColumns)
+                {
+                    treeView.Clear();
+                    treeView.Header.Visible = false;
+                    treeView.Columns.Clear();
+                }
+
                 ListControlUtils.AddTestItems(treeView.RootItem, 1000);
                 treeView.SelectLastItemAndScroll();
             });
@@ -82,9 +89,6 @@ namespace ControlsSample
                     = ListControlItem.CheckBoxSizeOverride.Value + incValue;
                 }
 
-#if DEBUG
-                /*Graphics.DebugElementId = treeView.RootItem.FirstChild?.UniqueId;*/
-#endif
                 FormUtils.InvalidateAll();
             });
 
@@ -104,6 +108,8 @@ namespace ControlsSample
             treeView.ContextMenu.Add("Change RootItem", () =>
             {
                 TreeViewRootItem item = new();
+                treeView.Columns.Clear();
+                treeView.Header.Visible = false;
                 ListControlUtils.AddTestItems(item, 10, ItemInitialize);
 
                 void ItemInitialize(TreeViewItem item)
@@ -112,6 +118,52 @@ namespace ControlsSample
                 }
 
                 treeView.RootItem = item;
+            });
+
+            treeView.ContextMenu.Add("Toggle second column alignment", () =>
+            {
+                var column = treeView.Columns.Count > 1 ? treeView.Columns[1] : null;
+
+                if (column is null)
+                {
+                    return;
+                }
+
+                treeView.DoInsideUpdate(() =>
+                {
+                    foreach (var item in treeView.RootItem.EnumExpandedItems())
+                    {
+                        var dataCell = item.SafeCell(column);
+                        if(dataCell.HorizontalAlignment == HorizontalAlignment.Right)
+                        {
+                            dataCell.HorizontalAlignment = HorizontalAlignment.Left;
+                        }
+                        else
+                        {
+                            dataCell.HorizontalAlignment = HorizontalAlignment.Right;
+                        }
+                    }
+                });
+            });
+
+            treeView.ContextMenu.Add("Multiple Columns", () =>
+            {
+                treeView.DoInsideUpdate(() =>
+                {
+                    treeView.ListBox.VertGridLines = true;
+
+                    ListControlUtils.SetTestItemsWithColumns(treeView, count: 10);
+                    var column1 = treeView.Columns[1];
+                    var column0 = treeView.Columns[0];
+                    var cell = treeView.RootItem.SafeCell(15, column1);
+                    cell.Text = "Cell 15-1";
+
+                    cell = treeView.RootItem.SafeCell(15, column0);
+                    cell.Text = "Cell 15-0";
+
+                    cell = treeView.RootItem.SafeCell(13, column1);
+                    cell.Text = "Cell 13-1";
+                });
             });
 
             treeView.ContextMenu.Add("Toggle vertical scroll bar visibility", () =>
@@ -133,6 +185,11 @@ namespace ControlsSample
                 }
 
                 treeView.ListBox.VerticalScrollBarSettings.SuggestedVisibility = visibility;
+            });
+
+            treeView.ContextMenu.Add("Toggle vert grid lines", () =>
+            {
+                treeView.ListBox.VertGridLines = !treeView.ListBox.VertGridLines;
             });
 
             var lastChild = treeView.RootItem.LastChild;
@@ -169,6 +226,13 @@ namespace ControlsSample
             var item = new Alternet.UI.TreeViewItem();
             item.Text = "Item " + Alternet.UI.LogUtils.GenNewId();
             item.SvgImage = Alternet.UI.KnownColorSvgImages.ImgLogo;
+
+            if (treeView.HasColumns)
+            {
+                item.GetCell(0)?.SetText(item.Text).SetSvgImage(item.SvgImage);
+                item.GetCell(1)?.SetText("Data" + Alternet.UI.LogUtils.GenNewId());
+            }
+
             treeView.AddChild(root, item, true);
         }
 

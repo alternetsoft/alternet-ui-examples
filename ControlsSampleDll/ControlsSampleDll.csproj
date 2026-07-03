@@ -85,12 +85,7 @@
   <ItemGroup>
     <Resource Include="Resources\Svg\*" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="NewCode\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ApiDocDll\ApiDocDll.csproj" />
-  </ItemGroup>
+  <ItemGroup />
   <!-- ================================================ -->
   <ItemGroup>
     <IncludeFolders Include="DragAndDropSample" />
@@ -121,9 +116,6 @@
     <Compile Include="..\PrintingSample\PrintingMainWindow.uixml.cs" Link="Links\PrintingSample\PrintingMainWindow.uixml.cs" />
     <None Include="..\PrintingSample\PrintingMainWindow.uixml" Link="Links\PrintingSample\PrintingMainWindow.uixml" />
     <UIXml Include="..\PrintingSample\PrintingMainWindow.uixml" Link="Links\PrintingSample\PrintingMainWindow.uixml" />
-
-    <Compile Include="..\PrintingSample\Patch\*.cs" Link="Links\PrintingSample\Patch\%(RecursiveDir)%(Filename)%(Extension)" />
-
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\ThreadingSample\ThreadingMainWindow.uixml.cs" Link="Links\ThreadingSample\ThreadingMainWindow.uixml.cs" />
@@ -248,6 +240,6 @@
   </PropertyGroup>
   <Import Project="$(SignToolPath)" Condition="Exists('$(SignToolPath)')" />
   <ItemGroup>
-    <PackageReference Include="Alternet.UI" Version="1.0.1" />
+    <PackageReference Include="Alternet.UI" Version="1.1.0" />
   </ItemGroup>
 </Project>

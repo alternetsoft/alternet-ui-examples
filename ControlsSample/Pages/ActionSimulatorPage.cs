@@ -10,14 +10,18 @@ namespace ControlsSample
     internal class ActionSimulatorPage : Window
     {
         [IsTextLocalized(true)]
-        private readonly Button button1;
+        private readonly StdButton button1;
 
         [IsTextLocalized(true)]
-        private readonly Button button2;
+        private readonly StdButton button2;
 
         private readonly UIActionSimulator simulator = new();
         private readonly TextBox editor;
         private readonly TextBox editor2;
+        private readonly Label label1;
+        private readonly Label label2;
+        private readonly ToolBarForTesting statusBar = new();
+
         private int counter;
 
         private readonly Panel panel = new()
@@ -27,10 +31,12 @@ namespace ControlsSample
 
         public ActionSimulatorPage()
         {
+            Layout = LayoutStyle.Vertical;
+            panel.VerticalAlignment = VerticalAlignment.Fill;
             panel.MinChildMargin = 5;
             Size = (800, 600);
 
-            new Label(
+            label1 = new Label(
                 panel,
                 [
                     "This demo send mouse clicks and key presses to operating system",
@@ -44,7 +50,7 @@ namespace ControlsSample
             editor = new TextBox(panel);
             editor2 = new TextBox(panel);
 
-            new Label(
+            label2 = new Label(
                 panel,
                 [
                     "Simulator moves mouse to 'Button1' and clicks it.",
@@ -53,12 +59,23 @@ namespace ControlsSample
                 ]);
 
             panel.Parent = this;
+
+            statusBar.SuggestedHeight = 26;
+            statusBar.SetVisibleBorders(false, true);
+            statusBar.Dock = DockStyle.Bottom;
+            statusBar.Parent = this;
+
+            var rightGrip = statusBar.AddSizingGrip(this, ToolBar.GripControlKind.SizeGripRight);
+            var moveGrip = statusBar.AddSizingGrip(this, ToolBar.GripControlKind.MoveGrip);
+            var leftGrip = statusBar.AddSizingGrip(this, ToolBar.GripControlKind.SizeGripLeft);
+
+            moveGrip.HasBorder = true;
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
-            if(e.Key == Key.F5)
+            if (e.Key == Key.F5)
             {
                 App.AddIdleTask(() =>
                 {
@@ -88,6 +105,18 @@ namespace ControlsSample
                         return condition;
                     }
                 });
+            }
+        }
+
+        internal class ToolBarForTesting : ToolBar
+        {
+            public ToolBarForTesting()
+            {
+            }
+
+            public override void OnLayout()
+            {
+                base.OnLayout();
             }
         }
     }

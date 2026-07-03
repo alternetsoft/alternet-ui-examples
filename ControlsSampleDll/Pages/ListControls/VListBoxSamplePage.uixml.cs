@@ -2,21 +2,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Alternet.UI;
 using Alternet.Drawing;
 
 namespace ControlsSample
 {
-    internal partial class VListBoxSamplePage: Panel
+    internal partial class VListBoxSamplePage : Panel
     {
-        private readonly NotNullCollection<ListControlItem> items1 = new();
-        private readonly NotNullCollection<ListControlItem> items2 = new();
+        private readonly ListSource items1 = new();
+        private readonly ListSource items2 = new();
         private bool useItems1 = true;
 
         private readonly VirtualListBox listBox = new()
         {
             Dock = DockStyle.Fill,
-            Margin = (0,0,0,5),
+            Margin = (0, 0, 0, 5),
         };
 
         private readonly Splitter splitter = new()
@@ -28,7 +29,7 @@ namespace ControlsSample
 
         public VListBoxSamplePage()
         {
-            PropertyGridSample.ObjectInit.AddDefaultOwnerDrawItems(listBox, (s) =>
+            PropertyGridSample.ObjectInit.AddDefaultOwnerDrawItemsForListBox(listBox, (s) =>
             {
                 items1.Add(s);
             });
@@ -44,10 +45,11 @@ namespace ControlsSample
 
             Title = "Virtual";
 
+            listBox.DebugIdentifier = "DemoListBox";
             findExactCheckBox.BindBoolProp(this, nameof(FindExact));
             findIgnoreCaseCheckBox.BindBoolProp(this, nameof(FindIgnoreCase));
             findText.TextChanged += FindText_TextChanged;
-            PropertyGridSample.ObjectInit.InitVListBox(listBox);
+            PropertyGridSample.ObjectInit.InitListBoxItems(listBox);
 
             splitter.TargetMode = SplitterTargetMode.NextVisibleSibling;
             Children.Prepend(splitter);
@@ -76,8 +78,7 @@ namespace ControlsSample
                 listBox.Invalidate();
             };
 
-            var contextMenu = new ContextMenuStrip();
-            vertPanel2.ContextMenuStrip = contextMenu;
+            var contextMenu = vertPanel2.ContextMenuStrip;
 
             contextMenu.Add("Toggle items fast", () =>
             {
@@ -112,11 +113,57 @@ namespace ControlsSample
                 listBox.Invalidate();
             });
 
-            contextMenu.AddSeparator();
-            contextMenu.Add(ControlUtils.CreateMenuItemRenderingModeSelector(listBox));
-            contextMenu.Add(ControlUtils.CreateMenuItemTrackPaintingTime(listBox));
+            contextMenu.Add("Toggle long item tooltip provider", () =>
+            {
+                listBox.ItemToolTipProvider ??= VirtualListBox.DefaultItemToolTipProvider;
+                var nextValue = EnumUtils.NextValue(listBox.ItemToolTipProvider.Value);
+                listBox.ItemToolTipProvider = nextValue;
+            });
 
-            listBox.HasBorder = VirtualListBox.DefaultUseInternalScrollBars || App.IsWindowsOS;
+            contextMenu.Add("Toggle horizontal lines", () =>
+            {
+                listBox.HorzGridLines = !listBox.HorzGridLines;
+            });
+
+            contextMenu.Add("Toggle items 3 and 6 visibility", () =>
+            {
+                var item3 = listBox.GetItem(3);
+                var item6 = listBox.GetItem(6);
+                if (item3 is not null)
+                    item3.IsVisible = !item3.IsVisible;
+                if (item6 is not null)
+                    item6.IsVisible = !item6.IsVisible;
+                listBox.Invalidate();
+            });
+
+            var item = listBox.GetItem(1);
+
+            if (item is not null)
+            {
+                item.ToolTip = ButtonPage.CreateRichToolTipParams();
+                item.IsToolTipVisible = true;
+            }
+
+            listBox.BindItemEditorToEvents(
+                bind: true,
+                textEdited: (s, e) =>
+                {
+                    if (e.Item is not null)
+                    {
+                        e.Item.Text = e.NewTextOrDefault;
+                    }
+
+                    App.LogNameValueReplace("VListBox.ItemTextEdited", e.NewTextOrDefault);
+                },
+                textRequested: (s, e) =>
+                {
+                    const bool changeItemText = true;
+
+                    if (changeItemText)
+                        e.Text = $"[{e.Text}]";
+                },
+                editKey: Keys.F2,
+                doubleClickToEdit: true);
         }
 
         private void ListBox_CheckedChanged(object? sender, EventArgs e)
@@ -161,21 +208,21 @@ namespace ControlsSample
         }
 
         private void ListBox_MouseLeftButtonDown(
-            object? sender, 
+            object? sender,
             MouseEventArgs e)
         {
             if (!cbLogHitTestEvent.Checked)
                 return;
 
             var result = listBox.HitTest(Mouse.GetPosition(listBox));
-            
+
             var item = (result == null ? "<none>" : listBox.GetItem(result.Value)?.ToString());
 
             item ??= result?.ToString() ?? string.Empty;
 
             var splitted = StringUtils.Split(item);
 
-            if(splitted.Length > 1)
+            if (splitted.Length > 1)
                 item = $"{splitted[0]}...";
 
             App.Log($"HitTest result: Item: '{item}'");
@@ -213,7 +260,7 @@ namespace ControlsSample
         }
 
         private void EnsureLastItemVisibleButton_Click(
-            object? sender, 
+            object? sender,
             EventArgs e)
         {
             // do not need to check count as EnsureVisible does this.
@@ -221,7 +268,7 @@ namespace ControlsSample
         }
 
         private void SelectItemAtIndex2Button_Click(
-            object? sender, 
+            object? sender,
             EventArgs e)
         {
             listBox.SelectItems(2);
@@ -233,7 +280,7 @@ namespace ControlsSample
         }
 
         private void SelectItemAtIndices2And4Button_Click(
-            object? sender, 
+            object? sender,
             EventArgs e)
         {
             listBox.SelectItems(2, 4);

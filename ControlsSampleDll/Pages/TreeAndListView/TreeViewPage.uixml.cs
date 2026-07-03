@@ -25,12 +25,7 @@ namespace ControlsSample
                     ensureLastItemVisibleButton,
                     scrollLastItemIntoViewButton,
                     focusLastItemButton,
-                    modifyLastItemButton).SuggestedWidthToMax();
-
-                treeView.ListBox.MouseUp += TreeView_MouseUp;
-                treeView.ListBox.MouseLeftButtonUp += TreeView_MouseLeftButtonUp;
-                treeView.ListBox.MouseLeftButtonDown += TreeView_MouseLeftButtonDown;
-                treeView.ListBox.MouseMove += TreeView_MouseMove;
+                    modifyLastItemButton).MinWidth(150);
 
                 var imageLists = DemoResourceLoader.LoadImageLists();
 
@@ -54,12 +49,66 @@ namespace ControlsSample
 
             treeView.RootItem.FirstChild?.Expand();
             treeView.SelectFirstItemAndScroll();
+
+            pageControl.FirstPage?.ContextMenuStrip.Add("Assign sample menu items to tree view", () =>
+            {
+                var menu = new MenuSample.ExampleContextMenu();
+
+                var popupTreeView = treeView.FirstChildOfType<InnerPopupTreeView>();
+                if (popupTreeView is null)
+                {
+                    popupTreeView = new();
+                    popupTreeView.SetItemSource(menu, setStyle: true);
+                }
+
+                popupTreeView.ShowInContainer(treeView, null, HVDropDownAlignment.Center);
+            });
+
+            pageControl.FirstPage?.ContextMenuStrip.Add("Show linear index", () =>
+            {
+                treeView.ListBox.CustomItemText -= OnGetItemTextWithIndex;
+                treeView.ListBox.CustomItemText += OnGetItemTextWithIndex;
+            });
+
+            pageControl.FirstPage?.ContextMenuStrip.Add("Log Mouse events", () =>
+            {
+                treeView.ListBox.MouseMove -= TreeView_MouseMove;
+                treeView.ListBox.MouseMove += TreeView_MouseMove;
+                treeView.ListBox.MouseUp += TreeView_MouseUp;
+                treeView.ListBox.MouseLeftButtonUp += TreeView_MouseLeftButtonUp;
+                treeView.ListBox.MouseLeftButtonDown += TreeView_MouseLeftButtonDown;
+            });
+
+            void OnGetItemTextWithIndex(object? sender, GetItemTextEventArgs e)
+            {
+                if (e.Item is not TreeViewItem treeViewItem)
+                    return;
+                e.Result += $" (LinearIndex: {treeViewItem.LinearIndex})";
+                e.Handled = true;
+            };
+
+            treeView.ListBox.ItemTextEdited += (s, e) =>
+            {
+                if (e.Item is TreeViewItem treeViewItem)
+                    treeViewItem.Text = e.NewTextOrDefault;
+            };
         }
 
         private void TreeView_MouseMove(object sender, MouseEventArgs e)
         {
             var item = treeView.GetNodeAtMouseCursor();
-            var s = item?.Text ?? "<none>";
+
+            string s;
+
+            if (item is null)
+            {
+                s = "<none>";
+            }
+            else
+            {
+                s = $"{item.Text}";
+            }
+
             var prefix = "MouseMove. Item under mouse:";
             App.LogReplace($"{prefix} '{s}'", prefix);
         }
@@ -103,7 +152,7 @@ namespace ControlsSample
                 AddItems(treeView, 5);
                 treeView.AddSeparator();
 
-                PropertyGridSample.ObjectInit.AddDefaultOwnerDrawItems(
+                PropertyGridSample.ObjectInit.AddDefaultOwnerDrawItemsForTreeView(
                 treeView,
                 item =>
                 {
@@ -283,9 +332,7 @@ namespace ControlsSample
 
         private void BeginSelectedLabelEditingButton_Click(object? sender, EventArgs e)
         {
-            /*
-            treeView.SelectedItem?.BeginLabelEdit();
-            */
+            treeView.ListBox.ShowItemEditor();
         }
 
         private void ExpandAllButton_Click(object? sender, EventArgs e)
@@ -357,10 +404,7 @@ namespace ControlsSample
             var item = treeView.LastItem;
             if (item != null)
             {
-                var collection = item.Parent == null ?
-                    treeView.Items : item.Parent.Items;
-                var newItem =
-                    new TreeViewItem(item.Text + " Sibling", item.ImageIndex ?? 0);
+                var newItem = new TreeViewItem(item.Text + " Sibling", item.ImageIndex ?? 0);
                 item.Parent?.Insert(item.Index ?? 0, newItem);
                 newItem.EnsureVisible();
             }

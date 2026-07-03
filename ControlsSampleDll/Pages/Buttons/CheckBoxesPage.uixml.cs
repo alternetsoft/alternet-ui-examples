@@ -23,7 +23,7 @@ namespace ControlsSample
               textEmptyButton,
               checkStateCheckedButton,
               checkStateIndeterminateButton);
-            buttons.SuggestedWidthToMax();
+            buttons.MinWidth(200);
 
             isCheckedFalseButton.Click += IsCheckedFalseButton_Click;
             isCheckedTrueButton.Click += IsCheckedTrueButton_Click;
@@ -31,6 +31,20 @@ namespace ControlsSample
             checkStateCheckedButton.Click += CheckStateCheckedButton_Click;
             checkStateIndeterminateButton.Click += CheckStateIndeterminateButton_Click;
             textEmptyButton.Click += TextEmptyButton_Click;
+
+            checkBox.Parent?.ContextMenuStrip.Add("Toggle accent border", () =>
+            {
+                if(checkBox.Item.Border == BorderSettings.AccentBorder)
+                {
+                    checkBox.Item.Border = BorderSettings.TransparentBorder;
+                }
+                else
+                {
+                    checkBox.Item.Border = BorderSettings.AccentBorder;
+                }
+
+                checkBox.Invalidate();
+            });
         }
 
         private void TextEmptyButton_Click(object? sender, EventArgs e)
@@ -64,7 +78,9 @@ namespace ControlsSample
         private void CheckStateIndeterminateButton_Click(object? sender, EventArgs e)
         {
             if (checkBox.ThreeState)
+            {
                 checkBox.CheckState = CheckState.Indeterminate;
+            }
             else
                 App.Log($"CheckBox.ThreeState = {GenericStrings.BoolFalse}. {GenericStrings.IndeterminateStateIsNotSet}.");
         }
@@ -77,16 +93,19 @@ namespace ControlsSample
         private void AllowAllStatesForUserCheckBox_CheckedChanged(object? sender, EventArgs e)
         {
             checkBox.AllowAllStatesForUser = allowAllStatesForUserCheckBox.IsChecked;
+            App.Log($"CheckBox.AllowAllStatesForUser = {checkBox.AllowAllStatesForUser}");
         }
 
         private void AlignRightCheckBox_CheckedChanged(object? sender, EventArgs e)
         {
             checkBox.AlignRight = alignRightCheckBox.IsChecked;
+            App.Log($"CheckBox.AlignRight = {checkBox.AlignRight}");
         }
 
         private void ThreeStatesCheckBox_CheckedChanged(object? sender, EventArgs e)
         {
             checkBox.ThreeState = threeStatesCheckBox.IsChecked;
+            App.Log($"CheckBox.ThreeState = {checkBox.ThreeState}");
         }
     }
 }

@@ -16,7 +16,7 @@ namespace ControlsSample
             SuggestedWidth = 200,
         };
 
-        private readonly CheckBox textVisibleCheckBox = new(GenericStrings.TextVisible)
+        private readonly StdCheckBox textVisibleCheckBox = new(GenericStrings.TextVisible)
         {
             IsChecked = true,
         };
@@ -26,7 +26,7 @@ namespace ControlsSample
             MinChildMargin = 5,
         };
 
-        private readonly Button setColorButton = new(GenericStrings.SetColor)
+        private readonly StdButton setColorButton = new(GenericStrings.SetColor)
         {
             HorizontalAlignment = HorizontalAlignment.Left,
         };
@@ -50,8 +50,6 @@ namespace ControlsSample
             textVisibleCheckBox.BindBoolProp(listBox, nameof(VirtualListBox.TextVisible));
             comboBox.MinWidth = 150;
             comboBox.ValueChanged += ComboBox_SelectedItemChanged;
-
-            listBox.HasBorder = VirtualListBox.DefaultUseInternalScrollBars;
         }
 
         private void ComboBox_SelectedItemChanged(object? sender, EventArgs e)
